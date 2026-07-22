@@ -1,0 +1,116 @@
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/font/OpenSans-VariableFont.ttf') format('truetype');
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --brand-default: hsl(109, 40%, 35%);
+  --brand-dark: hsl(110, 52%, 26%);
+  --brand-light: hsl(107, 31%, 53%);
+  --brand-subtle: hsl(109, 40%, 35%);
+  --brand-foreground: hsl(0, 0%, 100%);
+  --accent-default: hsl(108, 28%, 63%);
+  --accent-dark: hsl(109, 22%, 54%);
+  --accent-light: hsl(107, 63%, 82%);
+  --accent-subtle: hsl(108, 28%, 63%);
+  --accent-foreground: hsl(240, 6%, 10%);
+  --neutral-50: hsl(120, 7%, 95%);
+  --neutral-100: hsl(120, 2%, 83%);
+  --neutral-200: hsl(120, 1%, 72%);
+  --neutral-300: hsl(120, 1%, 62%);
+  --neutral-400: hsl(120, 1%, 51%);
+  --neutral-500: hsl(120, 1%, 41%);
+  --neutral-600: hsl(120, 1%, 31%);
+  --neutral-700: hsl(120, 2%, 22%);
+  --neutral-800: hsl(120, 1%, 14%);
+  --neutral-900: hsl(120, 8%, 5%);
+  --text-heading: hsl(120, 1%, 14%);
+  --text-body: hsl(120, 2%, 22%);
+  --text-muted: hsl(120, 1%, 41%);
+  --text-inverse: hsl(0, 0%, 100%);
+  --text-link: hsl(109, 40%, 35%);
+  --bg-page: hsl(120, 7%, 95%);
+  --bg-surface: hsl(0, 0%, 100%);
+  --bg-elevated: hsl(0, 0%, 99%);
+  --bg-sunken: hsl(120, 2%, 83%);
+  --border-default: hsl(120, 1%, 72%);
+  --border-strong: hsl(120, 1%, 62%);
+  --border-subtle: hsl(120, 2%, 83%);
+  --border-focus: hsl(109, 40%, 35%);
+  --success-default: hsl(142, 65%, 36%);
+  --success-light: hsl(135, 66%, 67%);
+  --warning-default: hsl(38, 90%, 50%);
+  --warning-light: hsl(51, 100%, 70%);
+  --error-default: hsl(0, 84%, 60%);
+  --error-light: hsl(6, 100%, 76%);
+  --info-default: hsl(217, 90%, 60%);
+  --info-light: hsl(211, 100%, 80%);
+  --gradient-brand: linear-gradient(135deg, #2b6420 0%, #90bb85 100%);
+  --gradient-accent: linear-gradient(135deg, #90bb85 0%, #c1eeb5 100%);
+  --gradient-hero: linear-gradient(135deg, #2b6420 0%, #427b35 50%, #90bb85 100%);
+  --gradient-surface: linear-gradient(to bottom, #ffffff 0%, #fdfdfd 100%);
+  --gradient-card: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+  --shadow-brand: 0 0 20px rgb(66 123 53 / 0.2);
+  --font-family-sans: Inter, system-ui, -apple-system, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --font-weight-black: 900;
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+  --base-white: #ffffff;
+  --base-black: #000000;
+  --selection-background: rgb(66 123 53 / 0.3);
+  --selection-foreground: inherit;
+  --overlay: rgba(0, 0, 0, 0.4);
+  --ring: rgb(66 123 53 / 0.4);
+  --skeleton: #d3d5d3;
+  --brand-50: hsl(107, 100%, 93%);
+  --brand-100: hsl(109, 59%, 88%);
+  --brand-200: hsl(108, 50%, 78%);
+  --brand-300: hsl(108, 42%, 66%);
+  --brand-400: hsl(108, 30%, 54%);
+  --brand-500: hsl(108, 34%, 41%);
+  --brand-600: hsl(108, 45%, 30%);
+  --brand-700: hsl(106, 68%, 21%);
+  --brand-800: hsl(105, 86%, 14%);
+  --brand-900: hsl(109, 96%, 9%);
+  --brand-950: hsl(120, 100%, 6%);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  body {
+    background-color: var(--color-bg-page);
+    color: var(--color-text-body);
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-text-heading);
+    font-weight: 700;
+  }
+  a { color: var(--color-text-link); }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+  .bg-elevated { background-color: var(--color-bg-elevated); }
+  .bg-sunken { background-color: var(--color-bg-sunken); }
+  .shadow-brand { box-shadow: var(--shadow-brand); }
+}
+
+* {
+  font-family: "OpenSans";
+}
+
+main {
+  color: var(--neutral-50);
+}
