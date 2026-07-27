@@ -1,3 +1,8 @@
 import { getLogger } from "@logtape/logtape";
 
-export const rootLogger = getLogger(["app"]);
+export const rootLogger = import.meta.env.DEV ? getLogger(["app"]) : {
+  log: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};

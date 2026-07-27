@@ -263,7 +263,7 @@ export const sprites = defineSpriteMap([defineSprite(
      ["arrow-right"],
      [24]
    )],
-  defineExternalAssetMeta('sprite.d4efce90.svg')
+  defineExternalAssetMeta('sprite.b9c8159a.svg')
 )]
 )])
 

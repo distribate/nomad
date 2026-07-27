@@ -9,10 +9,10 @@ importers:
   .:
     dependencies:
       '@kobalte/core':
-        specifier: ^0.13.12
+        specifier: 0.13.12
         version: 0.13.12(solid-js@1.9.13)
       '@logtape/logtape':
-        specifier: ^2.2.4
+        specifier: 2.2.4
         version: 2.2.4
       '@reatom/framework':
         specifier: 3.4.68
@@ -20,28 +20,40 @@ importers:
       '@reatom/npm-solid-js':
         specifier: 3.6.2
         version: 3.6.2
+      '@reatom/persist-web-storage':
+        specifier: ^3.4.6
+        version: 3.4.6
       '@tma.js/sdk':
         specifier: 3.2.3
         version: 3.2.3(typescript@6.0.3)
       class-variance-authority:
-        specifier: ^0.7.1
+        specifier: 0.7.1
         version: 0.7.1
       cnfast:
-        specifier: ^0.0.8
+        specifier: 0.0.8
         version: 0.0.8
+      dayjs:
+        specifier: ^1.11.21
+        version: 1.11.21
+      gsap:
+        specifier: ^3.15.0
+        version: 3.15.0
+      nanoid:
+        specifier: ^6.0.0
+        version: 6.0.0
       solid-js:
         specifier: 1.9.13
         version: 1.9.13
+      universal-router:
+        specifier: ^10.0.3
+        version: 10.0.3
     devDependencies:
       '@biomejs/biome':
         specifier: 2.5.2
         version: 2.5.2
       '@neodx/svg':
-        specifier: ^0.8.0
+        specifier: 0.8.0
         version: 0.8.0(prettier@3.9.6)
-      '@svg-jar/plugin':
-        specifier: ^0.1.2
-        version: 0.1.2(rolldown@1.1.4)(vite@8.1.1(@types/node@24.13.2)(jiti@2.7.0))
       '@tweakpane/core':
         specifier: 2.0.5
         version: 2.0.5
@@ -66,6 +78,9 @@ importers:
       vite:
         specifier: 8.1.1
         version: 8.1.1(@types/node@24.13.2)(jiti@2.7.0)
+      vite-bundle-analyzer:
+        specifier: ^1.3.9
+        version: 1.3.9
       vite-plugin-solid:
         specifier: 2.11.12
         version: 2.11.12(solid-js@1.9.13)(vite@8.1.1(@types/node@24.13.2)(jiti@2.7.0))
@@ -217,9 +232,6 @@ packages:
     resolution: {integrity: sha512-Ox2kYyxy7NoXdKWdHeDEjZxClwzO4SKM8plAaVwmAJPxHMqA0rLOoAsa+hBDwRLpctf+ZRnAd/ykguuJidnaTA==}
     peerDependencies:
       solid-js: ^1.8
-
-  '@eksml/xml@0.1.6':
-    resolution: {integrity: sha512-FGZ5YbU2KHvd8KxgitTzEEJnF0+rreyTXhursa/UpNu7aSk3N5epheAwrL5bQrYbhNVd3AbpVmpIJcWALkOKkw==}
 
   '@emnapi/core@1.10.0':
     resolution: {integrity: sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==}
@@ -515,6 +527,9 @@ packages:
   '@reatom/npm-solid-js@3.6.2':
     resolution: {integrity: sha512-LHZmkklSJK25oRDbIGc5qiN51doqL2SamCgqO72a9jCuHHGEdaE4g9Az0K72V9aoE11HE8r4xFiSsmpYjEpT+Q==}
 
+  '@reatom/persist-web-storage@3.4.6':
+    resolution: {integrity: sha512-bwJPxyTsLW8+/bd3CvdR4Y3wk94VAdiiVIbChKB86WwkJHdQ7M7YZ7Yy2+iOgCvzwDZkA+6BZnw6wiOGyZNOBg==}
+
   '@reatom/persist@3.4.3':
     resolution: {integrity: sha512-NsJNZEATjaXKGjxlPQ95KD3LmEVD4SY01HSJmDujACOYECFUMrVBD3p+SPV2+2PJEfVXAVapFvqxwPCq3RlajA==}
 
@@ -676,10 +691,6 @@ packages:
     resolution: {integrity: sha512-ISSB5QX1qP2ynrheIpYwc4oKR5Ny4siNuUyf1qZniy+Il+p/PtDB0QK1Dnle8noiHpwRD3gpPdubOC3qI/Zamg==}
     peerDependencies:
       solid-js: ^1.6.12
-
-  '@svg-jar/plugin@0.1.2':
-    resolution: {integrity: sha512-hFK9XydusiIpY4HTM0FK/uHLodU+dWG/BIjtpt2S2x9b9//KeN7FuDq2Rpl5UGyxI/08x2J6GcyTJ8+SySDDnw==}
-    engines: {node: '>=20'}
 
   '@swc/helpers@0.5.23':
     resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
@@ -891,10 +902,6 @@ packages:
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
 
-  commander@11.1.0:
-    resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
-    engines: {node: '>=16'}
-
   commander@12.0.0:
     resolution: {integrity: sha512-MwVNWlYjDTtOjX5PiD7o5pK0UrFU/OYgcJfjjK4RaHZETNtjJqrZa9Y9ds88+A+f+d5lv+561eZ+yCKoS3gbAA==}
     engines: {node: '>=18'}
@@ -938,6 +945,9 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  dayjs@1.11.21:
+    resolution: {integrity: sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -984,10 +994,6 @@ packages:
   entities@6.0.1:
     resolution: {integrity: sha512-aN97NXWF6AWBTahfVOIrB/NShkzi5H7F9r1s9mD3cDj4Ko5f2qhhVoYMibXF7GlLveb/D2ioWay8lxI97Ven3g==}
     engines: {node: '>=0.12'}
-
-  entities@8.0.0:
-    resolution: {integrity: sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==}
-    engines: {node: '>=20.19.0'}
 
   error-kid@1.1.0:
     resolution: {integrity: sha512-PwVk1XJt8bOAkptsG/ezLwh64m3TrWjCW8X95wnDjPjHRkkn3/I13m76zuFrGVr/zLsCZao+08OsOcJbUNEPZg==}
@@ -1044,12 +1050,18 @@ packages:
   grammex@3.1.3:
     resolution: {integrity: sha512-rUZoJJQguOCaAMTuoyxs40OxqSLgVhzCCwDn1mbp2vETWutv/TmgAz7KxMR8Tz4z4cty/zIh88HrOWKqWgeGjg==}
 
+  gsap@3.15.0:
+    resolution: {integrity: sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==}
+
   gzip-size@6.0.0:
     resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
     engines: {node: '>=10'}
 
   html-entities@2.3.3:
     resolution: {integrity: sha512-DV5Ln36z34NNTDgnz0EWGBLZENelNAtkiFA4kyNOG2tDI6Mz1uSWiq1wAKdyjnJwyDiDO7Fa2SO1CTxPXL8VxA==}
+
+  idb-keyval@6.3.0:
+    resolution: {integrity: sha512-um+2dgAWmYsu615EXpWVwSmapJhON0G43t3Ka/EVaohzPQXSMqKEqeDK/oIW3Ow+BXaF2PvSc+oBTFp793A5Ow==}
 
   import-meta-resolve@4.2.0:
     resolution: {integrity: sha512-Iqv2fzaTQN28s/FwZAoFq0ZSs/7hMAHJVX+w8PZl3cY19Pxk6jFFalxQoIfW2826i/fDLXv8IiEZRIT0lDuWcg==}
@@ -1219,6 +1231,11 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  nanoid@6.0.0:
+    resolution: {integrity: sha512-mkUH+rPkwU2qPadJ0oJZOjeZ5Mxn8Q1UhevwkTRWNuUZzyia3h4rhzK39hxaHTk0o2OxB8W2SQ6A8k23ZDi1pQ==}
+    engines: {node: ^22 || ^24 || >=26}
+    hasBin: true
+
   node-fetch-native@1.6.7:
     resolution: {integrity: sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q==}
 
@@ -1310,10 +1327,6 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
-  sax@1.6.0:
-    resolution: {integrity: sha512-6R3J5M4AcbtLUdZmRv2SygeVaM7IhrLXu9BmnOGmmACak8fiUtOsYNWUS4uK7upbmHIBbLBeFeI//477BKLBzA==}
-    engines: {node: '>=11.0.0'}
-
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
@@ -1365,11 +1378,6 @@ packages:
   svgo@3.3.2:
     resolution: {integrity: sha512-OoohrmuUlBs8B8o6MB2Aevn+pRIH9zDALSR+6hhqVfa6fRwG/Qw9VUMSMW9VNg2CFc/MTIfabtdOVl9ODIJjpw==}
     engines: {node: '>=14.0.0'}
-    hasBin: true
-
-  svgo@4.0.2:
-    resolution: {integrity: sha512-ekx94z1rRc5LDi6oSUaeRnYhd0UOJxdtQCL2rF8xpWxD3TPAsISWOrxezqGovqS38GRZOdpDfvQe3ts6F7nsng==}
-    engines: {node: '>=16'}
     hasBin: true
 
   tiny-glob@0.2.9:
@@ -1424,6 +1432,9 @@ packages:
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
+  universal-router@10.0.3:
+    resolution: {integrity: sha512-EeprhLOcCs65oS37EiaETWlbTCq4UMqrqU5Oew1emu840EgugcpSz5OTXpK9zfsJtFW3bt0iYgrbSlquwRcMhw==}
+
   unocss@66.7.4:
     resolution: {integrity: sha512-a9Aqre6SS036sAO5qo0hrOAfrgWuilNIO3ekwp/tWz0CtsL7SXOA3lAtHi3WP0vtIsWbbYJEEGX4n4VBoQprqA==}
     peerDependencies:
@@ -1450,39 +1461,6 @@ packages:
     resolution: {integrity: sha512-5uKD0nqiYVzlmCRs01Fhs2BdkEgBS3SAVP6ndrBsuK42iC2+JHyxM05Rm9G8+5mkmRtzMZGY8Ct5+mliZxU/Ww==}
     engines: {node: '>=18.12.0'}
 
-  unplugin@3.3.0:
-    resolution: {integrity: sha512-qa66K+crbfyE6JK10GjvbJeRrOsuC/JpbnHctfyp/i4oBTxWOzJfRZyDiOk1PtErMFRu8JhsU/wPvOdBNWe5Rg==}
-    engines: {node: ^20.19.0 || >=22.12.0}
-    peerDependencies:
-      '@farmfe/core': '*'
-      '@rspack/core': '*'
-      bun-types-no-globals: '*'
-      esbuild: '*'
-      rolldown: '*'
-      rollup: '*'
-      unloader: '*'
-      vite: '*'
-      webpack: '*'
-    peerDependenciesMeta:
-      '@farmfe/core':
-        optional: true
-      '@rspack/core':
-        optional: true
-      bun-types-no-globals:
-        optional: true
-      esbuild:
-        optional: true
-      rolldown:
-        optional: true
-      rollup:
-        optional: true
-      unloader:
-        optional: true
-      vite:
-        optional: true
-      webpack:
-        optional: true
-
   update-browserslist-db@1.2.3:
     resolution: {integrity: sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w==}
     hasBin: true
@@ -1496,6 +1474,10 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  vite-bundle-analyzer@1.3.9:
+    resolution: {integrity: sha512-hhy975B+ToseJaSJp3mURHriZUrMgaM2qx0BkP62kN6Yp46rw7EE3dl8ExFWYdn00OIwe7GbsA5PknvstNWG4Q==}
+    hasBin: true
 
   vite-plugin-solid@2.11.12:
     resolution: {integrity: sha512-FgjPcx2OwX9h6f28jli7A4bG7PP3te8uyakE5iqsmpq3Jqi1TWLgSroC9N6cMfGRU2zXsl4Q6ISvTr2VL0QHpA==}
@@ -1731,10 +1713,6 @@ snapshots:
     dependencies:
       '@floating-ui/dom': 1.8.0
       solid-js: 1.9.13
-
-  '@eksml/xml@0.1.6':
-    dependencies:
-      entities: 8.0.0
 
   '@emnapi/core@1.10.0':
     dependencies:
@@ -2055,6 +2033,12 @@ snapshots:
       '@reatom/core': 3.10.3
       solid-js: 1.9.13
 
+  '@reatom/persist-web-storage@3.4.6':
+    dependencies:
+      '@reatom/core': 3.10.3
+      '@reatom/persist': 3.4.3
+      idb-keyval: 6.3.0
+
   '@reatom/persist@3.4.3':
     dependencies:
       '@reatom/core': 3.10.3
@@ -2178,23 +2162,6 @@ snapshots:
   '@solid-primitives/utils@6.4.1(solid-js@1.9.13)':
     dependencies:
       solid-js: 1.9.13
-
-  '@svg-jar/plugin@0.1.2(rolldown@1.1.4)(vite@8.1.1(@types/node@24.13.2)(jiti@2.7.0))':
-    dependencies:
-      '@eksml/xml': 0.1.6
-      magic-string: 0.30.21
-      svgo: 4.0.2
-      unplugin: 3.3.0(rolldown@1.1.4)(vite@8.1.1(@types/node@24.13.2)(jiti@2.7.0))
-    transitivePeerDependencies:
-      - '@farmfe/core'
-      - '@rspack/core'
-      - bun-types-no-globals
-      - esbuild
-      - rolldown
-      - rollup
-      - unloader
-      - vite
-      - webpack
 
   '@swc/helpers@0.5.23':
     dependencies:
@@ -2503,8 +2470,6 @@ snapshots:
 
   colorette@2.0.20: {}
 
-  commander@11.1.0: {}
-
   commander@12.0.0: {}
 
   commander@7.2.0: {}
@@ -2546,6 +2511,8 @@ snapshots:
 
   csstype@3.2.3: {}
 
+  dayjs@1.11.21: {}
+
   debug@4.4.3:
     dependencies:
       ms: 2.1.3
@@ -2581,8 +2548,6 @@ snapshots:
   entities@4.5.0: {}
 
   entities@6.0.1: {}
-
-  entities@8.0.0: {}
 
   error-kid@1.1.0: {}
 
@@ -2623,11 +2588,15 @@ snapshots:
 
   grammex@3.1.3: {}
 
+  gsap@3.15.0: {}
+
   gzip-size@6.0.0:
     dependencies:
       duplexer: 0.1.2
 
   html-entities@2.3.3: {}
+
+  idb-keyval@6.3.0: {}
 
   import-meta-resolve@4.2.0: {}
 
@@ -2755,6 +2724,8 @@ snapshots:
 
   nanoid@3.3.15: {}
 
+  nanoid@6.0.0: {}
+
   node-fetch-native@1.6.7: {}
 
   node-releases@2.0.50: {}
@@ -2872,8 +2843,6 @@ snapshots:
       '@rolldown/binding-win32-arm64-msvc': 1.1.4
       '@rolldown/binding-win32-x64-msvc': 1.1.4
 
-  sax@1.6.0: {}
-
   semver@6.3.1: {}
 
   semver@7.6.0:
@@ -2931,16 +2900,6 @@ snapshots:
       csso: 5.0.5
       picocolors: 1.1.1
 
-  svgo@4.0.2:
-    dependencies:
-      commander: 11.1.0
-      css-select: 5.2.2
-      css-tree: 3.2.1
-      css-what: 6.2.2
-      csso: 5.0.5
-      picocolors: 1.1.1
-      sax: 1.6.0
-
   tiny-glob@0.2.9:
     dependencies:
       globalyzer: 0.1.0
@@ -2988,6 +2947,8 @@ snapshots:
 
   undici-types@7.18.2: {}
 
+  universal-router@10.0.3: {}
+
   unocss@66.7.4(vite@8.1.1(@types/node@24.13.2)(jiti@2.7.0)):
     dependencies:
       '@unocss/cli': 66.7.4
@@ -3029,15 +2990,6 @@ snapshots:
       picomatch: 4.0.5
       webpack-virtual-modules: 0.6.2
 
-  unplugin@3.3.0(rolldown@1.1.4)(vite@8.1.1(@types/node@24.13.2)(jiti@2.7.0)):
-    dependencies:
-      '@jridgewell/remapping': 2.3.5
-      picomatch: 4.0.5
-      webpack-virtual-modules: 0.6.2
-    optionalDependencies:
-      rolldown: 1.1.4
-      vite: 8.1.1(@types/node@24.13.2)(jiti@2.7.0)
-
   update-browserslist-db@1.2.3(browserslist@4.28.4):
     dependencies:
       browserslist: 4.28.4
@@ -3047,6 +2999,8 @@ snapshots:
   valibot@1.4.2(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
+
+  vite-bundle-analyzer@1.3.9: {}
 
   vite-plugin-solid@2.11.12(solid-js@1.9.13)(vite@8.1.1(@types/node@24.13.2)(jiti@2.7.0)):
     dependencies:

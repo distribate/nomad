@@ -1,19 +1,24 @@
 import { configureSync, getConsoleSink } from "@logtape/logtape";
 
-configureSync({
-  sinks: {
-    console: getConsoleSink(),
-  },
-  loggers: [
-    {
-      category: ["logtape", "meta"],
-      lowestLevel: "warning",
-      sinks: ["console"]
+if (import.meta.env.DEV) {
+  configureSync({
+    sinks: {
+      console: getConsoleSink(),
     },
-    {
-      category: "app",
-      lowestLevel: "info",
-      sinks: ["console"],
-    },
-  ],
-});
+    loggers: [
+      {
+        category: ["logtape", "meta"],
+        lowestLevel: "warning",
+        sinks: ["console"]
+      },
+      {
+        category: "app",
+        lowestLevel: "info",
+        sinks: ["console"],
+      },
+    ],
+  });
+  console.log("log setup")
+} else {
+  console.log("log skip")
+}

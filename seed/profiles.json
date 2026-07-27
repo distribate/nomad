@@ -1,0 +1,59 @@
+{
+  "": [
+    {
+      "firstName": "Alex",
+      "age": 26,
+      "description": "UI/UX designer who loves morning coffee and mechanical keyboards.",
+      "interests": ["Design", "Coffee", "Cycling", "Tech"],
+      "style": "calm",
+      "goal": "Find a buddy for quiet weekend cycling.",
+      "photo": {
+        "src": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
+      }
+    },
+    {
+      "firstName": "Sarah",
+      "age": 29,
+      "description": "Adrenaline junkie, trail runner, and amateur photographer.",
+      "interests": ["Hiking", "Extreme Sports", "Photography", "Travel"],
+      "style": "extreme",
+      "goal": "Looking for partners for a mountain trek next month.",
+      "photo": {
+        "src": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop"
+      }
+    },
+    {
+      "firstName": "Michael",
+      "age": 24,
+      "description": "Software engineer by day, bouldering enthusiast by night.",
+      "interests": ["Climbing", "Coding", "Board Games", "Sci-Fi"],
+      "style": "active",
+      "goal": "Want to join a local bouldering gym group.",
+      "photo": {
+        "src": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop"
+      }
+    },
+    {
+      "firstName": "Elena",
+      "age": 31,
+      "description": "Yoga instructor and plant parent. Always down for tea ceremonies.",
+      "interests": ["Yoga", "Meditation", "Plants", "Books"],
+      "style": "calm",
+      "goal": "Meet people interested in mindfulness and outdoor sessions.",
+      "photo": {
+        "src": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop"
+      }
+    },
+    {
+      "firstName": "David",
+      "age": 27,
+      "description": "Downhill mountain biker and snow lover.",
+      "interests": ["Snowboarding", "MTB", "Music Festivals"],
+      "style": "extreme",
+      "goal": "Find someone to hit the bike park with on weekends.",
+      "photo": {
+        "src": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop"
+      }
+    }
+  ]
+}

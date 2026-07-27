@@ -1,37 +1,43 @@
-import "./lib/logger/setup.ts";
-
-/* @refresh reload */
-import { render } from 'solid-js/web'
-
 import './index.css';
 import 'virtual:uno.css'
 
+import "./lib/logger/setup.ts";
+import "./lib/gsap/setup.ts";
+
+/* @refresh reload */
+import { render } from 'solid-js/web'
 import { Entry } from './entry'
 import { isTMA } from '@tma.js/sdk';
-import { $appState, defineInitialRoute, getReatomCtx } from './lib/app/app.model.ts';
-import { connectLogger } from '@reatom/framework'
+import { $appState } from './lib/app/app.model.ts';
 import { reatomContext } from '@reatom/npm-solid-js'
-import { rootLogger } from './lib/logger/logger.model';
-import { config } from "./const/index.ts";
+import { getReatomCtx } from './lib/app/index.ts';
+import { createRouter } from './router.tsx';
+import { initAsTMA } from './lib/app/tma.ts';
+import { config } from './const/config.ts';
+import { setupDayjs } from './lib/dayjs.ts';
 
 const root = document.getElementById('root')!;
 const ctx = getReatomCtx();
 
-try {
+const boot = async () => {
   if (import.meta.env.DEV) {
-    startReatomLogger();
+    const m = await import("./lib/dev/dev.model.ts");
+    m.startReatomLogger(ctx);
+
+    if (config.withDev) {
+      m.$dev.initPane(ctx);
+    }
   }
+
+  await setupDayjs(ctx);
+  await createRouter(ctx);
 
   const type = isTMA() ? "tma" : "standalone"
   $appState.meta.type(ctx, type);
 
   if (type === 'tma') {
-    await initTMA();
+    await initAsTMA(ctx);
   }
-
-  defineInitialRoute(ctx);
-} catch (e) {
-  console.error(e)
 }
 
 const getRootNode = () => (
@@ -40,20 +46,9 @@ const getRootNode = () => (
   </reatomContext.Provider>
 );
 
-render(getRootNode, root)
-
-if (import.meta.env.DEV && config.withDev) {
-  const { $dev } = await import("./lib/dev/dev.model.ts")
-  $dev.initPane(ctx)
-}
-
-function startReatomLogger() {
-  connectLogger(ctx);
-  rootLogger.info("Logger connected")
-}
-async function initTMA() {
-  const { backButton, init } = await import("@tma.js/sdk")
-  init();
-  backButton.mount();
-  backButton.show();
+try {
+  render(getRootNode, root);
+  await boot();
+} catch (e) {
+  console.error("App error", e)
 }

@@ -1,10 +1,19 @@
-import { action, atom, reatomAsync, withAssign, withErrorAtom, withStatusesAtom, type Ctx, type CtxSpy } from "@reatom/framework";
+import {
+  action, atom, reatomAsync, withAssign, withErrorAtom, withReset, withStatusesAtom,
+  type Ctx, type CtxSpy
+} from "@reatom/framework";
 import { BackButton } from "../../ui/back-button";
 import { $header } from "../layout/header/model";
+import { $user, type User } from "../../../lib/user/user.model";
+import { compareAtom } from "../../../lib/utils";
+import { nanoid } from "nanoid";
+import { $appState } from "../../../lib/app/app.model";
+import type { UserLocation, UserPhoto, UserStyle } from "../../../lib/user/types";
+import { navigate } from "../../../router";
 
 type StateVariant = {
-  cb?: (ctx: Ctx) => Promise<void> | void,
-  cd?: (ctx: CtxSpy) => boolean
+  callback?: (ctx: Ctx) => Promise<void> | void,
+  condition?: (ctx: CtxSpy) => boolean,
 }
 
 type Stage = {
@@ -29,9 +38,14 @@ const STAGES: Record<number, Stage> = {
   },
   2: {
     confirm: {
-      cd: (ctx) => {
-        return !!ctx.spy($introduction.firstName)
-      }
+      condition: (ctx) => {
+        const target = ctx.spy($introduction.firstName)
+        if (!target.trim()) return false
+
+        if (target.length < 1 || target.length > 26) return false
+
+        return true
+      },
     },
     meta: {
       name: "welcoming"
@@ -39,33 +53,38 @@ const STAGES: Record<number, Stage> = {
   },
   3: {
     confirm: {
-      cd: (ctx) => {
-        return ctx.spy($introduction.interests).length >= 2
-      }
+      condition: (ctx) => ctx.spy($introduction.interests).length >= 2 &&
+        ctx.spy($introduction.interests).length >= 3
     },
     meta: {
       name: "interests"
     }
   },
   4: {
+    confirm: {
+      condition: (ctx) => !!ctx.spy($introduction.style)
+    },
     meta: {
       name: "style"
     }
   },
   5: {
+    confirm: {
+      condition: (ctx) => !!ctx.spy($introduction.goal)
+    },
     meta: {
-      name: "in-searching"
+      name: "goals"
     }
   },
   6: {
     confirm: {
-      cb: (ctx) => {
-        $introduction.data(ctx, (state) => ({
-          ...state ?? {} as IntroductionData,
-          location: {
-            latitude: 2,
-            longitude: 3,
-          }
+      callback: (ctx) => {
+        $introduction.summary(ctx, ({
+          firstName: ctx.get($introduction.firstName),
+          interests: ctx.get($introduction.interests),
+          style: ctx.get($introduction.style) ?? "calm",
+          goal: ctx.get($introduction.goal) ?? "",
+          location: ctx.get($introduction.location)
         }))
       }
     },
@@ -74,35 +93,55 @@ const STAGES: Record<number, Stage> = {
     }
   },
   7: {
+    confirm: {
+      condition: (ctx) => {
+        return !!ctx.spy($introduction.summary)
+      },
+      callback: (ctx) => {
+        const summary = ctx.get($introduction.summary) as SummaryData;
+
+        $user.data(ctx, {
+          firstName: summary.firstName,
+          createdAt: new Date().toISOString(),
+          username: nanoid(8),
+          photo: {
+            src: "test"
+          }
+        })
+
+        navigate(ctx, "/")
+      }
+    },
     meta: {
       name: "summary"
     }
   }
 }
-const wrapCb = reatomAsync(async (ctx, { cb }: { cb?: StateVariant["cb"] }) => {
+const wrapCb = reatomAsync(async (ctx, { cb }: { cb?: StateVariant["callback"] }) => {
   return await cb?.(ctx)
 }, `wrapCb`).pipe(
   withStatusesAtom(),
   withErrorAtom()
 )
+const STAGES_CONFIRM_LABELS: Record<number, Map<(ctx: CtxSpy) => boolean, string>> = {
+  6: new Map([
+    [(ctx) => !ctx.spy($introduction.location), "Продолжить без локации"],
+    [(ctx) => !!ctx.spy($introduction.location), "Продолжить"],
+  ]),
+  7: new Map([
+    [(ctx) => true, "Завершить"],
+  ]),
+}
 
-// User data (pseudo)
-//
-// username (initially random hash string) (editable)
-// createdAt (automatically set to current date)
-// firstName - required, from user (editable)
-// interests - required, from user (editable)
-// style - required, from user (editable)
-// location - optional, from user (editable)
-
-type IntroductionData = {
-  firstName: string,
+type SummaryData = Pick<User, "firstName"> & {
+  // required, from user (editable)
   interests: string[],
-  style: "calm" | "extrim" | "active",
-  location?: {
-    latitude: number,
-    longitude: number,
-  }
+  // required, from user (editable)
+  style: UserStyle,
+  // optional, from user (editable)
+  location: UserLocation | null,
+  goal: string,
+  photo?: UserPhoto
 }
 
 export const $introduction = atom(null, "introduction").pipe(
@@ -110,54 +149,63 @@ export const $introduction = atom(null, "introduction").pipe(
     idx: atom(0, `${name}.idx`),
     next: action(async (ctx) => {
       let currIdx = ctx.get($introduction.idx)
+      console.log(currIdx);
+      const target = getTarget(currIdx)
 
-      const target = STAGES[currIdx];
-      if (!target) throw new Error();
+      await wrapCb(ctx, { cb: target.confirm?.callback });
 
-      await wrapCb(ctx, { cb: target.confirm?.cb });
-
-      $introduction.idx(ctx, ++currIdx);
+      if (currIdx < Object.keys(STAGES).length - 1) {
+        $introduction.idx(ctx, ++currIdx);
+      }
     }),
     back: action(async (ctx) => {
       let currIdx = ctx.get($introduction.idx)
 
       $introduction.idx(ctx, --currIdx);
     }),
-    bbRef: atom<HTMLButtonElement | null>(null, `${name}.bbRef`),
-    data: atom<IntroductionData | null>(null, `${name}.data`),
+    backButtonRef: atom<HTMLButtonElement | null>(null, `${name}.backButtonRef`).pipe(withReset()),
+    confirmBtnRef: atom<HTMLButtonElement | null>(null, `${name}.confirmBtnRef`).pipe(withReset()),
+    summary: atom<SummaryData | null>(null, `${name}.data`),
     //
     firstName: atom<string>("", `${name}.firstName`),
     interests: atom<string[]>([], `${name}.interests`),
-    style: atom<"calm" | "extrim" | "active" | null>(null, `${name}.style`),
-    location: atom<IntroductionData["location"] | null>(null, `${name}.location`),
+    style: atom<UserStyle | null>(null, `${name}.style`),
+    goal: atom<string | null>(null, `${name}.goal`),
+    location: atom<SummaryData["location"] | null>(null, `${name}.location`),
   }))
 )
 
+const getTarget = (idx: number) => {
+  const target = STAGES[idx]
+  if (!target) throw new Error(`No stage found for index ${idx}`)
+  return target
+}
+
+// atom that determines if the next stage is valid based on the current stage's condition
+// by default if value is false, the confirm button is hidden
 export const $isNext = atom((ctx) => {
   const currIdx = ctx.spy($introduction.idx)
-  if (currIdx === Object.keys(STAGES).length - 1) return false;
+  if (currIdx === Object.keys(STAGES).length) return false;
+  return true;
+}, `isNext`);
 
-  const target = STAGES[currIdx]
-  if (!target) {
-    throw new Error(`No stage found for index ${currIdx}`)
-  }
+export const $isValid = atom((ctx) => {
+  const currIdx = ctx.spy($introduction.idx)
+  const target = getTarget(currIdx);
 
-  const cd = target.confirm?.cd
-  if (cd === undefined) return true;
+  const cd = target.confirm?.condition;
+  if (!cd) return true;
 
   return cd(ctx)
-}, `isNext`);
+}, "isValid")
 
 export const $isBack = atom((ctx) => {
   const currIdx = ctx.spy($introduction.idx)
   if (currIdx === 0) return false;
 
-  const target = STAGES[currIdx]
-  if (!target) {
-    throw new Error(`No stage found for index ${currIdx}`)
-  }
+  const target = getTarget(currIdx);
 
-  const cd = target.back?.cd;
+  const cd = target.back?.condition;
   if (cd === undefined) return true;
 
   return cd(ctx)
@@ -166,7 +214,7 @@ export const $isBack = atom((ctx) => {
 wrapCb.statusesAtom.onChange((ctx, state) => {
   const isDisabled = state.isPending || state.isRejected
 
-  const ref = ctx.get($introduction.bbRef)
+  const ref = ctx.get($introduction.backButtonRef)
   if (!ref) return;
 
   ref.disabled = isDisabled
@@ -174,19 +222,43 @@ wrapCb.statusesAtom.onChange((ctx, state) => {
 
 $isBack.onChange((ctx, state) => {
   if (state) {
-    $header.nodes.set(
+    $header.nodes(
       ctx,
-      "l",
-      () => BackButton({
-        onClick: () => {
-          $introduction.back(ctx)
-        },
-        ref: (el) => {
-          $introduction.bbRef(ctx, el)
-        }
-      }),
+      (state) => ({
+        ...state, l: () => BackButton({
+          onClick: () => {
+            $introduction.back(ctx)
+          },
+          ref: (el) => {
+            $introduction.backButtonRef(ctx, el)
+          }
+        })
+      })
     )
   } else {
-    $header.nodes.set(ctx, "l", null)
+    $header.nodes(ctx, (state) => ({ ...state, l: null }))
   }
 })
+
+export const $confirmLabel = atom<string | null>((ctx) => {
+  const cd = STAGES_CONFIRM_LABELS[ctx.spy($introduction.idx)]
+  if (!cd) return null;
+
+  for (const [condition, label] of cd.entries()) {
+    if (condition(ctx)) {
+      return label
+    }
+  }
+
+  return null;
+})
+
+export const $hasInterest = (target: string) => compareAtom($introduction.interests, (curr) => curr.includes(target))
+export const $isGoal = (target: string) => compareAtom($introduction.goal, (curr) => curr === target)
+export const $isStyle = (target: string) => compareAtom($introduction.style, (curr) => curr === target)
+
+if (import.meta.env.DEV) {
+  $isNext.onChange((_, s) => console.log($isNext.__reatom.name, s));
+  $isBack.onChange((_, s) => console.log($isBack.__reatom.name, s));
+  $isValid.onChange((_, s) => console.log($isValid.__reatom.name, s));
+}

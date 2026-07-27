@@ -1,30 +1,29 @@
-import { useAtom } from "@reatom/npm-solid-js"
-import { type ParentComponent, Show } from "solid-js"
-import { Dynamic } from "solid-js/web"
-import { $appState, defineInitialRoute } from "./lib/app/app.model"
-import { routes } from "./routes"
 import { Header } from "./shared/components/layout/header"
+import { Dynamic, Show } from "solid-js/web"
+import { useAtomAccessor } from "./lib/reatom"
+import { $route } from "./router"
+import { NotFound } from "./shared/components/templates/not-found"
 
-const CurrentRouteComponent = () => {
-  const [route] = useAtom($appState.route);
-  const component = routes[route()]
-  return <Dynamic component={component} />
-}
-
-const AppLoader = () => {
-  return <div>Loading...</div>
-}
-
-export const Entry: ParentComponent = (props) => {
-  const [statuses] = useAtom(defineInitialRoute.statusesAtom)
+const Router = () => {
+  const route = useAtomAccessor($route);
 
   return (
-    <main class="bg-neutral-900 w-full p-2 overflow-hidden h-screen">
+    <Show
+      when={route()?.component}
+      fallback={<NotFound />}
+    >
+      {(Component) => <Dynamic component={Component()} />}
+    </Show>
+  )
+}
+
+export const Entry = () => {
+  return (
+    <main class="flex flex-col bg-neutral-900 *:border w-full overflow-hidden h-screen">
       <Header />
-      <Show when={!statuses().isPending} fallback={<AppLoader />}>
-        <CurrentRouteComponent />
-        {props.children}
-      </Show>
+      <div class="w-full z-1 relative h-full">
+        <Router />
+      </div>
     </main>
   )
 }

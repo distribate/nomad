@@ -7,13 +7,13 @@ import { cva } from "class-variance-authority"
 import { cn } from "cnfast"
 
 const buttonVariants = cva(
-  `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl
-  text-sm font-semibold ring-0 transition-colors
-  disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0`,
+  `inline-flex items-center cursor-pointer active:scale-[.994] justify-center gap-2 whitespace-nowrap rounded-xl
+  text-sm font-semibold ring-0 duration-150 ease-in-out
+  disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none`,
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground hover:bg-neutral-300",
         link: "text-primary underline-offset-4 hover:underline"
       },
       size: {
