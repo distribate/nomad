@@ -1,6 +1,6 @@
 import { atom, type Action, type Ctx } from "@reatom/framework"
 import { navigate } from "../../../../lib/router/utils"
-import { $route } from "../../../../lib/router"
+import { urlAtom } from "@reatom/url"
 
 const BADGES_KEYS = [
   "feed", "contacts", "settings", "me"
@@ -54,14 +54,14 @@ export const $badgeData = (target: string) => atom((ctx): { isActive: boolean } 
   }
 
   return {
-    isActive: badge.type === 'link' ? badge.target === ctx.spy($route.meta).pathname : false,
+    isActive: badge.type === 'link' ? badge.target === ctx.spy(urlAtom).pathname : false,
   }
 })
 
 export const handleBadgeEvent = (ctx: Ctx, badge: Badge) => {
   switch (badge.type) {
     case "link":
-      navigate(ctx, badge.target as string);
+      navigate(badge.target as string);
       break;
     case "action":
       badge.target(ctx);

@@ -18,6 +18,4 @@ export type RouteConfig = {
 
 export type RouteMeta = {
   withLoader: boolean,
-  pathname: string,
-  params: Record<string, string>,
 }

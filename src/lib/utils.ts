@@ -31,3 +31,8 @@ export function expose<T extends (...args: any[]) => any>(fn: T, name = fn.name)
   }
   return fn;
 }
+
+export const isPrimitive = (val: unknown): val is string | number | boolean =>
+  typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean';
+export const isError = (val: unknown): val is Error =>
+  val instanceof Error;

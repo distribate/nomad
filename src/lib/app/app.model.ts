@@ -8,12 +8,17 @@ type AppState = {
   type: "standalone" | "tma"
 }
 
+const getLang = () => {
+  const locales = navigator.languages ?? [navigator.language];
+  return locales[0];
+}
+
 export const $appState = atom(null, "appState").pipe(
   withAssign((_, name) => ({
     meta: {
       type: atom<AppState["type"]>("standalone", `${name}.meta.type`),
       version: atom(0, `${name}.meta.version`),
-      preferredLang: atom("ru", `${name}.meta.preferredLang`),
+      preferredLang: atom(getLang(), `${name}.meta.preferredLang`),
     },
   }))
 )
@@ -25,7 +30,7 @@ export const $appLoading = atom((ctx) => !!ctx.spy($routeLoading))
 
 $isAuthed.onChange((ctx, state) => {
   if (!state) {
-    navigate(ctx, "/intro")
+    navigate("/intro")
   }
 })
 

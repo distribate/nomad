@@ -23,6 +23,12 @@ importers:
       '@reatom/persist-web-storage':
         specifier: ^3.4.6
         version: 3.4.6
+      '@reatom/undo':
+        specifier: ^3.4.2
+        version: 3.4.2
+      '@reatom/url':
+        specifier: ^3.9.0
+        version: 3.9.0
       '@tma.js/sdk':
         specifier: 3.2.3
         version: 3.2.3(typescript@6.0.3)
@@ -535,6 +541,12 @@ packages:
 
   '@reatom/primitives@3.11.0':
     resolution: {integrity: sha512-b+jtK7qpQxSP83mYQXpPRMlFyg+C9WPv4sZDWSmm00mwmwetW0KbltftkWiwQjQM1TLwpDLZ6R7DX7fcTraIgg==}
+
+  '@reatom/undo@3.4.2':
+    resolution: {integrity: sha512-asceNhY0wrCHKL/lFw+f5oabJ7dbDw2ro+Sp6UNVwW8KOW7VLkyGzLmsmt4f135PypKiINxF3HI6CjwKMq0KHw==}
+
+  '@reatom/url@3.9.0':
+    resolution: {integrity: sha512-uQ2gilyIf9qxrta15AHFwZhkAE/MynDlV34JNlOfGJdVTAuPd6HmYjuTYGy15yBdTsV8xCK9ry67H8NP1/BrEw==}
 
   '@reatom/utils@3.11.3':
     resolution: {integrity: sha512-H2FQf9xra7Twf0PxS6L0DtuRRC79NfHRB3V/YhnhPHyUE/UFscXrin/I2eGj3FEKcgOfC2BWnzCOrkXjKWgECQ==}
@@ -2049,6 +2061,21 @@ snapshots:
   '@reatom/primitives@3.11.0':
     dependencies:
       '@reatom/core': 3.10.3
+      '@reatom/utils': 3.11.3
+
+  '@reatom/undo@3.4.2':
+    dependencies:
+      '@reatom/core': 3.10.3
+      '@reatom/effects': 3.11.3
+      '@reatom/hooks': 3.6.1
+      '@reatom/persist': 3.4.3
+      '@reatom/utils': 3.11.3
+
+  '@reatom/url@3.9.0':
+    dependencies:
+      '@reatom/core': 3.10.3
+      '@reatom/effects': 3.11.3
+      '@reatom/hooks': 3.6.1
       '@reatom/utils': 3.11.3
 
   '@reatom/utils@3.11.3': {}

@@ -11,8 +11,7 @@ export const Link = (props: LinkProps) => {
 
   const handleClick = (e: MouseEvent) => {
     e.preventDefault();
-
-    navigate(ctx, props.href);
+    navigate(props.href);
   };
 
   return (

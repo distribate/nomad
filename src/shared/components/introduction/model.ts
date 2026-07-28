@@ -3,7 +3,7 @@ import {
   type Ctx, type CtxSpy
 } from "@reatom/framework";
 import { BackButton } from "../../ui/back-button";
-import { $header, updateHeaderNodes } from "../layout/header/model";
+import { $header, $headerNodes } from "../layout/header/model";
 import { $user, type User } from "../../../lib/user/user.model";
 import { compareAtom } from "../../../lib/utils";
 import { nanoid } from "nanoid";
@@ -106,7 +106,7 @@ const STAGES: Record<number, Stage> = {
         $introduction.resetTargetSummaryFields(ctx);
         $introduction.resetRefs(ctx);
 
-        await navigate(ctx, "/")
+        await navigate("/")
       }
     },
     meta: {
@@ -236,7 +236,7 @@ $isBack.onChange((ctx, state) => {
       }
     });
 
-    updateHeaderNodes(ctx, { l }, {
+    $headerNodes.update(ctx, { l }, {
       withSnapshot: false
     })
   } else {

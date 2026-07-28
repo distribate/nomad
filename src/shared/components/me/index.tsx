@@ -92,14 +92,14 @@ const ME_EVENTS: MeEvent[] = [
   {
     label: "Edit Info",
     action: action(async (ctx) => {
-      await navigate(ctx, "/settings", { a: "edit-info" })
+      await navigate("/settings", { a: "edit-info" })
     }),
     icon: "sprite:edit"
   },
   {
     label: "Settings",
     action: action(async (ctx) => {
-      await navigate(ctx, "/settings")
+      await navigate("/settings")
     }),
     icon: "sprite:settings"
   },

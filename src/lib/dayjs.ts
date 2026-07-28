@@ -1,9 +1,8 @@
 import { action } from "@reatom/framework"
 import dayjs from "dayjs"
 import { withRule } from "./helpers"
-import { config } from "../const/config";
-
-type TargetLocale = "ru" | "en"
+import { getConfigVal } from "../const/config";
+import { $appState } from "./app/app.model";
 
 const locales = {
   ru: () => import("dayjs/locale/ru"),
@@ -11,9 +10,10 @@ const locales = {
   es: () => import("dayjs/locale/es"),
 };
 
-export const installDayjsLocale = async (targetLocale: TargetLocale) => {
+export const installDayjsLocale = async (targetLocale: string) => {
   try {
-    await locales[targetLocale]()
+    console.log(`Loaded locale for ${targetLocale}`)
+    await locales[targetLocale as unknown as keyof typeof locales]()
   } catch (e) {
     console.error("Failed to load locale. Falling back to ru")
     await locales.ru()
@@ -22,12 +22,9 @@ export const installDayjsLocale = async (targetLocale: TargetLocale) => {
   dayjs.locale(targetLocale)
 }
 
-export const setupDayjs = action(async (
-  _, locale: TargetLocale
-) => {
+export const setupDayjs = action(async (ctx) => {
+  const locale = ctx.get($appState.meta.preferredLang).split("-")[0];
   await installDayjsLocale(locale)
-},
-  withRule("setupDayjs", config.withAppActionsLog)
-)
+}, withRule("setupDayjs", getConfigVal("withAppActionsLog")))
 
 export const getDayjs = () => dayjs()

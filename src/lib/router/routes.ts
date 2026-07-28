@@ -9,7 +9,7 @@ import { defineRoute, redirect } from "./utils"
 import { Me } from "../../shared/components/me"
 import { Contacts } from "../../shared/components/contacts"
 import { Settings } from "../../shared/components/settings"
-import { revertHeaderNodes, updateHeaderNodes } from "../../shared/components/layout/header/model"
+import { $headerNodes } from "../../shared/components/layout/header/model"
 import { MoreEvents } from "../../shared/components/more"
 
 export const routes: Routes = [
@@ -42,13 +42,13 @@ export const routes: Routes = [
     action: defineRoute("me", {
       component: Me,
       onEnter: action((ctx) => {
-        updateHeaderNodes(ctx, { r: MoreEvents })
+        $headerNodes.update(ctx, { r: MoreEvents })
       }),
       guard: action((ctx) => {
         withAuth(ctx)
       }),
       onLeave: action((ctx) => {
-        revertHeaderNodes(ctx)
+        $headerNodes.revert(ctx)
       })
     })
   },

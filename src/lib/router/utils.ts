@@ -1,16 +1,16 @@
-import { action, isAbort } from "@reatom/framework"
+import { action } from "@reatom/framework"
 import type { RouteConfig } from "./types"
-import { defineRouteRender } from "."
-import { withRule } from "../helpers"
 import { RedirectError } from "./config"
-import { config as rootConfig } from "../../const/config"
+import { getConfigVal } from "../../const/config"
+import { getReatomCtx } from "../app/ctx"
+import { urlAtom } from "@reatom/url"
 
 export function defineRoute(
   routeName: string,
   config: RouteConfig,
 ) {
   const maybe = <T extends (...args: any[]) => any>(cb?: T, name?: string) => (
-    cb ? action(cb, rootConfig.withAppRouterLog ? `${routeName}.${name ?? "unknown"}` : "_") : undefined
+    cb ? action(cb, getConfigVal("withAppRouterLog") ? `${routeName}.${name ?? "unknown"}` : "_") : undefined
   );
 
   const route = {
@@ -23,46 +23,23 @@ export function defineRoute(
   return () => route
 }
 
-export const parseQueryParams = (searchParams: URLSearchParams): Record<string, string> => {
-  return Object.fromEntries(searchParams.entries());
-};
-
-export const navigate = action(async (
-  ctx,
-  url: string,
+export const navigate = async (
+  pathname: string,
   params?: Record<string, string | number | boolean | undefined | null>
 ) => {
-  let finalUrl = url;
+  const ctx = getReatomCtx();
 
-  if (params) {
-    const searchParams = new URLSearchParams();
+  const url = new URL(pathname, location.origin)
 
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        searchParams.append(key, String(value));
+  Object.entries(params ?? {})
+    .forEach(([k, v]) => {
+      if (v !== undefined && v !== null) {
+        url.searchParams.set(k, String(v))
       }
-    });
+    })
 
-    const qs = searchParams.toString();
-
-    if (qs) {
-      const separator = finalUrl.includes('?') ? '&' : '?';
-      finalUrl = `${finalUrl}${separator}${qs}`;
-    }
-  }
-
-  if (finalUrl === window.location.pathname + window.location.search) return;
-
-  const parsedUrl = new URL(finalUrl, window.location.origin);
-  const queryParamsObj = parseQueryParams(parsedUrl.searchParams);
-  const pathname = parsedUrl.pathname;
-
-  return defineRouteRender(ctx, pathname, queryParamsObj).catch((err) => {
-    if (!isAbort(err)) {
-      console.error(err);
-    }
-  });
-}, withRule("navigate", rootConfig.withAppRouterLog));
+  urlAtom(ctx, url)
+}
 
 export function redirect(to: string, replace = false): never {
   throw new RedirectError(to, replace);

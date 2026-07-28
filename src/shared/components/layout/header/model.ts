@@ -18,22 +18,30 @@ export const $header = atom(null, "header").pipe(
   }))
 )
 
-export const updateHeaderNodes = action((ctx, data: Partial<HeaderNodes>, params: { withSnapshot: boolean } = { withSnapshot: true }) => {
-  const curr = ctx.get($header.nodes);
+export const $headerNodes = {
+  revert: action((ctx) => {
+    const snapshot = ctx.get($header.snapshot);
 
-  if (params.withSnapshot) {
-    $header.snapshot(ctx, curr);
-  }
+    if (snapshot) {
+      $header.nodes(ctx, snapshot)
+    }
 
-  $header.nodes(ctx, (state) => ({ ...state, ...data }));
-}, "updateHeaderNodes")
+    $header.snapshot.reset(ctx)
+  }, "revertHeaderNodes"),
+  /*
+    @params
+    withSnapshot - whether to save the current state to the snapshot before updating
+  */
+  update: action((
+    ctx, data: Partial<HeaderNodes>,
+    params: { withSnapshot: boolean } = { withSnapshot: true }
+  ) => {
+    const curr = ctx.get($header.nodes);
 
-export const revertHeaderNodes = action((ctx) => {
-  const snapshot = ctx.get($header.snapshot);
+    if (params.withSnapshot) {
+      $header.snapshot(ctx, curr);
+    }
 
-  if (snapshot) {
-    $header.nodes(ctx, snapshot)
-  }
-
-  $header.snapshot.reset(ctx)
-}, "revertHeaderNodes")
+    $header.nodes(ctx, (state) => ({ ...state, ...data }));
+  }, "updateHeaderNodes")
+}

@@ -14,6 +14,8 @@
     "@reatom/framework": "3.4.68",
     "@reatom/npm-solid-js": "3.6.2",
     "@reatom/persist-web-storage": "^3.4.6",
+    "@reatom/undo": "^3.4.2",
+    "@reatom/url": "^3.9.0",
     "@tma.js/sdk": "3.2.3",
     "class-variance-authority": "0.7.1",
     "cnfast": "0.0.8",

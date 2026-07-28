@@ -1,12 +1,25 @@
-import type { AtomMut } from "@reatom/framework";
+import { type Atom, type AtomMut, type Ctx } from "@reatom/framework";
 import { $appState } from "../app/app.model";
-import { $gsapPlugins } from "../gsap";
+import { $gsapIsEnabled, $gsapPlugins } from "../gsap";
+import { getConfig } from "../../const/config";
 
-export type BindingNode = AtomMut<any> | { [k: string]: BindingNode };
+export type BindingValue = string[] | Atom<any> | AtomMut<any>;
+
+export type BindingNode =
+  | BindingValue
+  | { target: BindingValue, condition?: (ctx: Ctx) => boolean }
+  | { [k: string]: BindingNode };
 
 export type Bindings = {
   [scope: string]: BindingNode;
 };
+
+function createBinding(
+  target: BindingValue,
+  condition?: (ctx: Ctx) => boolean
+) {
+  return { target, condition };
+}
 
 const BINDINGS = {
   app: {
@@ -14,10 +27,12 @@ const BINDINGS = {
     version: $appState.meta.version,
     preferredLang: $appState.meta.preferredLang,
     gsap: {
-      // @ts-expect-error
-      plugins: $gsapPlugins
-    }
+      enabled: $gsapIsEnabled,
+      plugins: createBinding($gsapPlugins, (ctx) => ctx.get($gsapIsEnabled))
+    },
   },
+  // maybe editable fields (boolean=switch,str=input)?
+  config: getConfig()
 } satisfies Bindings;
 
 export { BINDINGS }

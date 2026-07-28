@@ -12,7 +12,7 @@ import { reatomContext } from '@reatom/npm-solid-js'
 import { getReatomCtx } from './lib/app/ctx.ts';
 import { createRouter } from './lib/router/index.tsx';
 import { initAsTMA } from './lib/app/tma.ts';
-import { config } from './const/config.ts';
+import { DEV_PANE, getConfigVal } from './const/config.ts';
 import { setupDayjs } from './lib/dayjs.ts';
 import { initGsap } from './lib/gsap/index.ts';
 import { action } from '@reatom/framework';
@@ -26,30 +26,18 @@ const initDevModules = action(async (ctx) => {
   const m = await import("./lib/dev/dev.model.ts");
   m.startReatomLogger(ctx);
 
-  if (config.withDev) {
+  if (DEV_PANE) {
     m.$dev.initPane(ctx);
   }
-}, withRule("initDevModules", config.withAppActionsLog))
+}, withRule("initDevModules", getConfigVal("withAppActionsLog")))
 
 const boot = async () => {
   if (import.meta.env.DEV) {
     await initDevModules(ctx)
   }
 
-  // const launchParams = retrieveLaunchParams();
-  // const user = launchParams.tgWebAppData?.user;
-
-  // if (user) {
-  //   $user.data(ctx, {
-  //     photo: user.photo_url ? { src: user.photo_url } : null,
-  //     firstName: user.first_name,
-  //     username: user.username ?? "unknown",
-  //     createdAt: new Date().toISOString()
-  //   })
-  // }
-
   await initGsap(ctx);
-  await setupDayjs(ctx, "ru");
+  await setupDayjs(ctx);
   await createRouter(ctx);
 
   const type = isTMA() ? "tma" : "standalone"
@@ -57,6 +45,18 @@ const boot = async () => {
 
   if (type === 'tma') {
     await initAsTMA(ctx);
+
+    const launchParams = retrieveLaunchParams();
+    const user = launchParams.tgWebAppData?.user;
+
+    if (user) {
+      $user.data(ctx, {
+        photo: user.photo_url ? { src: user.photo_url } : null,
+        firstName: user.first_name,
+        username: user.username ?? "unknown",
+        createdAt: new Date().toISOString()
+      })
+    }
   }
 }
 

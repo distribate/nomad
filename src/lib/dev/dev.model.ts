@@ -1,64 +1,105 @@
-import { action, atom, connectLogger, createLogBatched, isAtom, withAssign } from "@reatom/framework";
+import { action, atom, connectLogger, createLogBatched, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
 import { FolderApi, Pane } from "tweakpane";
-import { BINDINGS, type BindingNode } from ".";
+import { BINDINGS, type BindingNode, type BindingValue } from ".";
 import { withRule } from "../helpers";
-import { config } from "../../const/config";
+import { getConfigVal } from "../../const/config";
+import type { BindingApi } from "@tweakpane/core";
+import { isError, isPrimitive } from "../utils";
 
-let pane: Pane | null = null;
+let subs: Map<string, Unsubscribe> = new Map()
 
-const isPrimitive = (val: any): val is string | number | boolean =>
-  typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean';
+const write = (binding: BindingApi) => {
+  const target = binding.controller.value.binding.target;
+  return target.write.bind(target);
+};
+
+const formatter = (val: unknown) => {
+  if (Array.isArray(val)) {
+    return val.join(", ");
+  }
+  return val;
+};
+
+function isConditionalBinding(
+  node: BindingNode,
+): node is { target: BindingValue; condition?: (ctx: Ctx) => boolean } {
+  return (
+    typeof node === "object" &&
+    node !== null &&
+    "target" in node
+  );
+}
 
 function renderBindingNode(
+  ctx: Ctx,
   container: Pane | FolderApi,
   node: BindingNode,
   keyName: string,
-  ctx: any
 ) {
-  if (isAtom(node)) {
-    const val = ctx.get(node);
+  if (isConditionalBinding(node)) {
+    if (node.condition && !node.condition(ctx)) return;
 
-    if (isPrimitive(val)) {
-      container.addBinding({ [keyName]: val }, keyName, { readonly: true });
-    } else if (Array.isArray(val)) {
-      container.addBinding(
-        { [keyName]: val.join('\n') },
-        keyName,
-        { multiline: true, readonly: true }
-      );
-    } else {
-      container.addBinding(
-        { [keyName]: JSON.stringify(val) },
-        keyName,
-        { readonly: true }
-      );
+    return renderBindingNode(ctx, container, node.target, keyName);
+  }
+
+  const val = isAtom(node) ? ctx.get(node) : node;
+
+  if (isPrimitive(val) || Array.isArray(val)) {
+    const binding = container.addBinding(
+      { [keyName]: formatter(val) },
+      keyName,
+      { readonly: true }
+    );
+
+    if (isAtom(node)) {
+      const setValue = write(binding);
+
+      const sub = ctx.subscribe(node, (state) => {
+        setValue(formatter(state));
+      });
+
+      subs.set(`${container.title}.${keyName}`, sub);
     }
+
     return;
   }
 
-  if (typeof node === 'object' && node !== null) {
-    const folder = container.addFolder({ title: keyName });
+  const folder = container.addFolder({ title: keyName });
 
-    for (const [childKey, childNode] of Object.entries(node)) {
-      renderBindingNode(folder, childNode, childKey, ctx);
-    }
+  for (const [childKey, childNode] of Object.entries(node)) {
+    renderBindingNode(ctx, folder, childNode, childKey);
   }
 }
 
 export const $dev = atom(null, "dev").pipe(
   withAssign((_, name) => ({
     initPane: action((ctx) => {
-      pane = new Pane();
+      const pane = new Pane();
+
+      pane.element.style.zIndex = "1000";
+      pane.element.style.position = "fixed";
+      pane.element.style.right = "4px";
+      pane.element.style.top = "4px";
+      pane.element.style.overflow = "auto"
+
+      function startBindNodes() {
+        // root folder for convenient folding
+        const rootFolder = pane.addFolder({ title: "dev", expanded: false });
+
+        for (const [scope, node] of Object.entries(BINDINGS)) {
+          renderBindingNode(ctx, rootFolder, node, scope);
+        }
+      }
 
       try {
-        for (const [scope, node] of Object.entries(BINDINGS)) {
-          // @ts-expect-error
-          renderBindingNode(pane, node, scope, ctx);
-        }
+        startBindNodes()
       } catch (e) {
-        const err = e as Error
-        console.error(`Error: "${err.message}", stack: ${err.stack}`)
+        if (isError(e)) {
+          console.error(`Error: "${e.message}", stack: ${e.stack}`)
+        }
       }
+
+      return { subs };
     }, `${name}.initPane`)
   }))
 )
@@ -78,5 +119,5 @@ export const startReatomLogger = action((ctx) => {
     ),
   });
 },
-  withRule("startReatomLogger", config.withAppActionsLog)
+  withRule("startReatomLogger", getConfigVal("withAppActionsLog"))
 )
