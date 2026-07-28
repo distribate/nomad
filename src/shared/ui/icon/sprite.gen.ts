@@ -262,13 +262,37 @@ export const sprites = defineSpriteMap([defineSprite(
    ), defineSpriteSymbol(
      ["arrow-right"],
      [24]
+   ), defineSpriteSymbol(
+     ["compass"],
+     [24]
+   ), defineSpriteSymbol(
+     ["dots-vertical"],
+     [24]
+   ), defineSpriteSymbol(
+     ["edit"],
+     [24]
+   ), defineSpriteSymbol(
+     ["pencil-check"],
+     [24]
+   ), defineSpriteSymbol(
+     ["pencil"],
+     [24]
+   ), defineSpriteSymbol(
+     ["photo-edit"],
+     [24]
+   ), defineSpriteSymbol(
+     ["settings"],
+     [24]
+   ), defineSpriteSymbol(
+     ["user-circle"],
+     [24]
    )],
-  defineExternalAssetMeta('sprite.b9c8159a.svg')
+  defineExternalAssetMeta('sprite.9a744a29.svg')
 )]
 )])
 
 export type SpritesMeta = {
-  "sprite": "arrow-left" | "arrow-right";
+  "sprite": "arrow-left" | "arrow-right" | "compass" | "dots-vertical" | "edit" | "pencil-check" | "pencil" | "photo-edit" | "settings" | "user-circle";
 }
 
 //#endregion

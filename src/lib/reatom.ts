@@ -2,11 +2,13 @@ import { action, type Action, type Atom, type AtomMut, type Ctx, type MapAtom } 
 import { useAtom } from "@reatom/npm-solid-js";
 import { onCleanup } from "solid-js";
 import { rootLogger } from "./logger/logger.model";
+import type { RouterCtx } from "./router";
 
 export const useAtomAccessor = <T,>(atom: Atom<T>) => useAtom(atom)[0]
 
 type Target<T> =
   | MapAtom<any, T | null>
+  // AtomMut require the reset action
   | (AtomMut<T | null> & { reset: Action<[], T | null> });
 
 export const defineRefAtom = <T extends HTMLElement>(
@@ -48,20 +50,25 @@ export const defineRefAtom = <T extends HTMLElement>(
   };
 };
 
+/*
+  @deprecated
+*/
 export const reatomRouteAction = <
-  T extends { reatomCtx: Ctx },
+  T extends RouterCtx,
 >(
   cb: (ctx: Ctx, routeCtx: T, ...args: any[]) => any,
   name?: string,
 ) => {
-  const target = action(
-    (ctx, routeCtx: T, ...args: any[]) => {
-      return cb(ctx, routeCtx, ...args)
-    },
-    `${name ?? "unknown"}.route`,
-  )
+  const target = action(async (ctx, routeCtx: T, ...args: any[]) => {
+    return await cb(ctx, routeCtx, ...args)
+  }, name)
 
   return ((routeCtx: T, ...args: any[]) => {
-    return target(routeCtx.reatomCtx, routeCtx, ...args)
+    try {
+      return target(routeCtx.reatomCtx, routeCtx, ...args)
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
   }) as any
 }

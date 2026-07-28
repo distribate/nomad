@@ -1,6 +1,6 @@
 import type { AtomMut } from "@reatom/framework";
 import { $appState } from "../app/app.model";
-import { $setupedPlugins } from "../gsap";
+import { $gsapPlugins } from "../gsap";
 
 export type BindingNode = AtomMut<any> | { [k: string]: BindingNode };
 
@@ -12,8 +12,10 @@ const BINDINGS = {
   app: {
     type: $appState.meta.type,
     version: $appState.meta.version,
+    preferredLang: $appState.meta.preferredLang,
     gsap: {
-      plugins: $setupedPlugins
+      // @ts-expect-error
+      plugins: $gsapPlugins
     }
   },
 } satisfies Bindings;

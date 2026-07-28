@@ -216,23 +216,22 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
     )
   },
   7: () => {
-    const [data] = useAtom($introduction.summary);
+    const firstName = useAtomAccessor($introduction.firstName);
+    const interests = useAtomAccessor($introduction.interests);
+    const style = useAtomAccessor($introduction.style);
+    const goal = useAtomAccessor($introduction.goal);
 
     return (
-      <Show when={data()} fallback={<span>empty</span>}>
-        {(data) => (
-          <div class="flex flex-col text-center gap-6 text-lg h-full w-full items-start">
-            <Title as="text" msg="Итак," />
-            <div class="flex flex-col items-start w-full gap-2">
-              <p class="text-left">
-                Вас зовут {data().firstName}, ваш стиль: {data().style},
-                интересуетесь {data().interests?.join(', ')},
-                ваш целью является {data().goal}
-              </p>
-            </div>
-          </div>
-        )}
-      </Show>
+      <div class="flex flex-col text-center gap-6 text-lg h-full w-full items-start">
+        <Title as="text" msg="Итак," />
+        <div class="flex flex-col items-start w-full gap-2">
+          <p class="text-left">
+            Вас зовут {firstName()}, ваш стиль: {style()},
+            интересуетесь {interests()?.join(', ')},
+            ваш целью является {goal()}
+          </p>
+        </div>
+      </div>
     )
   }
 }
@@ -304,7 +303,7 @@ export const Introduction = () => {
   })
 
   return (
-    <div class="flex flex-col w-full h-full items-center justify-between">
+    <div class="flex flex-col p-4 w-full h-full items-center justify-between">
       <div class="flex h-[40dvh] w-full items-start justify-center">
         <p
           ref={defineRefAtom(ctx, "appName", $refsMap)}

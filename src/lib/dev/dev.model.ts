@@ -1,6 +1,8 @@
 import { action, atom, connectLogger, createLogBatched, isAtom, withAssign } from "@reatom/framework";
 import { FolderApi, Pane } from "tweakpane";
 import { BINDINGS, type BindingNode } from ".";
+import { withRule } from "../helpers";
+import { config } from "../../const/config";
 
 let pane: Pane | null = null;
 
@@ -50,6 +52,7 @@ export const $dev = atom(null, "dev").pipe(
 
       try {
         for (const [scope, node] of Object.entries(BINDINGS)) {
+          // @ts-expect-error
           renderBindingNode(pane, node, scope, ctx);
         }
       } catch (e) {
@@ -63,7 +66,7 @@ export const $dev = atom(null, "dev").pipe(
 export const startReatomLogger = action((ctx) => {
   connectLogger(ctx, {
     showCause: true,
-    skipUnnamed: false,
+    skipUnnamed: true,
     log: createLogBatched(
       {
         debounce: 1,
@@ -74,4 +77,6 @@ export const startReatomLogger = action((ctx) => {
       },
     ),
   });
-}, "startReatomLogger")
+},
+  withRule("startReatomLogger", config.withAppActionsLog)
+)

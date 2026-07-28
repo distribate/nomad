@@ -14,7 +14,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-neutral-300",
-        link: "text-primary underline-offset-4 hover:underline"
+        neutral: "bg-neutral-800 text-primary",
+        link: "text-primary underline-offset-4 hover:underline",
+        danger: "bg-red-600 text-primary-foreground hover:bg-red-700"
       },
       size: {
         default: "h-10 px-4 py-2",

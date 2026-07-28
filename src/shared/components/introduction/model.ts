@@ -3,13 +3,12 @@ import {
   type Ctx, type CtxSpy
 } from "@reatom/framework";
 import { BackButton } from "../../ui/back-button";
-import { $header } from "../layout/header/model";
+import { $header, updateHeaderNodes } from "../layout/header/model";
 import { $user, type User } from "../../../lib/user/user.model";
 import { compareAtom } from "../../../lib/utils";
 import { nanoid } from "nanoid";
-import { $appState } from "../../../lib/app/app.model";
 import type { UserLocation, UserPhoto, UserStyle } from "../../../lib/user/types";
-import { navigate } from "../../../router";
+import { navigate } from "../../../lib/router/utils";
 
 type StateVariant = {
   callback?: (ctx: Ctx) => Promise<void> | void,
@@ -79,13 +78,7 @@ const STAGES: Record<number, Stage> = {
   6: {
     confirm: {
       callback: (ctx) => {
-        $introduction.summary(ctx, ({
-          firstName: ctx.get($introduction.firstName),
-          interests: ctx.get($introduction.interests),
-          style: ctx.get($introduction.style) ?? "calm",
-          goal: ctx.get($introduction.goal) ?? "",
-          location: ctx.get($introduction.location)
-        }))
+
       }
     },
     meta: {
@@ -95,13 +88,11 @@ const STAGES: Record<number, Stage> = {
   7: {
     confirm: {
       condition: (ctx) => {
-        return !!ctx.spy($introduction.summary)
+        return true
       },
-      callback: (ctx) => {
-        const summary = ctx.get($introduction.summary) as SummaryData;
-
+      callback: async (ctx) => {
         $user.data(ctx, {
-          firstName: summary.firstName,
+          firstName: ctx.get($introduction.firstName),
           createdAt: new Date().toISOString(),
           username: nanoid(8),
           photo: {
@@ -109,7 +100,13 @@ const STAGES: Record<number, Stage> = {
           }
         })
 
-        navigate(ctx, "/")
+        $header.nodes.reset(ctx);
+
+        $introduction.idx.reset(ctx);
+        $introduction.resetTargetSummaryFields(ctx);
+        $introduction.resetRefs(ctx);
+
+        await navigate(ctx, "/")
       }
     },
     meta: {
@@ -129,7 +126,7 @@ const STAGES_CONFIRM_LABELS: Record<number, Map<(ctx: CtxSpy) => boolean, string
     [(ctx) => !!ctx.spy($introduction.location), "Продолжить"],
   ]),
   7: new Map([
-    [(ctx) => true, "Завершить"],
+    [() => true, "Завершить"],
   ]),
 }
 
@@ -146,10 +143,9 @@ type SummaryData = Pick<User, "firstName"> & {
 
 export const $introduction = atom(null, "introduction").pipe(
   withAssign((_, name) => ({
-    idx: atom(0, `${name}.idx`),
+    idx: atom(0, `${name}.idx`).pipe(withReset()),
     next: action(async (ctx) => {
       let currIdx = ctx.get($introduction.idx)
-      console.log(currIdx);
       const target = getTarget(currIdx)
 
       await wrapCb(ctx, { cb: target.confirm?.callback });
@@ -160,18 +156,27 @@ export const $introduction = atom(null, "introduction").pipe(
     }),
     back: action(async (ctx) => {
       let currIdx = ctx.get($introduction.idx)
-
       $introduction.idx(ctx, --currIdx);
     }),
     backButtonRef: atom<HTMLButtonElement | null>(null, `${name}.backButtonRef`).pipe(withReset()),
     confirmBtnRef: atom<HTMLButtonElement | null>(null, `${name}.confirmBtnRef`).pipe(withReset()),
-    summary: atom<SummaryData | null>(null, `${name}.data`),
-    //
-    firstName: atom<string>("", `${name}.firstName`),
-    interests: atom<string[]>([], `${name}.interests`),
-    style: atom<UserStyle | null>(null, `${name}.style`),
-    goal: atom<string | null>(null, `${name}.goal`),
-    location: atom<SummaryData["location"] | null>(null, `${name}.location`),
+    // target summary fields (pseudo)
+    firstName: atom<string>("", `${name}.firstName`).pipe(withReset()),
+    interests: atom<string[]>([], `${name}.interests`).pipe(withReset()),
+    style: atom<UserStyle | null>(null, `${name}.style`).pipe(withReset()),
+    goal: atom<string | null>(null, `${name}.goal`).pipe(withReset()),
+    location: atom<SummaryData["location"] | null>(null, `${name}.location`).pipe(withReset()),
+    resetTargetSummaryFields: action((ctx) => {
+      $introduction.firstName.reset(ctx);
+      $introduction.interests.reset(ctx);
+      $introduction.style.reset(ctx);
+      $introduction.goal.reset(ctx);
+      $introduction.location.reset(ctx);
+    }),
+    resetRefs: action((ctx) => {
+      $introduction.backButtonRef.reset(ctx);
+      $introduction.confirmBtnRef.reset(ctx);
+    }),
   }))
 )
 
@@ -222,19 +227,18 @@ wrapCb.statusesAtom.onChange((ctx, state) => {
 
 $isBack.onChange((ctx, state) => {
   if (state) {
-    $header.nodes(
-      ctx,
-      (state) => ({
-        ...state, l: () => BackButton({
-          onClick: () => {
-            $introduction.back(ctx)
-          },
-          ref: (el) => {
-            $introduction.backButtonRef(ctx, el)
-          }
-        })
-      })
-    )
+    const l = () => BackButton({
+      onClick: () => {
+        $introduction.back(ctx)
+      },
+      ref: (el) => {
+        $introduction.backButtonRef(ctx, el)
+      }
+    });
+
+    updateHeaderNodes(ctx, { l }, {
+      withSnapshot: false
+    })
   } else {
     $header.nodes(ctx, (state) => ({ ...state, l: null }))
   }

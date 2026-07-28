@@ -3,6 +3,7 @@ import solid from 'vite-plugin-solid'
 import UnoCSS from 'unocss/vite'
 import svg from '@neodx/svg/vite';
 import { analyzer } from 'vite-bundle-analyzer'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 const config = {
   port: 5273
@@ -22,10 +23,12 @@ export default defineConfig(() => {
       analyzer({
         enabled: true,
         analyzerMode: "static"
-      })
+      }),
+      basicSsl(),
     ],
     build: {
-      sourcemap: true
+      sourcemap: true,
+      minify: true
     },
     server: {
       host: true,
