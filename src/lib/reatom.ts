@@ -1,7 +1,6 @@
 import { action, type Action, type Atom, type AtomMut, type Ctx, type MapAtom } from "@reatom/framework";
 import { useAtom } from "@reatom/npm-solid-js";
 import { onCleanup } from "solid-js";
-import { rootLogger } from "./logger/logger.model";
 import type { RouterCtx } from "./router";
 
 export const useAtomAccessor = <T,>(atom: Atom<T>) => useAtom(atom)[0]
@@ -37,14 +36,14 @@ export const defineRefAtom = <T extends HTMLElement>(
     }
 
     if (withLog) {
-      rootLogger.info({ msg: "Created ref atom", key, node });
+      console.log("+ ref atom", { k: key, n: node });
     }
 
     onCleanup(() => {
       cleanup();
 
       if (withLog) {
-        rootLogger.info({ msg: "Deleted ref atom", key });
+        console.log("- ref atom", { k: key });
       }
     });
   };

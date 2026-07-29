@@ -5,6 +5,11 @@ import { Switch } from "solid-js";
 import { SwitchControl, Switch as SwitchPrimitive, SwitchThumb } from "../../ui/switch"
 import { useAtomAccessor } from "../../../lib/reatom";
 import type { SettingItem } from "./types";
+import { cva } from "class-variance-authority";
+
+const settingsItemVariant = cva(
+  `flex items-center justify-between w-full px-4 py-3 hover:bg-neutral-700`
+)
 
 export const SettingsAction = (props: { item: Extract<SettingItem, { type: "action" }> }) => {
   const ctx = useCtx();
@@ -15,7 +20,7 @@ export const SettingsAction = (props: { item: Extract<SettingItem, { type: "acti
     const checked = useAtomAccessor(item.value);
 
     return (
-      <div class="flex items-center justify-between w-full">
+      <div class={settingsItemVariant()}>
         <div class="flex flex-col text-left">
           <span>
             {item.meta.title}
@@ -41,7 +46,7 @@ export const SettingsAction = (props: { item: Extract<SettingItem, { type: "acti
   if (item.as === 'button') {
     return (
       <button
-        class="flex items-center w-full px-4 py-3"
+        class={settingsItemVariant()}
         onClick={() => item.event(ctx)}
       >
         <div class="flex flex-col text-left">
@@ -64,7 +69,7 @@ export const SettingsLink = (props: { item: Extract<SettingItem, { type: "page" 
 
   return (
     <button
-      class="flex items-center justify-between w-full px-4 py-3 hover:bg-neutral-700"
+      class={settingsItemVariant()}
       onClick={() => $settings.to(ctx, props.item.route)}
     >
       <div class="flex flex-col text-left">

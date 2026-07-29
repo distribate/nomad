@@ -19,3 +19,5 @@ export type RouteConfig = {
 export type RouteMeta = {
   withLoader: boolean,
 }
+
+export type RouteCallbacks = Pick<RouteBase, "onLeave">

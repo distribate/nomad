@@ -7,6 +7,4 @@ export const initAsTMA = action(async () => {
   init();
   backButton.mount();
   backButton.show();
-},
-  withRule("initAsTMA", getConfigVal("withAppActionsLog"))
-)
+}, withRule("initAsTMA", getConfigVal("withAppActionsLog")))

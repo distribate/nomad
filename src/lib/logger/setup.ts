@@ -1,6 +1,9 @@
 import { configureSync, getConsoleSink } from "@logtape/logtape";
+import { getReatomCtx } from "../app/ctx";
+import { connectLogger, createLogBatched } from "@reatom/framework";
 
 if (import.meta.env.DEV) {
+  // default logger
   configureSync({
     sinks: {
       console: getConsoleSink(),
@@ -18,7 +21,19 @@ if (import.meta.env.DEV) {
       },
     ],
   });
-  console.log("log setup")
-} else {
-  console.log("log skip")
+
+  // reatom logger
+  connectLogger(getReatomCtx(), {
+    showCause: true,
+    skipUnnamed: true,
+    log: createLogBatched(
+      {
+        debounce: 1,
+        limit: 5000,
+        getTimeStamp: () => new Date().toLocaleTimeString(),
+        log: console.log,
+        shouldGroup: true,
+      },
+    ),
+  });
 }

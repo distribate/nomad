@@ -6,6 +6,7 @@ import { NotFound } from "./shared/components/templates/not-found"
 import { Skeleton } from "./shared/ui/skeleton"
 import { Bottom } from "./shared/components/layout/bottom"
 import { $appLoading } from "./lib/app/app.model"
+import { Toaster } from 'solid-toast';
 
 const Router = () => {
   const route = useAtomAccessor($route.render);
@@ -33,21 +34,33 @@ const AppLoader = () => {
   )
 }
 
+
+const Global = () => {
+  return (
+    <Toaster />
+  )
+}
+
 export const Entry = () => {
   const appLoading = useAtomAccessor($appLoading);
 
   return (
-    <main class="flex flex-col bg-neutral-900 w-full overflow-hidden h-screen">
-      <Show
-        when={!appLoading()}
-        fallback={<AppLoader />}
-      >
-        <Header />
-        <div class="w-full z-1 relative h-full">
-          <Router />
+    <>
+      <main class="flex items-center justify-center w-full">
+        <div class="flex flex-col relative bg-neutral-900 items-center justify-center w-full overflow-hidden h-screen max-w-[440px]">
+          <Header />
+          <Show
+            when={!appLoading()}
+            fallback={<AppLoader />}
+          >
+            <div class="w-full z-1 relative h-full">
+              <Router />
+            </div>
+          </Show>
+          <Bottom />
         </div>
-        <Bottom />
-      </Show>
-    </main>
+      </main>
+      <Global />
+    </>
   )
 }

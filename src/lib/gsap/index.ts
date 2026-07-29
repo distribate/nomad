@@ -20,7 +20,6 @@ export const initGsap = action(async (ctx) => {
   const enabled = ctx.get($gsapIsEnabled);
 
   if (!enabled) {
-    console.log("gsap init skip")
     return;
   }
 
@@ -35,10 +34,7 @@ export const initGsap = action(async (ctx) => {
   $gsapPlugins(ctx, loadedPlugins.map(p => p.name))
 
   gsapInstance = gsap;
-  return gsapInstance;
-},
-  withRule("initGsap", getConfigVal("withAppActionsLog"))
-)
+},withRule("initGsap", getConfigVal("withAppActionsLog")))
 
 export const getGsap = (): typeof gsap => {
   const enabled = getReatomCtx().get($gsapIsEnabled)

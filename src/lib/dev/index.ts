@@ -5,34 +5,40 @@ import { getConfig } from "../../const/config";
 
 export type BindingValue = string[] | Atom<any> | AtomMut<any>;
 
+type BindingParams = {
+  // Condition for showing this binding
+  condition?: (ctx: Ctx) => boolean,
+  readonly?: boolean
+}
 export type BindingNode =
   | BindingValue
-  | { target: BindingValue, condition?: (ctx: Ctx) => boolean }
+  | ({
+    target: BindingValue,
+  } & BindingParams)
   | { [k: string]: BindingNode };
 
 export type Bindings = {
   [scope: string]: BindingNode;
 };
 
-function createBinding(
-  target: BindingValue,
-  condition?: (ctx: Ctx) => boolean
-) {
-  return { target, condition };
+function createBinding(target: BindingValue, params: BindingParams) {
+  return { target, ...params };
 }
 
 const BINDINGS = {
   app: {
-    type: $appState.meta.type,
-    version: $appState.meta.version,
-    preferredLang: $appState.meta.preferredLang,
+    type: $appState.type,
+    version: $appState.version,
+    preferredLang: $appState.preferredLang,
     gsap: {
       enabled: $gsapIsEnabled,
-      plugins: createBinding($gsapPlugins, (ctx) => ctx.get($gsapIsEnabled))
+      plugins: createBinding($gsapPlugins, { condition: (ctx) => ctx.get($gsapIsEnabled) })
     },
   },
-  // maybe editable fields (boolean=switch,str=input)?
-  config: getConfig()
+  config: {
+    logRouter: createBinding(getConfig().withAppRouterLog, { readonly: false }),
+    logActions: createBinding(getConfig().withAppActionsLog, { readonly: false }),
+  }
 } satisfies Bindings;
 
 export { BINDINGS }

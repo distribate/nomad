@@ -1,64 +1,17 @@
+/* @refresh reload */
 import './index.css';
 import 'virtual:uno.css'
 
 import "./lib/logger/setup.ts";
 
-/* @refresh reload */
 import { render } from 'solid-js/web'
 import { Entry } from './entry'
-import { isTMA, retrieveLaunchParams } from '@tma.js/sdk';
-import { $appState } from './lib/app/app.model.ts';
 import { reatomContext } from '@reatom/npm-solid-js'
 import { getReatomCtx } from './lib/app/ctx.ts';
-import { createRouter } from './lib/router/index.tsx';
-import { initAsTMA } from './lib/app/tma.ts';
-import { DEV_PANE, getConfigVal } from './const/config.ts';
-import { setupDayjs } from './lib/dayjs.ts';
-import { initGsap } from './lib/gsap/index.ts';
-import { action } from '@reatom/framework';
-import { withRule } from './lib/helpers.ts';
-import { $user } from './lib/user/user.model.ts';
+import { boot } from './lib/app/boot.ts';
 
 const root = document.getElementById('root')!;
 const ctx = getReatomCtx();
-
-const initDevModules = action(async (ctx) => {
-  const m = await import("./lib/dev/dev.model.ts");
-  m.startReatomLogger(ctx);
-
-  if (DEV_PANE) {
-    m.$dev.initPane(ctx);
-  }
-}, withRule("initDevModules", getConfigVal("withAppActionsLog")))
-
-const boot = async () => {
-  if (import.meta.env.DEV) {
-    await initDevModules(ctx)
-  }
-
-  await initGsap(ctx);
-  await setupDayjs(ctx);
-  await createRouter(ctx);
-
-  const type = isTMA() ? "tma" : "standalone"
-  $appState.meta.type(ctx, type);
-
-  if (type === 'tma') {
-    await initAsTMA(ctx);
-
-    const launchParams = retrieveLaunchParams();
-    const user = launchParams.tgWebAppData?.user;
-
-    if (user) {
-      $user.data(ctx, {
-        photo: user.photo_url ? { src: user.photo_url } : null,
-        firstName: user.first_name,
-        username: user.username ?? "unknown",
-        createdAt: new Date().toISOString()
-      })
-    }
-  }
-}
 
 const getRootNode = () => (
   <reatomContext.Provider value={ctx}>
@@ -68,7 +21,7 @@ const getRootNode = () => (
 
 try {
   render(getRootNode, root);
-  await boot();
+  await boot(ctx);
 } catch (e) {
   console.error("App error", e)
 }

@@ -6,6 +6,7 @@ import { For, Show, type Accessor } from "solid-js";
 import { action, isAbort, type Action } from "@reatom/framework";
 import { navigate } from "../../../lib/router/utils";
 import { Icon, type IconName } from "../../ui/icon";
+import { WithTopPadding } from "../layouts";
 
 export const MeHeader = () => {
   const me = useAtomAccessor($user.data) as Accessor<User>;
@@ -130,9 +131,9 @@ const MeEvents = () => {
 
 export const Me = () => {
   return (
-    <div class="flex flex-col h-full w-full gap-4 p-4">
+    <WithTopPadding class="flex flex-col h-full w-full gap-4 p-4">
       <MeHeader />
       <MeEvents />
-    </div>
+    </WithTopPadding>
   )
 }

@@ -4,6 +4,7 @@ import UnoCSS from 'unocss/vite'
 import svg from '@neodx/svg/vite';
 import { analyzer } from 'vite-bundle-analyzer'
 import basicSsl from '@vitejs/plugin-basic-ssl'
+import { exposeMacro } from "./plugins/expose-macro.ts"
 
 const config = {
   port: 5273
@@ -25,6 +26,7 @@ export default defineConfig(() => {
         analyzerMode: "static"
       }),
       basicSsl(),
+      exposeMacro()
     ],
     build: {
       sourcemap: true,

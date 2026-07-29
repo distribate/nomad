@@ -1,10 +1,7 @@
 import { useAtom, useCtx } from "@reatom/npm-solid-js"
 import { $header } from "./model"
 import { onCleanup, onMount } from "solid-js";
-import { atom, withReset } from "@reatom/framework";
 import { Dynamic } from "solid-js/web";
-
-export const $headerHeight = atom<number>(0, "headerHeight").pipe(withReset())
 
 const Empty = () => <div />
 
@@ -17,7 +14,7 @@ export const Header = () => {
 
   onMount(() => {
     const observer = new ResizeObserver(([entry]) => {
-      $headerHeight(ctx, entry.borderBoxSize[0].blockSize)
+      $header.height(ctx, entry.borderBoxSize[0].blockSize)
     })
 
     observer.observe(ref)
@@ -30,7 +27,7 @@ export const Header = () => {
   return (
     <div
       ref={el => (ref = el)}
-      class="flex z-4 *:max-w-1/3 items-center justify-between w-full px-4 py-3 h-16 rounded-b-lg absolute top-0 right-0 left-0"
+      class="flex z-4 *:max-w-1/3 items-center justify-between w-full px-4 py-1 h-14 rounded-b-lg absolute top-0 right-0 left-0"
     >
       <Dynamic component={elements().l ?? Empty} />
       <Dynamic component={elements().c ?? Empty} />

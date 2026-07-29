@@ -1,9 +1,10 @@
-import { atom, withAssign, type Ctx } from "@reatom/framework";
+import { atom, reatomAsync, withAssign, withErrorAtom, withStatusesAtom, type Ctx } from "@reatom/framework";
 import { withLocalStorage } from '@reatom/persist-web-storage'
 import type { UserPhoto } from "./types";
 import { expose } from "../utils";
 import { getReatomCtx } from "../app/ctx";
 import { redirect } from "../router/utils";
+import { isTMA, retrieveLaunchParams } from "@tma.js/sdk";
 
 export type User = {
   username: string; // (initially random hash string) (editable)
@@ -31,8 +32,33 @@ export function withAuth(ctx: Ctx) {
   if (!isAuthed) throw redirect("/intro");
 }
 
-if (import.meta.env.DEV) {
-  expose(function getCurrentUser() {
-    return getReatomCtx().get($user.data);
-  })
-}
+export const initUser = reatomAsync(async (ctx) => {
+  if (isTMA()) {
+    const launchParams = retrieveLaunchParams();
+    const tgUser = launchParams.tgWebAppData?.user;
+
+    if (tgUser) {
+      $user.data(ctx, {
+        photo: tgUser.photo_url ? { src: tgUser.photo_url } : null,
+        firstName: tgUser.first_name,
+        username: tgUser.username ?? "unknown",
+        createdAt: new Date().toISOString()
+      })
+    }
+  } else {
+    const curr = ctx.get($user.data)
+    if (!curr) return;
+
+    $user.data(ctx, {
+      ...curr,
+      photo: { src: "https://picsum.photos/id/237/200/300" }
+    })
+  }
+}, "initUser").pipe(
+  withStatusesAtom(),
+  withErrorAtom()
+)
+
+expose(function getCurrentUser() {
+  return getReatomCtx().get($user.data);
+})

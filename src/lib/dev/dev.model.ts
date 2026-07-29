@@ -1,11 +1,13 @@
-import { action, atom, connectLogger, createLogBatched, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
+import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
 import { FolderApi, Pane } from "tweakpane";
 import { BINDINGS, type BindingNode, type BindingValue } from ".";
-import { withRule } from "../helpers";
-import { getConfigVal } from "../../const/config";
 import type { BindingApi } from "@tweakpane/core";
-import { isError, isPrimitive } from "../utils";
+import { expose, isError, isPrimitive } from "../utils";
+import { getReatomCtx } from "../app/ctx";
+import { $devPaneIsEnabled } from "../../const/config";
+import { watch, watchersModel } from "../app/watchers";
 
+let pane: Pane | null = null;
 let subs: Map<string, Unsubscribe> = new Map()
 
 const write = (binding: BindingApi) => {
@@ -35,11 +37,13 @@ function renderBindingNode(
   container: Pane | FolderApi,
   node: BindingNode,
   keyName: string,
+  isReadonly = true,
 ) {
   if (isConditionalBinding(node)) {
     if (node.condition && !node.condition(ctx)) return;
 
-    return renderBindingNode(ctx, container, node.target, keyName);
+    const effectiveReadonly = node.readonly ?? isReadonly;
+    return renderBindingNode(ctx, container, node.target, keyName, effectiveReadonly);
   }
 
   const val = isAtom(node) ? ctx.get(node) : node;
@@ -48,8 +52,17 @@ function renderBindingNode(
     const binding = container.addBinding(
       { [keyName]: formatter(val) },
       keyName,
-      { readonly: true }
+      { readonly: isReadonly }
     );
+
+    if (!isReadonly) {
+      binding.on("change", (ev) => {
+        if (isAtom(node)) {
+          // @ts-expect-error
+          node(ctx, ev.value)
+        }
+      })
+    }
 
     if (isAtom(node)) {
       const setValue = write(binding);
@@ -74,15 +87,18 @@ function renderBindingNode(
 export const $dev = atom(null, "dev").pipe(
   withAssign((_, name) => ({
     initPane: action((ctx) => {
-      const pane = new Pane();
+      pane = new Pane();
 
       pane.element.style.zIndex = "1000";
       pane.element.style.position = "fixed";
       pane.element.style.right = "4px";
       pane.element.style.top = "4px";
       pane.element.style.overflow = "auto"
+      pane.element.style.maxWidth = window.innerWidth * 0.7 + "px";
 
       function startBindNodes() {
+        if (!pane) return;
+
         // root folder for convenient folding
         const rootFolder = pane.addFolder({ title: "dev", expanded: false });
 
@@ -98,26 +114,32 @@ export const $dev = atom(null, "dev").pipe(
           console.error(`Error: "${e.message}", stack: ${e.stack}`)
         }
       }
+    }, `${name}.initPane`),
+    start: action((ctx) => {
+      $dev.initPane(ctx);
+      devWatchers.define(ctx);
+    }, `${name}.start`),
+    disposePane: () => {
+      if (!pane) {
+        console.log("pane is not initialized");
+        return;
+      }
 
-      return { subs };
-    }, `${name}.initPane`)
+      pane.dispose();
+      pane = null;
+    }
   }))
 )
 
-export const startReatomLogger = action((ctx) => {
-  connectLogger(ctx, {
-    showCause: true,
-    skipUnnamed: true,
-    log: createLogBatched(
-      {
-        debounce: 1,
-        limit: 5000,
-        getTimeStamp: () => new Date().toLocaleTimeString(),
-        log: console.log,
-        shouldGroup: true,
-      },
-    ),
-  });
-},
-  withRule("startReatomLogger", getConfigVal("withAppActionsLog"))
-)
+const devWatchers = watchersModel({
+  name: "dev",
+  watchers: [
+    watch($devPaneIsEnabled, {
+      handler: (ctx, value) => !value ? $dev.disposePane() : $dev.initPane(ctx)
+    })
+  ]
+})
+
+expose(function togglePane() {
+  $devPaneIsEnabled(getReatomCtx(), s => !s)
+})

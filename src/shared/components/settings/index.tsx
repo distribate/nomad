@@ -1,5 +1,5 @@
 import { MeHeader } from "../me"
-import { onCleanup, onMount, Show, type Component } from "solid-js"
+import { onCleanup, onMount, Show, type Component, type ParentComponent } from "solid-js"
 import { useCtx } from "@reatom/npm-solid-js";
 import { $settings, currentSectionIsDefault, DEFAULT_SETTINGS_NODE_KEY } from "./model";
 import { useAtomAccessor } from "../../../lib/reatom";
@@ -8,6 +8,13 @@ import { $headerNodes } from "../layout/header/model";
 import { BackButton } from "../../ui/back-button";
 import { SettingsItem } from "./primitives";
 import { action } from "@reatom/framework";
+import { WithTopPadding } from "../layouts";
+
+const SettingsSection: ParentComponent = (props) => {
+  return (
+    <section class="flex bg-neutral-800 rounded-xl overflow-hidden flex-col gap-2" {...props} />
+  )
+}
 
 const SETTINGS_COMPONENTS: Record<string, Component> = {
   "default": () => {
@@ -15,7 +22,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
       <>
         <MeHeader />
         <div class="flex flex-col gap-6">
-          <section class="flex bg-neutral-800 rounded-xl flex-col gap-2">
+          <SettingsSection>
             <SettingsItem
               item={{
                 type: "page",
@@ -46,8 +53,8 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                 route: "preferences"
               }}
             />
-          </section>
-          <section class="flex bg-neutral-800 rounded-xl flex-col gap-2">
+          </SettingsSection>
+          <SettingsSection>
             <h2 class="px-4 pt-2 text-sm text-neutral-400">
               Help
             </h2>
@@ -69,7 +76,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                 route: "faq"
               }}
             />
-          </section>
+          </SettingsSection>
         </div>
       </>
     )
@@ -78,18 +85,31 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
     return (
       <>
         <div class="flex flex-col gap-6">
-          <SettingsItem
-            item={{
-              type: "action",
-              meta: {
-                title: "Animations",
-                description: ""
-              },
-              event: action((ctx, c) => $settings.preferences.animations(ctx, c)),
-              as: "switch",
-              value: $settings.preferences.animations
-            }}
-          />
+          <SettingsSection>
+            <SettingsItem
+              item={{
+                type: "action",
+                meta: {
+                  title: "Animations",
+                  description: ""
+                },
+                event: action((ctx, c) => $settings.preferences.animations(ctx, c)),
+                as: "switch",
+                value: $settings.preferences.animations
+              }}
+            />
+          </SettingsSection>
+        </div>
+      </>
+    )
+  },
+  "account": () => {
+    return (
+      <>
+        <div class="flex flex-col gap-6">
+          <SettingsSection>
+
+          </SettingsSection>
         </div>
       </>
     )
@@ -126,7 +146,7 @@ export const Settings = () => {
   });
 
   return (
-    <div class="flex flex-col h-full w-full gap-4 p-4">
+    <WithTopPadding class="flex flex-col h-full w-full gap-4 px-4">
       <Show
         when={ComponentToRender()}
         fallback={
@@ -136,12 +156,12 @@ export const Settings = () => {
         }
       >
         {(Comp) => (
-          <div class="flex flex-col gap-12 w-full h-full py-12">
+          <div class="flex overflow-y-auto flex-col gap-6 w-full h-full">
             {/*@ts-ignore*/}
             <Dynamic component={Comp} />
           </div>
         )}
       </Show>
-    </div>
+    </WithTopPadding>
   )
 }

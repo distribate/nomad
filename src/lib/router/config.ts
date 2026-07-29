@@ -1,3 +1,5 @@
+import { getConfigVal } from "../../const/config";
+
 export class RedirectError extends Error {
   readonly to: string;
   readonly replace: boolean;
@@ -9,3 +11,5 @@ export class RedirectError extends Error {
     this.replace = replace;
   }
 }
+
+export const routerNameRule = getConfigVal("withAppRouterLog");

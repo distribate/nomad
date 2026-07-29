@@ -1,70 +1,60 @@
-import { atom, type Action, type Ctx } from "@reatom/framework"
+import { action, atom, reatomMap, withAssign, withReset, type Ctx } from "@reatom/framework"
 import { navigate } from "../../../../lib/router/utils"
 import { urlAtom } from "@reatom/url"
+import { $isAuthed, $user } from "../../../../lib/user/user.model"
+import { BADGES, type Badge } from "./const"
 
-const BADGES_KEYS = [
-  "feed", "contacts", "settings", "me"
-]
-
-export type Badge = {
-  origin: typeof BADGES_KEYS[number]
-  label: string,
-  disabled?: boolean
-} & ({
-  type: "link"
-  target: string
-} | {
-  type: "action"
-  target: Action<[], void>
-})
-
-export const BADGES: Badge[] = [
-  {
-    origin: "feed",
-    label: "Feed",
-    type: "link",
-    target: "/",
-  },
-  {
-    origin: "contacts",
-    label: "Contacts",
-    type: "link",
-    target: "/contacts",
-    disabled: true,
-  },
-  {
-    origin: "settings",
-    label: "Settings",
-    type: "link",
-    target: "/settings",
-  },
-  {
-    origin: "me",
-    type: "link",
-    target: "/me",
-    label: "Profile",
-  },
-]
-
-export const $badgeData = (target: string) => atom((ctx): { isActive: boolean } => {
+export const $badgeIsActive = (target: string) => atom((ctx): boolean => {
   const badge = BADGES.find((badge) => badge.origin === target)
+  if (!badge) return false
 
-  if (!badge) {
-    return { isActive: false }
-  }
-
-  return {
-    isActive: badge.type === 'link' ? badge.target === ctx.spy(urlAtom).pathname : false,
-  }
+  return badge.target === ctx.spy(urlAtom).pathname
 })
 
-export const handleBadgeEvent = (ctx: Ctx, badge: Badge) => {
-  switch (badge.type) {
-    case "link":
-      navigate(badge.target as string);
-      break;
-    case "action":
-      badge.target(ctx);
-      break;
-  }
+type TypedPointerEvent<T extends Element> = PointerEvent & {
+  currentTarget: T
 }
+
+const MOVE_DELAY = 250
+
+export const $badge = atom(null, "badge").pipe(
+  withAssign((_, name) => ({
+    activeBadge: atom<Badge | null>(null, `${name}.activeBadge`).pipe(withReset()),
+    execEvent: action((_, b: Badge) => {
+      navigate(b.target)
+    }),
+    startMove: action((ctx, badge: Badge, e: TypedPointerEvent<HTMLButtonElement>) => {
+      const timer = setTimeout(() => {
+        const rect = e.currentTarget.getBoundingClientRect()
+
+        $badge.activeBadge(ctx, badge)
+      }, MOVE_DELAY)
+    }),
+    inMove: action((ctx, e: PointerEvent) => {
+
+    }),
+    stopMove: action((ctx) => {
+      const badge = ctx.get($badge.activeBadge)
+
+      $badge.activeBadge(ctx, null)
+    }),
+  }))
+)
+
+export const $bottom = atom(null, "bottom").pipe(
+  withAssign((_, name) => ({
+    isEnabled: atom((ctx) => ctx.spy($isAuthed)),
+    barRef: atom<HTMLDivElement | null>(null).pipe(withReset()),
+    badgesRefs: reatomMap<string, HTMLButtonElement | null>(new Map()),
+    height: atom(0, `${name}.height`),
+  }))
+)
+
+export const getBottomBadge = (ctx: Ctx, o: string): HTMLButtonElement => {
+  const target = $bottom.badgesRefs.get(ctx, o)
+  if (!target) throw new Error(`Badge not found: ${o}`)
+  return target
+}
+
+export const $userPhoto = atom((ctx) => ctx.spy($user.data)?.photo?.src ?? null)
+export const $userFirstLetterInFirstName = atom((ctx) => ctx.spy($user.data)?.firstName?.[0] ?? "Me")

@@ -15,6 +15,7 @@ export const $header = atom(null, "header").pipe(
     snapshot: atom<HeaderNodes | null>(null, `${name}.snapshot`).pipe(
       withReset()
     ),
+    height: atom<number>(0, `${name}.height`).pipe(withReset())
   }))
 )
 

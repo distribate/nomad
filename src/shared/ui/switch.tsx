@@ -32,7 +32,7 @@ export const SwitchControl = <T extends ValidComponent = "input">(
 				class={cn(
 					`
 					inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent bg-neutral-700
-				 shadow-sm transition-shadow data-[disabled]:(cursor-not-allowed opacity-50) data-[checked]:bg-neutral-700
+				 shadow-sm transition-shadow data-[disabled]:(cursor-not-allowed opacity-50) data-[checked]:bg-brand-default
 					transition-property-[box-shadow,color,background-color]
 					`,
 					local.class,
