@@ -22,7 +22,7 @@ export const $appState = atom(null, "appState").pipe(
   }))
 )
 
-export const $appLoading = atom((ctx) => !!ctx.spy($routeLoading))
+export const $appLoading = atom(true)
 
 const appWatchers = watchersModel({
   name: "app",

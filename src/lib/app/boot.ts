@@ -1,12 +1,18 @@
-import { action } from "@reatom/framework";
+import { reatomAsync, sleep } from "@reatom/framework";
 import { rootLogger } from "../logger/logger.model.ts";
 import { isError } from "../utils.ts";
 import { modules } from "./modules.ts";
+import { $appLoading } from "./app.model.ts";
 
-export const boot = action(async (ctx) => {
+const APP_LOADING_DELAY = 400;
+
+export const boot = reatomAsync(async (ctx) => {
   const ordered = [...modules].sort(
     (a, b) => (a.priority ?? 0) - (b.priority ?? 0),
   );
+
+  $appLoading(ctx, true);
+  await sleep(APP_LOADING_DELAY);
 
   for (const module of ordered) {
     if (!module.condition?.() && module.condition !== undefined) {
@@ -26,4 +32,6 @@ export const boot = action(async (ctx) => {
       }
     }
   }
-}, "boot");
+
+  $appLoading(ctx, false);
+}, "boot")

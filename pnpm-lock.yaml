@@ -21,22 +21,25 @@ importers:
         specifier: 3.6.2
         version: 3.6.2
       '@reatom/persist-web-storage':
-        specifier: ^3.4.6
+        specifier: 3.4.6
         version: 3.4.6
       '@reatom/undo':
-        specifier: ^3.4.2
+        specifier: 3.4.2
         version: 3.4.2
       '@reatom/url':
-        specifier: ^3.9.0
+        specifier: 3.9.0
         version: 3.9.0
       '@tma.js/sdk':
-        specifier: 3.2.3
+        specifier: ^3.2.3
         version: 3.2.3(typescript@6.0.3)
+      cbor-x:
+        specifier: ^1.6.5
+        version: 1.6.5
       class-variance-authority:
-        specifier: 0.7.1
+        specifier: ^0.7.1
         version: 0.7.1
       cnfast:
-        specifier: 0.0.8
+        specifier: ^0.0.8
         version: 0.0.8
       dayjs:
         specifier: ^1.11.21
@@ -45,22 +48,22 @@ importers:
         specifier: ^3.15.0
         version: 3.15.0
       magic-string:
-        specifier: ^1.1.0
+        specifier: 1.1.0
         version: 1.1.0
       nanoid:
-        specifier: ^6.0.0
+        specifier: 6.0.0
         version: 6.0.0
       oxc-parser:
-        specifier: ^0.142.0
+        specifier: 0.142.0
         version: 0.142.0
       solid-js:
         specifier: 1.9.13
         version: 1.9.13
       solid-toast:
-        specifier: ^0.5.0
+        specifier: 0.5.0
         version: 0.5.0(solid-js@1.9.13)
       universal-router:
-        specifier: ^10.0.3
+        specifier: 10.0.3
         version: 10.0.3
     devDependencies:
       '@biomejs/biome':
@@ -94,7 +97,7 @@ importers:
         specifier: 8.1.1
         version: 8.1.1(@types/node@24.13.2)(jiti@2.7.0)
       vite-bundle-analyzer:
-        specifier: ^1.3.9
+        specifier: 1.3.9
         version: 1.3.9
       vite-plugin-solid:
         specifier: 2.11.12
@@ -240,6 +243,36 @@ packages:
   '@biomejs/cli-win32-x64@2.5.2':
     resolution: {integrity: sha512-4InchVpdVmdkkkgjQqKpgvyu+VPnoF/7RPSw5YATgEVpt2j72wcCAeV5TwaE9ZGJUZWZn7v2CwSAj6CrMJEx8A==}
     engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [win32]
+
+  '@cbor-extract/cbor-extract-darwin-arm64@2.2.2':
+    resolution: {integrity: sha512-ZKZ/F8US7JR92J4DMct6cLW/Y66o2K576+zjlEN/MevH70bFIsB10wkZEQPLzl2oNh2SMGy55xpJ9JoBRl5DOA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@cbor-extract/cbor-extract-darwin-x64@2.2.2':
+    resolution: {integrity: sha512-32b1mgc+P61Js+KW9VZv/c+xRw5EfmOcPx990JbCBSkYJFY0l25VinvyyWfl+3KjibQmAcYwmyzKF9J4DyKP/Q==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@cbor-extract/cbor-extract-linux-arm64@2.2.2':
+    resolution: {integrity: sha512-wfqgzqCAy/Vn8i6WVIh7qZd0DdBFaWBjPdB6ma+Wihcjv0gHqD/mw3ouVv7kbbUNrab6dKEx/w3xQZEdeXIlzg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@cbor-extract/cbor-extract-linux-arm@2.2.2':
+    resolution: {integrity: sha512-tNg0za41TpQfkhWjptD+0gSD2fggMiDCSacuIeELyb2xZhr7PrhPe5h66Jc67B/5dmpIhI2QOUtv4SBsricyYQ==}
+    cpu: [arm]
+    os: [linux]
+
+  '@cbor-extract/cbor-extract-linux-x64@2.2.2':
+    resolution: {integrity: sha512-rpiLnVEsqtPJ+mXTdx1rfz4RtUGYIUg2rUAZgd1KjiC1SehYUSkJN7Yh+aVfSjvCGtVP0/bfkQkXpPXKbmSUaA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@cbor-extract/cbor-extract-win32-x64@2.2.2':
+    resolution: {integrity: sha512-dI+9P7cfWxkTQ+oE+7Aa6onEn92PHgfWXZivjNheCRmTBDBf2fx6RyTi0cmgpYLnD1KLZK9ZYrMxaPZ4oiXhGA==}
     cpu: [x64]
     os: [win32]
 
@@ -1034,6 +1067,13 @@ packages:
   caniuse-lite@1.0.30001800:
     resolution: {integrity: sha512-MMHtuAz9Ys840zAY5F4k6fV5GaivZ9sPk+nz0mY+GYVzRBnYkN0mpqkSR92oWRQ19yQWo4HvBV/FnC16AJX8MA==}
 
+  cbor-extract@2.2.2:
+    resolution: {integrity: sha512-hlSxxI9XO2yQfe9g6msd3g4xCfDqK5T5P0fRMLuaLHhxn4ViPrm+a+MUfhrvH2W962RGxcBwEGzLQyjbDG1gng==}
+    hasBin: true
+
+  cbor-x@1.6.5:
+    resolution: {integrity: sha512-yO64CxnSh6kp+pHNRK9IfwnMvCB+c8HvmUjQY/9l9YRF0/cAPka/tUHLwS64QqUpFCq3/OtbKziVJYXH2EaRig==}
+
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
@@ -1398,6 +1438,10 @@ packages:
 
   node-fetch-native@1.6.7:
     resolution: {integrity: sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q==}
+
+  node-gyp-build-optional-packages@5.1.1:
+    resolution: {integrity: sha512-+P72GAjVAbTxjjwUmwjVrqrdZROD4nf8KgpBoDxqXXTiYZZt/ud60dE5yvCSr9lRO8e8yv6kgJIC0K0PfZFVQw==}
+    hasBin: true
 
   node-releases@2.0.50:
     resolution: {integrity: sha512-J6l92tKHX6w8Jy5nO1Vuc01NoIiRGi/d6qBKVxh+IQ8Cr3b6HbVNfKiF8ZpFKufTwpwxMmce2W3iQZ861ZRyTg==}
@@ -1876,6 +1920,24 @@ snapshots:
     optional: true
 
   '@biomejs/cli-win32-x64@2.5.2':
+    optional: true
+
+  '@cbor-extract/cbor-extract-darwin-arm64@2.2.2':
+    optional: true
+
+  '@cbor-extract/cbor-extract-darwin-x64@2.2.2':
+    optional: true
+
+  '@cbor-extract/cbor-extract-linux-arm64@2.2.2':
+    optional: true
+
+  '@cbor-extract/cbor-extract-linux-arm@2.2.2':
+    optional: true
+
+  '@cbor-extract/cbor-extract-linux-x64@2.2.2':
+    optional: true
+
+  '@cbor-extract/cbor-extract-win32-x64@2.2.2':
     optional: true
 
   '@corvu/utils@0.4.2(solid-js@1.9.13)':
@@ -2710,6 +2772,22 @@ snapshots:
 
   caniuse-lite@1.0.30001800: {}
 
+  cbor-extract@2.2.2:
+    dependencies:
+      node-gyp-build-optional-packages: 5.1.1
+    optionalDependencies:
+      '@cbor-extract/cbor-extract-darwin-arm64': 2.2.2
+      '@cbor-extract/cbor-extract-darwin-x64': 2.2.2
+      '@cbor-extract/cbor-extract-linux-arm': 2.2.2
+      '@cbor-extract/cbor-extract-linux-arm64': 2.2.2
+      '@cbor-extract/cbor-extract-linux-x64': 2.2.2
+      '@cbor-extract/cbor-extract-win32-x64': 2.2.2
+    optional: true
+
+  cbor-x@1.6.5:
+    optionalDependencies:
+      cbor-extract: 2.2.2
+
   chokidar@3.6.0:
     dependencies:
       anymatch: 3.1.3
@@ -2999,6 +3077,11 @@ snapshots:
   nanoid@6.0.0: {}
 
   node-fetch-native@1.6.7: {}
+
+  node-gyp-build-optional-packages@5.1.1:
+    dependencies:
+      detect-libc: 2.1.2
+    optional: true
 
   node-releases@2.0.50: {}
 

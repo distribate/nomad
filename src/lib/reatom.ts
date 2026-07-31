@@ -1,7 +1,6 @@
-import { action, type Action, type Atom, type AtomMut, type Ctx, type MapAtom } from "@reatom/framework";
+import { type Action, type Atom, type AtomMut, type Ctx, type MapAtom } from "@reatom/framework";
 import { useAtom } from "@reatom/npm-solid-js";
 import { onCleanup } from "solid-js";
-import type { RouterCtx } from "./router";
 
 export const useAtomAccessor = <T,>(atom: Atom<T>) => useAtom(atom)[0]
 
@@ -48,26 +47,3 @@ export const defineRefAtom = <T extends HTMLElement>(
     });
   };
 };
-
-/*
-  @deprecated
-*/
-export const reatomRouteAction = <
-  T extends RouterCtx,
->(
-  cb: (ctx: Ctx, routeCtx: T, ...args: any[]) => any,
-  name?: string,
-) => {
-  const target = action(async (ctx, routeCtx: T, ...args: any[]) => {
-    return await cb(ctx, routeCtx, ...args)
-  }, name)
-
-  return ((routeCtx: T, ...args: any[]) => {
-    try {
-      return target(routeCtx.reatomCtx, routeCtx, ...args)
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-  }) as any
-}
