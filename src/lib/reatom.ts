@@ -1,6 +1,7 @@
 import { type Action, type Atom, type AtomMut, type Ctx, type MapAtom } from "@reatom/framework";
 import { useAtom } from "@reatom/npm-solid-js";
 import { onCleanup } from "solid-js";
+import { getConfigVal } from "../const/config";
 
 export const useAtomAccessor = <T,>(atom: Atom<T>) => useAtom(atom)[0]
 
@@ -12,14 +13,9 @@ type Target<T> =
 export const defineRefAtom = <T extends HTMLElement>(
   ctx: Ctx,
   key: string,
-  $target: Target<T>,
-  params?: {
-    withLog?: boolean
-  }
+  $target: Target<T>
 ) => {
-  const { withLog } = params ?? {
-    withLog: import.meta.env.DEV
-  };
+  const withLog = getConfigVal("withRefAtomLog");
 
   return (el: T | null) => {
     const cleanup = "getOrCreate" in $target

@@ -2,6 +2,8 @@
 import './index.css';
 import 'virtual:uno.css'
 
+import 'solid-devtools'
+
 import "./lib/logger/setup.ts";
 
 import { render } from 'solid-js/web'

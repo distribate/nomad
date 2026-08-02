@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@kobalte/core": "0.13.12",
@@ -29,6 +30,7 @@
     "solid-toast": "0.5.0",
     "universal-router": "10.0.3"
   },
+  "sideEffects": false,
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
     "@neodx/svg": "0.8.0",
@@ -36,6 +38,7 @@
     "@types/node": "24.13.2",
     "@unocss/preset-wind4": "66.7.4",
     "@vitejs/plugin-basic-ssl": "2.3.0",
+    "solid-devtools": "^0.34.5",
     "tweakpane": "4.0.5",
     "typescript": "~6.0.2",
     "unocss": "66.7.4",

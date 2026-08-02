@@ -5,6 +5,7 @@ import svg from '@neodx/svg/vite';
 import { analyzer } from 'vite-bundle-analyzer'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import { exposeMacro } from "./plugins/expose-macro.ts"
+import devtools from 'solid-devtools/vite'
 
 const config = {
   port: 5273
@@ -13,6 +14,9 @@ const config = {
 export default defineConfig(() => {
   return {
     plugins: [
+      devtools({
+        autoname: true,
+      }),
       solid(),
       UnoCSS(),
       svg({

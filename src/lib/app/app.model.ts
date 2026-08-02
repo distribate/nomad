@@ -1,7 +1,6 @@
 import { action, atom, withAssign } from "@reatom/framework";
 import { $isAuthed } from "../user/user.model";
 import { navigate } from "../router/utils";
-import { $routeLoading } from "../router";
 import { watch, watchersModel } from "./watchers";
 
 // #region app

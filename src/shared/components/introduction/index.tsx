@@ -1,7 +1,7 @@
 import { useAtom, useCtx } from "@reatom/npm-solid-js"
 import { $hasInterest, $introduction, $isGoal, $isStyle } from "./model";
 import { Dynamic, For } from "solid-js/web";
-import { createSignal, Match, Show, type JSX, Switch, type ParentProps, onMount } from "solid-js";
+import { createSignal, Match, type JSX, Switch, type ParentProps, onMount } from "solid-js";
 import { Button } from "../../ui/button";
 import { Navigation } from "./navigation";
 import { action, entries, reatomMap } from "@reatom/framework";

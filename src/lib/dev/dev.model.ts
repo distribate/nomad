@@ -1,145 +1,130 @@
-import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
-import { FolderApi, Pane } from "tweakpane";
-import { BINDINGS, type BindingNode, type BindingValue } from ".";
-import type { BindingApi } from "@tweakpane/core";
-import { expose, isError, isPrimitive } from "../utils";
-import { getReatomCtx } from "../app/ctx";
-import { $devPaneIsEnabled } from "../../const/config";
-import { watch, watchersModel } from "../app/watchers";
+import {
+  action, atom, entries, reatomMap, withAssign, withInit,
+  type AtomMut, type AtomState, type Ctx, type Unsubscribe
+} from "@reatom/framework";
+import { withLocalStorage } from "@reatom/persist-web-storage";
 
-let pane: Pane | null = null;
-let subs: Map<string, Unsubscribe> = new Map()
+export const defineValWithLS = (defaultVal: boolean, name: string) => atom(defaultVal, name);
 
-const write = (binding: BindingApi) => {
-  const target = binding.controller.value.binding.target;
-  return target.write.bind(target);
-};
+export type DevFlag = AtomMut<boolean>
 
-const formatter = (val: unknown) => {
-  if (Array.isArray(val)) {
-    return val.join(", ");
-  }
-  return val;
-};
+const initialConfig = new Map([
+  ["withAppActionsLog", defineValWithLS(true, "withAppActionsLog")],
+  ["withRefAtomLog", defineValWithLS(false, "withRefAtomLog")],
+  ["withGsap", defineValWithLS(true, "withGsap")],
+  ["withAppRouterLog", defineValWithLS(true, "withAppRouterLog")]
+])
 
-function isConditionalBinding(
-  node: BindingNode,
-): node is { target: BindingValue; condition?: (ctx: Ctx) => boolean } {
-  return (
-    typeof node === "object" &&
-    node !== null &&
-    "target" in node
-  );
-}
+// todo: add the value formatter
+const initFromPersist = action((ctx): Map<string, AtomMut<any>> => {
+  const persistRec = ctx.get($devFlags)
+  const persistEntries = entries(persistRec)
+  const persistMap = new Map(persistEntries)
 
-function renderBindingNode(
-  ctx: Ctx,
-  container: Pane | FolderApi,
-  node: BindingNode,
-  keyName: string,
-  isReadonly = true,
-) {
-  if (isConditionalBinding(node)) {
-    if (node.condition && !node.condition(ctx)) return;
+  const finalMap = new Map<string, DevFlag>()
+  const nextPersistRec: Record<string, any> = { ...persistRec }
 
-    const effectiveReadonly = node.readonly ?? isReadonly;
-    return renderBindingNode(ctx, container, node.target, keyName, effectiveReadonly);
-  }
-
-  const val = isAtom(node) ? ctx.get(node) : node;
-
-  if (isPrimitive(val) || Array.isArray(val)) {
-    const binding = container.addBinding(
-      { [keyName]: formatter(val) },
-      keyName,
-      { readonly: isReadonly }
-    );
-
-    if (!isReadonly) {
-      binding.on("change", (ev) => {
-        if (isAtom(node)) {
-          // @ts-expect-error
-          node(ctx, ev.value)
-        }
-      })
+  for (const [key, defaultAtom] of initialConfig) {
+    if (persistMap.has(key)) {
+      const savedValue = persistMap.get(key)
+      finalMap.set(key, defineValWithLS(savedValue, key))
+    } else {
+      finalMap.set(key, defaultAtom)
+      nextPersistRec[key] = ctx.get(defaultAtom)
     }
+  }
 
-    if (isAtom(node)) {
-      const setValue = write(binding);
-
-      const sub = ctx.subscribe(node, (state) => {
-        setValue(formatter(state));
-      });
-
-      subs.set(`${container.title}.${keyName}`, sub);
+  for (const [key, savedValue] of persistMap) {
+    if (!finalMap.has(key)) {
+      finalMap.set(key, defineValWithLS(savedValue, key))
     }
-
-    return;
   }
 
-  const folder = container.addFolder({ title: keyName });
-
-  for (const [childKey, childNode] of Object.entries(node)) {
-    renderBindingNode(ctx, folder, childNode, childKey);
+  for (const [flagName, flagAtom] of finalMap) {
+    $devSubs.sub(ctx, flagName, flagAtom)
   }
-}
 
-export const $dev = atom(null, "dev").pipe(
-  withAssign((_, name) => ({
-    initPane: action((ctx) => {
-      pane = new Pane();
+  $devFlags(ctx, nextPersistRec)
+  return finalMap
+})
 
-      pane.element.style.zIndex = "1000";
-      pane.element.style.position = "fixed";
-      pane.element.style.right = "4px";
-      pane.element.style.top = "4px";
-      pane.element.style.overflow = "auto"
-      pane.element.style.maxWidth = window.innerWidth * 0.7 + "px";
+const $devFlags = atom<Record<string, any>>({}, "devFlags").pipe(withLocalStorage("devFlags"))
+const $devFlagsMap = reatomMap<string, DevFlag>(new Map(), "devFlagsMap").pipe(withInit((ctx) => initFromPersist(ctx)))
+const $devSubs = reatomMap<DevFlag, Unsubscribe>(new Map(), "devSubs").pipe(
+  withAssign(() => ({
+    sub: action((ctx, flagName: string, flagAtom: DevFlag) => {
+      if (!$devSubs.has(ctx, flagAtom)) {
+        const unsub = ctx.subscribe(flagAtom, (state) => {
+          console.log(flagAtom.__reatom.name, state)
+          $devFlags(ctx, (prev) => ({ ...prev, [flagName]: state }))
+        })
 
-      function startBindNodes() {
-        if (!pane) return;
-
-        // root folder for convenient folding
-        const rootFolder = pane.addFolder({ title: "dev", expanded: false });
-
-        for (const [scope, node] of Object.entries(BINDINGS)) {
-          renderBindingNode(ctx, rootFolder, node, scope);
+        $devSubs.set(ctx, flagAtom, unsub)
+      }
+    }),
+    unsub: action((ctx, actual: AtomState<typeof $devFlagsMap>) => {
+      for (const [flagAtom, unsub] of ctx.get($devSubs)) {
+        if (!Array.from(actual.values()).includes(flagAtom)) {
+          unsub()
+          $devSubs.delete(ctx, flagAtom)
         }
       }
-
-      try {
-        startBindNodes()
-      } catch (e) {
-        if (isError(e)) {
-          console.error(`Error: "${e.message}", stack: ${e.stack}`)
-        }
-      }
-    }, `${name}.initPane`),
-    start: action((ctx) => {
-      $dev.initPane(ctx);
-      devWatchers.define(ctx);
-    }, `${name}.start`),
-    disposePane: () => {
-      if (!pane) {
-        console.log("pane is not initialized");
-        return;
-      }
-
-      pane.dispose();
-      pane = null;
-    }
-  }))
-)
-
-const devWatchers = watchersModel({
-  name: "dev",
-  watchers: [
-    watch($devPaneIsEnabled, {
-      handler: (ctx, value) => !value ? $dev.disposePane() : $dev.initPane(ctx)
     })
-  ]
+  }))
+);
+
+$devFlagsMap.onChange((ctx, state) => {
+  for (const [key, flagAtom] of state) {
+    $devSubs.sub(ctx, key, flagAtom)
+  }
+  $devSubs.unsub(ctx, state)
 })
 
-expose(function togglePane() {
-  $devPaneIsEnabled(getReatomCtx(), s => !s)
-})
+export type ConfigValOpts<T extends 'val' | 'atom'> = { as?: T }
+
+export function getConfigValue(ctx: Ctx, name: string, { as = 'val' }: { as?: 'val' | 'atom' } = {}) {
+  let final: DevFlag | null = null;
+
+  const targetAtom = $devFlagsMap.get(ctx, name);
+
+  if (!targetAtom) {
+    console.log(`Dev flag "${name}" is undefined, creating atom with default value...`)
+    $devFlagsMap.set(ctx, name, defineValWithLS(false, name))
+    final = $devFlagsMap.get(ctx, name)!
+  } else {
+    final = targetAtom
+  }
+
+  if (!final) {
+    throw new Error(`Dev flag "${name}" is undefined`);
+  }
+
+  return as === 'atom' ? final : ctx.get(final)
+}
+
+// todo: add declarative definition
+// const defineDevFlag = (flagName: string, defaultValue: boolean): void => {
+//   const ctx = getReatomCtx();
+
+//   const targetAtom = $devFlagsMap.get(ctx, flagName)
+//   if (targetAtom) {
+//     console.log(`"${flagName}" is already defined`)
+//     return
+//   }
+
+//   $devFlagsMap.set(ctx, flagName, defineValWithLS(defaultValue, flagName))
+//   console.log(`Dev flag "${flagName}" is defined as ${defaultValue}`)
+// }
+//
+
+export const getDevConfig = (ctx: Ctx) => {
+  let sum: Record<string, any> = {}
+  for (const [k, v] of Object.entries(ctx.get($devFlagsMap))) {
+    sum[k] = ctx.get(v)
+  }
+  return  {
+    config: sum,
+    devSubs: ctx.get($devSubs),
+    devPersist: ctx.get($devFlags),
+  };
+}

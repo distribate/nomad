@@ -1,7 +1,7 @@
 import { type Atom, type AtomMut, type Ctx } from "@reatom/framework";
 import { $appState } from "../app/app.model";
 import { $gsapIsEnabled, $gsapPlugins } from "../gsap";
-import { getConfig } from "../../const/config";
+import { getConfigVal } from "../../const/config";
 
 export type BindingValue = string[] | Atom<any> | AtomMut<any>;
 
@@ -36,8 +36,9 @@ const BINDINGS = {
     },
   },
   config: {
-    logRouter: createBinding(getConfig().withAppRouterLog, { readonly: false }),
-    logActions: createBinding(getConfig().withAppActionsLog, { readonly: false }),
+    logRouter: createBinding(getConfigVal("withAppRouterLog", { as: "atom" }), { readonly: false }),
+    logActions: createBinding(getConfigVal("withAppActionsLog", { as: "atom" }), { readonly: false }),
+    logRefAtom: createBinding(getConfigVal("withRefAtomLog", { as: "atom" }), { readonly: false }),
   }
 } satisfies Bindings;
 

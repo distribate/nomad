@@ -39,7 +39,7 @@ export const modules: AppModule[] = [
     name: "dev",
     priority: 5,
     init: action(async (ctx) => {
-      const { $dev } = await import("../dev/dev.model.ts");
+      const { $pane: $dev } = await import("../dev/pane.model.ts");
       $dev.start(ctx);
     }),
     critical: false,
