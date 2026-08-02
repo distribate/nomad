@@ -1,5 +1,5 @@
 import { MeHeader } from "../me"
-import { onCleanup, onMount, Show, type Component, type ParentComponent } from "solid-js"
+import { For, onCleanup, onMount, Show, type Component, type ParentComponent } from "solid-js"
 import { useCtx } from "@reatom/npm-solid-js";
 import { $settings, currentSectionIsDefault, DEFAULT_SETTINGS_NODE_KEY } from "./model";
 import { useAtomAccessor } from "../../../lib/reatom";
@@ -7,8 +7,10 @@ import { Dynamic } from "solid-js/web";
 import { $headerNodes } from "../layout/header/model";
 import { BackButton } from "../../ui/back-button";
 import { SettingsItem } from "./primitives";
-import { action } from "@reatom/framework";
+import { action, entries } from "@reatom/framework";
 import { WithTopPadding } from "../layouts";
+import { $locale, $localeLabel, LOCALES } from "../../../lib/app/app.model";
+import { $user } from "../../../lib/user/user.model";
 
 const SettingsSection: ParentComponent = (props) => {
   return (
@@ -18,9 +20,14 @@ const SettingsSection: ParentComponent = (props) => {
 
 const SETTINGS_COMPONENTS: Record<string, Component> = {
   "default": () => {
+    const currLang = useAtomAccessor($localeLabel);
+    const me = useAtomAccessor($user.data);
+
     return (
       <>
-        <MeHeader />
+        <Show when={me()}>
+          {(data) => <MeHeader me={data()} />}
+        </Show>
         <div class="flex flex-col gap-6">
           <SettingsSection>
             <SettingsItem
@@ -51,6 +58,16 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                   description: ""
                 },
                 route: "preferences"
+              }}
+            />
+            <SettingsItem
+              item={{
+                type: "page",
+                meta: {
+                  title: "Language",
+                  description: currLang()
+                },
+                route: "language"
               }}
             />
           </SettingsSection>
@@ -98,6 +115,42 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                 value: $settings.preferences.animations
               }}
             />
+          </SettingsSection>
+        </div>
+      </>
+    )
+  },
+  "language": () => {
+    return (
+      <>
+        <div class="flex flex-col gap-6">
+          <SettingsSection>
+            <h2 class="px-4 pt-2 text-sm text-neutral-400">
+              Language
+            </h2>
+            <div class="flex flex-col">
+              <For each={entries(LOCALES)}>
+                {([locale, value]) => {
+                  return (
+                    <SettingsItem
+                      item={{
+                        type: "action",
+                        meta: {
+                          title: value.label,
+                          description: value.label
+                        },
+                        event: action((ctx) => {
+                          $locale(ctx, locale)
+                          window.location.reload();
+                        }),
+                        as: "button",
+                        isActive: locale === useAtomAccessor($locale)()
+                      }}
+                    />
+                  )
+                }}
+              </For>
+            </div>
           </SettingsSection>
         </div>
       </>

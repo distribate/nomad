@@ -8,7 +8,15 @@ import type { SettingItem } from "./types";
 import { cva } from "class-variance-authority";
 
 const settingsItemVariant = cva(
-  `flex items-center justify-between w-full px-4 py-3 hover:bg-neutral-700`
+  `flex items-center justify-between w-full px-4 py-3 hover:bg-neutral-700`,
+  {
+    variants: {
+      variant: {
+        active: "bg-brand-default/40",
+        inactive: ""
+      }
+    }
+  }
 )
 
 export const SettingsAction = (props: { item: Extract<SettingItem, { type: "action" }> }) => {
@@ -46,7 +54,7 @@ export const SettingsAction = (props: { item: Extract<SettingItem, { type: "acti
   if (item.as === 'button') {
     return (
       <button
-        class={settingsItemVariant()}
+        class={settingsItemVariant({ variant: item.isActive ? 'active' : "inactive" })}
         onClick={() => item.event(ctx)}
       >
         <div class="flex flex-col text-left">

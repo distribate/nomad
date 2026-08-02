@@ -25,7 +25,8 @@ type SettingItemAction = {
   } | {
     event: Action<[], any>;
     as: "button",
-    value?: never
+    value?: never,
+    isActive?: boolean
   }
 )
 

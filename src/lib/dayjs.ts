@@ -2,7 +2,7 @@ import { action } from "@reatom/framework"
 import dayjs from "dayjs"
 import { withRule } from "./helpers"
 import { getConfigVal } from "../const/config";
-import { $appState } from "./app/app.model";
+import { $lang } from "./app/app.model";
 import { rootLogger } from "./logger/logger.model";
 
 const locales = {
@@ -24,7 +24,8 @@ export const installDayjsLocale = async (targetLocale: string) => {
 }
 
 export const setupDayjs = action(async (ctx) => {
-  const locale = ctx.get($appState.preferredLang).split("-")[0];
+  const locale = ctx.get($lang);
+  if (!locale) throw new Error("Locale is not set")
   await installDayjsLocale(locale)
 }, withRule("setupDayjs", getConfigVal("withAppActionsLog")))
 

@@ -3,16 +3,13 @@ import {
   type AtomMut, type AtomState, type Ctx, type Unsubscribe
 } from "@reatom/framework";
 import { withLocalStorage } from "@reatom/persist-web-storage";
-
-export const defineValWithLS = (defaultVal: boolean, name: string) => atom(defaultVal, name);
-
-export type DevFlag = AtomMut<boolean>
+import type { DevFlag } from "./types";
 
 const initialConfig = new Map([
-  ["withAppActionsLog", defineValWithLS(true, "withAppActionsLog")],
-  ["withRefAtomLog", defineValWithLS(false, "withRefAtomLog")],
-  ["withGsap", defineValWithLS(true, "withGsap")],
-  ["withAppRouterLog", defineValWithLS(true, "withAppRouterLog")]
+  ["withAppActionsLog", atom(true, "withAppActionsLog")],
+  ["withRefAtomLog", atom(false, "withRefAtomLog")],
+  ["withGsap", atom(true, "withGsap")],
+  ["withAppRouterLog", atom(true, "withAppRouterLog")]
 ])
 
 // todo: add the value formatter
@@ -27,7 +24,7 @@ const initFromPersist = action((ctx): Map<string, AtomMut<any>> => {
   for (const [key, defaultAtom] of initialConfig) {
     if (persistMap.has(key)) {
       const savedValue = persistMap.get(key)
-      finalMap.set(key, defineValWithLS(savedValue, key))
+      finalMap.set(key, atom(savedValue, key))
     } else {
       finalMap.set(key, defaultAtom)
       nextPersistRec[key] = ctx.get(defaultAtom)
@@ -36,7 +33,7 @@ const initFromPersist = action((ctx): Map<string, AtomMut<any>> => {
 
   for (const [key, savedValue] of persistMap) {
     if (!finalMap.has(key)) {
-      finalMap.set(key, defineValWithLS(savedValue, key))
+      finalMap.set(key, atom(savedValue, key))
     }
   }
 
@@ -55,7 +52,8 @@ const $devSubs = reatomMap<DevFlag, Unsubscribe>(new Map(), "devSubs").pipe(
     sub: action((ctx, flagName: string, flagAtom: DevFlag) => {
       if (!$devSubs.has(ctx, flagAtom)) {
         const unsub = ctx.subscribe(flagAtom, (state) => {
-          console.log(flagAtom.__reatom.name, state)
+          import.meta.env.DEV && console.log(flagAtom.__reatom.name, state);
+          // persist
           $devFlags(ctx, (prev) => ({ ...prev, [flagName]: state }))
         })
 
@@ -80,8 +78,6 @@ $devFlagsMap.onChange((ctx, state) => {
   $devSubs.unsub(ctx, state)
 })
 
-export type ConfigValOpts<T extends 'val' | 'atom'> = { as?: T }
-
 export function getConfigValue(ctx: Ctx, name: string, { as = 'val' }: { as?: 'val' | 'atom' } = {}) {
   let final: DevFlag | null = null;
 
@@ -89,7 +85,7 @@ export function getConfigValue(ctx: Ctx, name: string, { as = 'val' }: { as?: 'v
 
   if (!targetAtom) {
     console.log(`Dev flag "${name}" is undefined, creating atom with default value...`)
-    $devFlagsMap.set(ctx, name, defineValWithLS(false, name))
+    $devFlagsMap.set(ctx, name, atom(false, name))
     final = $devFlagsMap.get(ctx, name)!
   } else {
     final = targetAtom
@@ -112,7 +108,7 @@ export function getConfigValue(ctx: Ctx, name: string, { as = 'val' }: { as?: 'v
 //     return
 //   }
 
-//   $devFlagsMap.set(ctx, flagName, defineValWithLS(defaultValue, flagName))
+//   $devFlagsMap.set(ctx, flagName, atom(defaultValue, flagName))
 //   console.log(`Dev flag "${flagName}" is defined as ${defaultValue}`)
 // }
 //

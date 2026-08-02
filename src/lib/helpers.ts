@@ -7,3 +7,15 @@ export const withRule = (name: string, rule: (() => boolean) | boolean): string 
     ? name
     : `_${name}`
 }
+
+type ModelContext = {
+  name: (childName: string) => string,
+}
+
+export function declareModel<T>(
+  modelName: string,
+  fn: (ctx: ModelContext) => T
+): T {
+  const name = (childName: string) => `${modelName}.${childName}`
+  return fn({ name })
+}

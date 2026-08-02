@@ -1,7 +1,7 @@
-import { useAtom, useCtx } from "@reatom/npm-solid-js"
-import { $hasInterest, $introduction, $isGoal, $isStyle } from "./model";
+import { useCtx } from "@reatom/npm-solid-js"
+import { $hasInterest, $intro, $isGoal, $isStyle } from "./model";
 import { Dynamic, For } from "solid-js/web";
-import { createSignal, Match, type JSX, Switch, type ParentProps, onMount } from "solid-js";
+import { createSignal, Match, onMount, type JSX, Switch, type ParentProps } from "solid-js";
 import { Button } from "../../ui/button";
 import { Navigation } from "./navigation";
 import { action, entries, reatomMap } from "@reatom/framework";
@@ -21,7 +21,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       <div class="flex flex-col text-center h-full w-full items-center justify-between">
         <p
           ref={defineRefAtom(ctx, "title", $refsMap)}
-          class={cn(titleTextStyle, "text-center")}
+          class={cn(titleTextStyle, "text-center opacity-0")}
         >
           Находи людей.
           Исследуй больше.
@@ -58,7 +58,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
   ),
   2: () => {
     const ctx = useCtx();
-    const [value] = useAtom($introduction.firstName);
+    const value = useAtomAccessor($intro.firstName);
 
     return (
       <div class="flex flex-col text-center h-full gap-6 w-full items-center">
@@ -66,7 +66,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            $introduction.next(ctx)
+            $intro.next(ctx)
           }}
           class="w-full justify-center flex"
         >
@@ -76,7 +76,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
             value={value()}
             size="lg"
             class="w-full"
-            onChange={(e) => $introduction.firstName(ctx, e.target.value)}
+            onChange={(e) => $intro.firstName(ctx, e.target.value)}
           />
         </form>
       </div>
@@ -84,7 +84,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
   },
   3: () => {
     const ctx = useCtx();
-    const [firstName] = useAtom($introduction.firstName);
+    const firstName = useAtomAccessor($intro.firstName);
 
     return (
       <div class="flex flex-col text-center h-full gap-6 w-full items-center">
@@ -107,7 +107,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
             <Block
               variant={useAtomAccessor($hasInterest(k))() ? "active" : "inactive"}
               onClick={() => {
-                $introduction.interests(ctx, state =>
+                $intro.interests(ctx, state =>
                   state.includes(k) ? state.filter(c => c !== k) : [...state, k]
                 );
               }}
@@ -130,7 +130,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
             {([k, v]) => (
               <Block
                 variant={useAtomAccessor($isStyle(k))() ? "active" : "inactive"}
-                onClick={() => $introduction.style(ctx, k)}
+                onClick={() => $intro.style(ctx, k)}
               >
                 <p>
                   {v}
@@ -153,7 +153,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
             {([k, v]) => (
               <Block
                 variant={useAtomAccessor($isGoal(k))() ? "active" : "inactive"}
-                onClick={() => $introduction.goal(ctx, k)}
+                onClick={() => $intro.goal(ctx, k)}
               >
                 <p>
                   {v}
@@ -174,7 +174,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
 
-        const result = $introduction.location(ctx, {
+        const result = $intro.location(ctx, {
           latitude, longitude,
         });
 
@@ -199,7 +199,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
               <Button
                 class="text-sm"
                 onClick={() => {
-                  $introduction.location(ctx, null);
+                  $intro.location(ctx, null);
                 }}
               >
                 Выбрать локацию вручную
@@ -216,10 +216,10 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
     )
   },
   7: () => {
-    const firstName = useAtomAccessor($introduction.firstName);
-    const interests = useAtomAccessor($introduction.interests);
-    const style = useAtomAccessor($introduction.style);
-    const goal = useAtomAccessor($introduction.goal);
+    const firstName = useAtomAccessor($intro.firstName);
+    const interests = useAtomAccessor($intro.interests);
+    const style = useAtomAccessor($intro.style);
+    const goal = useAtomAccessor($intro.goal);
 
     return (
       <div class="flex flex-col text-center gap-6 text-lg h-full w-full items-start">
@@ -241,9 +241,12 @@ const $refsMap = reatomMap<"appName" | "title", HTMLParagraphElement | null>(new
 const startFirstFrameAnim = action((ctx) => {
   const t1 = $refsMap.get(ctx, "appName")
   const t2 = $refsMap.get(ctx, "title")
-  const t3 = ctx.get($introduction.confirmBtnRef)
+  const t3 = $intro.refsMap.get(ctx, "confirmBtn")
 
-  if (!t1 || !t2 || !t3) return
+  if (!t1 || !t2 || !t3) {
+    console.warn("t1, t2, or t3 is null", { t1, t2, t3 })
+    return
+  }
 
   const gsap = getGsap();
 
@@ -295,7 +298,7 @@ const startFirstFrameAnim = action((ctx) => {
 export const Introduction = () => {
   const ctx = useCtx();
 
-  const [idx] = useAtom($introduction.idx);
+  const idx = useAtomAccessor($intro.idx);
   const component = () => STEPS[idx()]
 
   onMount(() => {
@@ -307,7 +310,7 @@ export const Introduction = () => {
       <div class="flex h-[40dvh] w-full items-start justify-center">
         <p
           ref={defineRefAtom(ctx, "appName", $refsMap)}
-          class="font-semibold leading-8 relative text-4xl"
+          class="font-semibold opacity-0 leading-8 relative text-4xl"
         >
           Nomad
         </p>

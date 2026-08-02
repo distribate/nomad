@@ -1,15 +1,15 @@
 import { createNoopProxy, exposePublic } from "../lib/utils"
 import { getReatomCtx } from "../lib/app/ctx";
-import {
-  getConfigValue, getDevConfig,
-  type ConfigValOpts, type DevFlag
-} from "../lib/dev/dev.model";
+import {getConfigValue, getDevConfig } from "../lib/dev/dev.model";
+import type { ConfigValOpts, DevFlag } from "../lib/dev/types";
 
 export function getConfigVal(name: string, options: ConfigValOpts<'atom'> & { as: 'atom' }): DevFlag
 export function getConfigVal(name: string, options?: ConfigValOpts<'val'>): boolean
 export function getConfigVal(name: string, { as = 'val' }: { as?: 'val' | 'atom' } = {}) {
   const ctx = getReatomCtx();
-  return import.meta.env.DEV ? getConfigValue(ctx, name, { as }) : createNoopProxy()
+  return import.meta.env.DEV
+    ? getConfigValue(ctx, name, { as })
+    : as === 'atom' ? createNoopProxy() : false
 }
 
 const modules = {

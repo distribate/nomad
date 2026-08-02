@@ -1,10 +1,14 @@
-import { reatomAsync, sleep } from "@reatom/framework";
+import { action, reatomAsync, sleep } from "@reatom/framework";
 import { rootLogger } from "../logger/logger.model.ts";
 import { isError } from "../utils.ts";
 import { modules } from "./modules.ts";
 import { $appLoading } from "./app.model.ts";
 
 const APP_LOADING_DELAY = 400;
+
+export const beforeBoot = action(async (ctx) => {
+
+}, "beforeBoot")
 
 export const boot = reatomAsync(async (ctx) => {
   const ordered = [...modules].sort(

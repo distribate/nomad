@@ -13,7 +13,7 @@ export let $gsapPlugins = atom<string[]>([]);
 export const $gsapIsEnabled = atom((ctx) => {
   const fromSettings = ctx.spy($settings.preferences.animations);
   const fromConfig = getConfigVal("withGsap");
-  return fromSettings && fromConfig;
+  return fromSettings && (import.meta.env.DEV ? fromConfig : true);
 })
 
 export const initGsap = action(async (ctx) => {

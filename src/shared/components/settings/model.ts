@@ -3,6 +3,9 @@ import { withUndo } from "@reatom/undo";
 import { searchParamsAtom } from '@reatom/url'
 import { navigate } from "../../../lib/router/utils";
 import { withLocalStorage } from "@reatom/persist-web-storage";
+import { withLog } from "../../../lib/reatom/extensions";
+
+export const DEFAULT_SETTINGS_NODE_KEY = "default" as const
 
 export const $settings = atom(null, "settings").pipe(
   withAssign((_, name) => ({
@@ -11,30 +14,35 @@ export const $settings = atom(null, "settings").pipe(
     // ),
     preferences: atom(null, `${name}.preferences`).pipe(
       withAssign((_, name) => ({
-        animations: atom(true, `${name}.animations`).pipe(withLocalStorage("withAnimations"), withReset())
-      }))
+        animations: atom(true, `${name}.animations`).pipe(
+          withLocalStorage("withAnimations"),
+          withReset(),
+          withLog()
+        )
+      })),
     ),
     currentSection: searchParamsAtom.lens("a", { path: "/settings" }).pipe(
-      withUndo({ length: 50 })
+      withUndo({ length: 50 }),
+      withLog()
     ),
     to: action((_, target: string) => {
       navigate("/settings", { a: target })
     }),
     back: action((ctx) => {
-      $settings.currentSection.undo(ctx)
+      const isUndo = ctx.get($settings.currentSection.isUndoAtom)
+
+      if (isUndo) {
+        $settings.currentSection.undo(ctx)
+      } else {
+        navigate("/settings", { a: DEFAULT_SETTINGS_NODE_KEY })
+      }
     })
   }))
 )
-
-export const DEFAULT_SETTINGS_NODE_KEY = "default" as const
 
 export const currentSectionIsDefault = (target: string) => {
   if (target === '' || target === DEFAULT_SETTINGS_NODE_KEY) return true
   return false
 }
 
-if (import.meta.env.DEV) {
-  $settings.currentSection.__reatom.name = `settings.currentSection`;
-  $settings.currentSection.onChange((_, s) => console.log($settings.currentSection.__reatom.name, s))
-  $settings.preferences.animations.onChange((_, s) => console.log($settings.preferences.animations.__reatom.name, s))
-}
+$settings.currentSection.__reatom.name = `settings.currentSection`

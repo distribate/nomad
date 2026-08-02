@@ -10,7 +10,7 @@ import { render } from 'solid-js/web'
 import { Entry } from './entry'
 import { reatomContext } from '@reatom/npm-solid-js'
 import { getReatomCtx } from './lib/app/ctx.ts';
-import { boot } from './lib/app/boot.ts';
+import { boot, beforeBoot } from './lib/app/boot.ts';
 
 const root = document.getElementById('root')!;
 const ctx = getReatomCtx();
@@ -22,6 +22,7 @@ const getRootNode = () => (
 );
 
 try {
+  await beforeBoot(ctx);
   render(getRootNode, root);
   await boot(ctx);
 } catch (e) {

@@ -1,14 +1,13 @@
 import { type Action, type Atom, type AtomMut, type Ctx, type MapAtom } from "@reatom/framework";
 import { useAtom } from "@reatom/npm-solid-js";
 import { onCleanup } from "solid-js";
-import { getConfigVal } from "../const/config";
+import { getConfigVal } from "../../const/config";
 
 export const useAtomAccessor = <T,>(atom: Atom<T>) => useAtom(atom)[0]
 
 type Target<T> =
   | MapAtom<any, T | null>
-  // AtomMut require the reset action
-  | (AtomMut<T | null> & { reset: Action<[], T | null> });
+  | (AtomMut<T | null> & { reset: Action<[], T | null> }); // AtomMut require the reset action
 
 export const defineRefAtom = <T extends HTMLElement>(
   ctx: Ctx,

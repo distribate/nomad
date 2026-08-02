@@ -4,12 +4,11 @@ import * as ButtonPrimitive from "@kobalte/core/button"
 import type { PolymorphicProps } from "@kobalte/core/polymorphic"
 import type { VariantProps } from "class-variance-authority"
 import { cva } from "class-variance-authority"
-import { cn } from "cnfast"
 
 const buttonVariants = cva(
   `inline-flex items-center cursor-pointer active:scale-[.994] justify-center gap-2 whitespace-nowrap rounded-xl
   text-sm font-semibold ring-0 duration-150 ease-in-out
-  disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none`,
+  disabled:pointer-events-none! disabled:opacity-50! [&_svg]:pointer-events-none`,
   {
     variants: {
       variant: {
@@ -20,7 +19,7 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-10 px-4 py-2",
-        icon: "size-10"
+        icon: "size-9"
       }
     },
     defaultVariants: {
@@ -30,7 +29,7 @@ const buttonVariants = cva(
   }
 )
 
-type ButtonProps<T extends ValidComponent = "button"> = ButtonPrimitive.ButtonRootProps<T> &
+export type ButtonProps<T extends ValidComponent = "button"> = ButtonPrimitive.ButtonRootProps<T> &
   VariantProps<typeof buttonVariants> & { class?: string | undefined; children?: JSX.Element }
 
 const Button = <T extends ValidComponent = "button">(
@@ -40,11 +39,10 @@ const Button = <T extends ValidComponent = "button">(
 
   return (
     <ButtonPrimitive.Root
-      class={cn(buttonVariants({ variant: local.variant, size: local.size }), local.class)}
+      class={buttonVariants({ variant: local.variant, size: local.size, class: local.class })}
       {...others}
     />
   )
 }
 
 export { Button, buttonVariants }
-export type { ButtonProps }

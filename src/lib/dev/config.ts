@@ -1,5 +1,5 @@
 import { type Atom, type AtomMut, type Ctx } from "@reatom/framework";
-import { $appState } from "../app/app.model";
+import { $appState, $lang } from "../app/app.model";
 import { $gsapIsEnabled, $gsapPlugins } from "../gsap";
 import { getConfigVal } from "../../const/config";
 
@@ -29,7 +29,7 @@ const BINDINGS = {
   app: {
     type: $appState.type,
     version: $appState.version,
-    preferredLang: $appState.preferredLang,
+    lang: $lang,
     gsap: {
       enabled: $gsapIsEnabled,
       plugins: createBinding($gsapPlugins, { condition: (ctx) => ctx.get($gsapIsEnabled) })

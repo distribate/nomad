@@ -1,13 +1,12 @@
-import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
+import type { BindingApi } from "@tweakpane/core";
 import { FolderApi, Pane } from "tweakpane";
+import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
 import { BINDINGS, type BindingNode, type BindingValue } from "./config";
 import { expose, isError, isPrimitive } from "../utils";
-import type { BindingApi } from "@tweakpane/core";
 import { watch, watchersModel } from "../app/watchers";
-import { defineValWithLS } from "./dev.model";
 import { getReatomCtx } from "../app/ctx";
 
-const $devPaneIsEnabled = defineValWithLS(import.meta.env.DEV, "devPane")
+const $devPaneIsEnabled = atom(import.meta.env.DEV, "devPane")
 
 let instance: Pane | null = null;
 let subs: Map<string, Unsubscribe> = new Map()
