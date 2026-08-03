@@ -2,12 +2,13 @@ import { type Atom, type AtomMut, type Ctx } from "@reatom/framework";
 import { $appState, $lang } from "../app/app.model";
 import { $gsapIsEnabled, $gsapPlugins } from "../gsap";
 import { getConfigVal } from "../../const/config";
+import { INITIAL_CONFIG_KEYS } from "./const";
 
 export type BindingValue = string[] | Atom<any> | AtomMut<any>;
 
-type BindingParams = {
+export type BindingParams = {
   // Condition for showing this binding
-  condition?: (ctx: Ctx) => boolean,
+  when?: (ctx: Ctx) => boolean,
   readonly?: boolean
 }
 export type BindingNode =
@@ -32,13 +33,15 @@ const BINDINGS = {
     lang: $lang,
     gsap: {
       enabled: $gsapIsEnabled,
-      plugins: createBinding($gsapPlugins, { condition: (ctx) => ctx.get($gsapIsEnabled) })
+      plugins: createBinding($gsapPlugins, { when: (ctx) => ctx.get($gsapIsEnabled) })
     },
   },
   config: {
-    logRouter: createBinding(getConfigVal("withAppRouterLog", { as: "atom" }), { readonly: false }),
-    logActions: createBinding(getConfigVal("withAppActionsLog", { as: "atom" }), { readonly: false }),
-    logRefAtom: createBinding(getConfigVal("withRefAtomLog", { as: "atom" }), { readonly: false }),
+    logRouter: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.LOG_ROUTER, { as: "atom" }), { readonly: false }),
+    logActions: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.LOG_APP_ACTIONS, { as: "atom" }), { readonly: false }),
+    logRefAtom: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.LOG_REF_ATOM, { as: "atom" }), { readonly: false }),
+    logDevAtom: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.LOG_DEV, { as: "atom" }), { readonly: false }),
+    gsap: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.GSAP, { as: "atom" }), { readonly: false })
   }
 } satisfies Bindings;
 

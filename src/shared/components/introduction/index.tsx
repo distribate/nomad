@@ -76,7 +76,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
             value={value()}
             size="lg"
             class="w-full"
-            onChange={(e) => $intro.firstName(ctx, e.target.value)}
+            onInput={(e) => $intro.firstName(ctx, e.target.value)}
           />
         </form>
       </div>

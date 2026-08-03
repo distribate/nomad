@@ -151,7 +151,10 @@ const $introModel = declareModel("intro", ({ name }) => {
         let currIdx = ctx.get($intro.idx)
         $intro.idx(ctx, --currIdx);
       }),
-      refsMap: reatomMap<"confirmBtn" | "backButton", HTMLButtonElement | null>(null, `${name}.refsMap`).pipe(withReset()),
+      refsMap: reatomMap<"confirmBtn" | "backButton", HTMLButtonElement | null>(null, `${name}.refsMap`).pipe(
+        withReset(),
+        withLog()
+      ),
       // target summary fields (pseudo)
       firstName: atom<string>("", `${name}.firstName`).pipe(withReset()),
       interests: atom<string[]>([], `${name}.interests`).pipe(withReset()),

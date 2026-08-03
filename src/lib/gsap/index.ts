@@ -2,26 +2,28 @@ import { action, atom } from "@reatom/framework";
 import { getConfigVal } from "../../const/config";
 import { createNoopProxy } from "../utils";
 import { GSAP_PLUGIN_LOADERS } from "./plugins";
-import { withRule } from "../helpers";
 import { $settings } from "../../shared/components/settings/model";
 import { getReatomCtx } from "../app/ctx";
 
-export let gsapInstance: typeof import("gsap").default | null = null;
+type Gsap = typeof import("gsap").default
+let instance: Gsap | null = null;
 
-export let $gsapPlugins = atom<string[]>([]);
+export const $gsapPlugins = atom<string[]>([]);
 
 export const $gsapIsEnabled = atom((ctx) => {
   const fromSettings = ctx.spy($settings.preferences.animations);
-  const fromConfig = getConfigVal("withGsap");
-  return fromSettings && (import.meta.env.DEV ? fromConfig : true);
+
+  // by default gsap devflag is enabled in prod instead of config val
+  const fromConfig = import.meta.env.DEV
+    ? getConfigVal("withGsap")
+    : true;
+
+  return fromSettings && fromConfig;
 })
 
 export const initGsap = action(async (ctx) => {
   const enabled = ctx.get($gsapIsEnabled);
-
-  if (!enabled) {
-    return;
-  }
+  if (!enabled) return;
 
   const [gsapModule, ...loadedPlugins] = await Promise.all([
     import("gsap"),
@@ -33,16 +35,14 @@ export const initGsap = action(async (ctx) => {
   gsap.registerPlugin(...loadedPlugins);
   $gsapPlugins(ctx, loadedPlugins.map(p => p.name))
 
-  gsapInstance = gsap;
-},withRule("initGsap", getConfigVal("withAppActionsLog")))
+  instance = gsap;
+}, "initGsap")
 
-export const getGsap = (): typeof gsap => {
+export const getGsap = (): Gsap => {
   const enabled = getReatomCtx().get($gsapIsEnabled)
+  if (!enabled) return createNoopProxy();
 
-  if (enabled) {
-    if (gsapInstance) return gsapInstance;
-    throw new Error("Gsap is not initialized");
-  }
+  if (instance) return instance;
 
-  return createNoopProxy()
+  throw new Error("Gsap is not initialized");
 }

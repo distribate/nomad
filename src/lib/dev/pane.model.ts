@@ -1,7 +1,7 @@
 import type { BindingApi } from "@tweakpane/core";
 import { FolderApi, Pane } from "tweakpane";
 import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
-import { BINDINGS, type BindingNode, type BindingValue } from "./config";
+import { BINDINGS, type BindingNode, type BindingParams, type BindingValue } from "./config";
 import { expose, isError, isPrimitive } from "../utils";
 import { watch, watchersModel } from "../app/watchers";
 import { getReatomCtx } from "../app/ctx";
@@ -23,9 +23,7 @@ const formatter = (val: unknown) => {
   return val;
 };
 
-function isConditionalBinding(
-  node: BindingNode,
-): node is { target: BindingValue; condition?: (ctx: Ctx) => boolean } {
+function isConditionalBinding(node: BindingNode): node is { target: BindingValue } & Pick<BindingParams, "when"> {
   return (
     typeof node === "object" &&
     node !== null &&
@@ -41,7 +39,7 @@ function renderBindingNode(
   isReadonly = true,
 ) {
   if (isConditionalBinding(node)) {
-    if (node.condition && !node.condition(ctx)) return;
+    if (node.when && !node.when(ctx)) return;
 
     const effectiveReadonly = node.readonly ?? isReadonly;
     return renderBindingNode(ctx, container, node.target, keyName, effectiveReadonly);

@@ -3,12 +3,15 @@ import { rootLogger } from "../logger/logger.model.ts";
 import { isError } from "../utils.ts";
 import { modules } from "./modules.ts";
 import { $appLoading } from "./app.model.ts";
+import { withRule } from "../helpers.ts";
+import { getConfigVal } from "../../const/config.ts";
+import { INITIAL_CONFIG_KEYS } from "../dev/const.ts";
 
 const APP_LOADING_DELAY = 400;
 
 export const beforeBoot = action(async (ctx) => {
 
-}, "beforeBoot")
+}, withRule("beforeBoot", getConfigVal(INITIAL_CONFIG_KEYS.LOG_APP_ACTIONS)))
 
 export const boot = reatomAsync(async (ctx) => {
   const ordered = [...modules].sort(
@@ -38,4 +41,4 @@ export const boot = reatomAsync(async (ctx) => {
   }
 
   $appLoading(ctx, false);
-}, "boot")
+}, withRule("boot", getConfigVal(INITIAL_CONFIG_KEYS.LOG_APP_ACTIONS)))

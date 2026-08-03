@@ -4,17 +4,19 @@ import {
 } from "@reatom/framework";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import type { DevFlag } from "./types";
+import { INITIAL_CONFIG_KEYS } from "./const";
 
 const initialConfig = new Map([
-  ["withAppActionsLog", atom(true, "withAppActionsLog")],
-  ["withRefAtomLog", atom(false, "withRefAtomLog")],
-  ["withGsap", atom(true, "withGsap")],
-  ["withAppRouterLog", atom(true, "withAppRouterLog")]
+  [INITIAL_CONFIG_KEYS.LOG_APP_ACTIONS, atom(true)],
+  [INITIAL_CONFIG_KEYS.LOG_REF_ATOM, atom(false)],
+  [INITIAL_CONFIG_KEYS.GSAP, atom(true)],
+  [INITIAL_CONFIG_KEYS.LOG_ROUTER, atom(true)],
+  [INITIAL_CONFIG_KEYS.LOG_DEV, atom(false)],
 ])
 
 // todo: add the value formatter
 const initFromPersist = action((ctx): Map<string, AtomMut<any>> => {
-  const persistRec = ctx.get($devFlags)
+  const persistRec = ctx.get($devFlagsRec)
   const persistEntries = entries(persistRec)
   const persistMap = new Map(persistEntries)
 
@@ -24,7 +26,7 @@ const initFromPersist = action((ctx): Map<string, AtomMut<any>> => {
   for (const [key, defaultAtom] of initialConfig) {
     if (persistMap.has(key)) {
       const savedValue = persistMap.get(key)
-      finalMap.set(key, atom(savedValue, key))
+      finalMap.set(key, atom(savedValue))
     } else {
       finalMap.set(key, defaultAtom)
       nextPersistRec[key] = ctx.get(defaultAtom)
@@ -33,7 +35,7 @@ const initFromPersist = action((ctx): Map<string, AtomMut<any>> => {
 
   for (const [key, savedValue] of persistMap) {
     if (!finalMap.has(key)) {
-      finalMap.set(key, atom(savedValue, key))
+      finalMap.set(key, atom(savedValue))
     }
   }
 
@@ -41,20 +43,23 @@ const initFromPersist = action((ctx): Map<string, AtomMut<any>> => {
     $devSubs.sub(ctx, flagName, flagAtom)
   }
 
-  $devFlags(ctx, nextPersistRec)
+  $devFlagsRec(ctx, nextPersistRec)
   return finalMap
 })
 
-const $devFlags = atom<Record<string, any>>({}, "devFlags").pipe(withLocalStorage("devFlags"))
-const $devFlagsMap = reatomMap<string, DevFlag>(new Map(), "devFlagsMap").pipe(withInit((ctx) => initFromPersist(ctx)))
-const $devSubs = reatomMap<DevFlag, Unsubscribe>(new Map(), "devSubs").pipe(
+const $devFlagsRec = atom<Record<string, any>>({}).pipe(
+  withLocalStorage("devFlags")
+)
+const $devFlagsMap = reatomMap<string, DevFlag>(new Map()).pipe(
+  withInit((ctx) => initFromPersist(ctx))
+)
+const $devSubs = reatomMap<DevFlag, Unsubscribe>(new Map()).pipe(
   withAssign(() => ({
     sub: action((ctx, flagName: string, flagAtom: DevFlag) => {
       if (!$devSubs.has(ctx, flagAtom)) {
         const unsub = ctx.subscribe(flagAtom, (state) => {
-          import.meta.env.DEV && console.log(flagAtom.__reatom.name, state);
           // persist
-          $devFlags(ctx, (prev) => ({ ...prev, [flagName]: state }))
+          $devFlagsRec(ctx, (prev) => ({ ...prev, [flagName]: state }))
         })
 
         $devSubs.set(ctx, flagAtom, unsub)
@@ -78,7 +83,9 @@ $devFlagsMap.onChange((ctx, state) => {
   $devSubs.unsub(ctx, state)
 })
 
-export function getConfigValue(ctx: Ctx, name: string, { as = 'val' }: { as?: 'val' | 'atom' } = {}) {
+export const getConfigValue = (
+  ctx: Ctx, name: string, { as = 'val' }: { as?: 'val' | 'atom' } = {}
+) => {
   let final: DevFlag | null = null;
 
   const targetAtom = $devFlagsMap.get(ctx, name);
@@ -98,29 +105,12 @@ export function getConfigValue(ctx: Ctx, name: string, { as = 'val' }: { as?: 'v
   return as === 'atom' ? final : ctx.get(final)
 }
 
-// todo: add declarative definition
-// const defineDevFlag = (flagName: string, defaultValue: boolean): void => {
-//   const ctx = getReatomCtx();
-
-//   const targetAtom = $devFlagsMap.get(ctx, flagName)
-//   if (targetAtom) {
-//     console.log(`"${flagName}" is already defined`)
-//     return
-//   }
-
-//   $devFlagsMap.set(ctx, flagName, atom(defaultValue, flagName))
-//   console.log(`Dev flag "${flagName}" is defined as ${defaultValue}`)
-// }
-//
-
 export const getDevConfig = (ctx: Ctx) => {
   let sum: Record<string, any> = {}
-  for (const [k, v] of Object.entries(ctx.get($devFlagsMap))) {
-    sum[k] = ctx.get(v)
-  }
-  return  {
+  for (const [k, v] of Object.entries(ctx.get($devFlagsMap))) sum[k] = ctx.get(v)
+  return {
     config: sum,
     devSubs: ctx.get($devSubs),
-    devPersist: ctx.get($devFlags),
+    devPersist: ctx.get($devFlagsRec),
   };
 }

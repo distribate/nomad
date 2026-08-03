@@ -4,13 +4,13 @@ import { RedirectError } from "./config"
 import { getConfigVal } from "../../const/config"
 import { getReatomCtx } from "../app/ctx"
 import { urlAtom } from "@reatom/url"
+import { INITIAL_CONFIG_KEYS } from "../dev/const"
 
 export function defineRoute(
-  routeName: string,
-  config: RouteConfig,
+  routeName: string, config: RouteConfig,
 ) {
   const maybe = <T extends (...args: any[]) => any>(cb?: T, name?: string) => (
-    cb ? action(cb, getConfigVal("withAppRouterLog") ? `${routeName}.${name ?? "unknown"}` : "_") : undefined
+    cb ? action(cb, getConfigVal(INITIAL_CONFIG_KEYS.LOG_ROUTER) ? `${routeName}.${name ?? "unknown"}` : "_") : undefined
   );
 
   const route = {
