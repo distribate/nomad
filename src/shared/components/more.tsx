@@ -3,7 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Icon, type IconName } from "../ui/icon";
 import { useCtx } from "@reatom/npm-solid-js";
 import { For } from "solid-js";
-import { $user } from "../../lib/user/user.model";
+import { $logout } from "../../lib/user/user.model";
 
 type MoreEvent = {
   label: string;
@@ -40,7 +40,7 @@ const MORE_EVENTS = createActions({
     icon: "sprite:arrow-left",
     withConfirm: true,
     action(ctx) {
-      $user.data(ctx, null);
+      $logout.exec(ctx)
     },
   },
 });

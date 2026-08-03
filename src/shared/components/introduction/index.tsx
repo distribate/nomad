@@ -1,7 +1,7 @@
 import { useCtx } from "@reatom/npm-solid-js"
-import { $hasInterest, $intro, $isGoal, $isStyle } from "./model";
+import { $hasInterest, $intro, $isGoal, $isStyle, STAGES_MAP } from "./model";
 import { Dynamic, For } from "solid-js/web";
-import { createSignal, Match, onMount, type JSX, Switch, type ParentProps } from "solid-js";
+import { createSignal, Match, onMount, type JSX, Switch, type ParentProps, onCleanup } from "solid-js";
 import { Button } from "../../ui/button";
 import { Navigation } from "./navigation";
 import { action, entries } from "@reatom/framework";
@@ -12,9 +12,10 @@ import { defineRefAtom, useAtomAccessor } from "../../../lib/reatom";
 import { getGsap } from "../../../lib/gsap";
 import { Block, Title, titleTextStyle } from "./primitives";
 import cn from "cnfast";
+import { setupDevModule } from "../../../lib/helpers";
 
 const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
-  0: () => {
+  [STAGES_MAP.SPLASH]: () => {
     const ctx = useCtx();
 
     return (
@@ -29,7 +30,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       </div>
     )
   },
-  1: () => (
+  [STAGES_MAP.VALUE_PROPOSITION]: () => (
     <div class="flex flex-col text-center h-full gap-4 w-full items-center">
       <p class="text-lg">
         Не хочется идти одному?
@@ -56,7 +57,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       </div>
     </div>
   ),
-  2: () => {
+  [STAGES_MAP.WELCOMING]: () => {
     const ctx = useCtx();
     const value = useAtomAccessor($intro.firstName);
 
@@ -82,7 +83,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       </div>
     )
   },
-  3: () => {
+  [STAGES_MAP.INTERESTS]: () => {
     const ctx = useCtx();
     const firstName = useAtomAccessor($intro.firstName);
 
@@ -125,7 +126,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       </div>
     )
   },
-  4: () => {
+  [STAGES_MAP.STYLE]: () => {
     const ctx = useCtx();
 
     return (
@@ -154,7 +155,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       </div>
     )
   },
-  5: () => {
+  [STAGES_MAP.GOALS]: () => {
     const ctx = useCtx();
 
     return (
@@ -183,7 +184,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       </div>
     )
   },
-  6: () => {
+  [STAGES_MAP.LOCATION]: () => {
     const [isSetuped, setIsSetuped] = createSignal(false);
 
     const ctx = useCtx();
@@ -233,7 +234,68 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
       </div>
     )
   },
-  7: () => {
+  [STAGES_MAP.PHOTO]: () => {
+    const ctx = useCtx();
+
+    const [preview, setPreview] = createSignal<string>('');
+    let fileInputRef!: HTMLInputElement;
+
+    const handleFileChange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+
+      if (!file) return;
+
+      if (preview() && preview().startsWith('blob:')) {
+        URL.revokeObjectURL(preview());
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+
+      $intro.photo(ctx, { src: objectUrl })
+    };
+
+    onCleanup(() => {
+      if (preview() && preview().startsWith('blob:')) {
+        URL.revokeObjectURL(preview());
+      }
+    });
+
+    return (
+      <div class="relative group w-32 h-32 rounded-full overflow-hidden bg-neutral-800 border border-neutral-700">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          class="hidden"
+          onChange={handleFileChange}
+        />
+        {preview() ? (
+          <img
+            src={preview()}
+            alt="Profile avatar"
+            class="w-full h-full object-cover"
+          />
+        ) : (
+          <div class="w-full h-full flex items-center justify-center text-neutral-500 text-sm">
+            Нет фото
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => fileInputRef.click()}
+          class="
+            absolute inset-0 bg-black/50 text-white text-xs opacity-0
+            group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer font-medium
+          "
+        >
+          Изменить
+        </button>
+      </div>
+    )
+  },
+  [STAGES_MAP.CONFIRM]: () => {
     const firstName = useAtomAccessor($intro.firstName);
     const interests = useAtomAccessor($intro.interests);
     const style = useAtomAccessor($intro.style);
@@ -316,6 +378,8 @@ export const Introduction = () => {
 
   const idx = useAtomAccessor($intro.idx);
   const component = () => STEPS[idx()]
+
+  setupDevModule(ctx, () => import('./model.dev'),(m) => m.$introDev);
 
   onMount(() => {
     startFirstFrameAnim(ctx)

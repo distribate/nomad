@@ -12,7 +12,7 @@ const $devPaneIsEnabled = atom(import.meta.env.DEV, "devPane")
 let instance: Pane | null = null;
 let subs: Map<string, Unsubscribe> = new Map()
 
-const write = (binding: BindingApi) => {
+export const writeToBindingValue = (binding: BindingApi) => {
   const target = binding.controller.value.binding.target;
   return target.write.bind(target);
 };
@@ -71,7 +71,7 @@ function renderBindingNode(
     }
 
     if (isAtom(node)) {
-      const setValue = write(binding);
+      const setValue = writeToBindingValue(binding);
 
       const sub = ctx.subscribe(node, (state) => {
         setValue(formatter(state));

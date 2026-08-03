@@ -6,6 +6,7 @@ import { Icon } from "../../ui/icon";
 import { WithTopPadding } from "../layouts";
 import { me_events } from "./model";
 import { useAtomAccessor } from "../../../lib/reatom";
+import { setupDevModule } from "../../../lib/helpers";
 
 export const MeHeader = (props: { me: User }) => {
   return (
@@ -60,7 +61,12 @@ const MeEvents = () => {
 }
 
 export const Me = () => {
+  const ctx = useCtx();
   const me = useAtomAccessor($user.data);
+
+  setupDevModule(
+    ctx, () => import("./model.dev"), (m) => m.$meDev
+  )
 
   return (
     <WithTopPadding class="flex flex-col h-full w-full gap-4 p-4">

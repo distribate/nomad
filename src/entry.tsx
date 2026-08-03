@@ -6,6 +6,7 @@ import { NotFound } from "./shared/components/templates/not-found"
 import { Bottom } from "./shared/components/layout/bottom"
 import { $appLoading } from "./lib/app/app.model"
 import { Toaster } from 'solid-toast';
+import { AlertDialog } from "./shared/components/alert-dialog"
 
 const Router = () => {
   const route = useAtomAccessor($route.render);
@@ -36,6 +37,7 @@ const Global = () => {
   return (
     <>
       <Toaster />
+      <AlertDialog />
     </>
   )
 }

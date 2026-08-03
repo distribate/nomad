@@ -27,6 +27,7 @@
     "node_modules/gsap/types/index.d.ts"
   ],
   "include": [
-    "src"
+    "src",
+    "global.d.ts"
   ],
 }

@@ -5,6 +5,7 @@ import { expose } from "../utils";
 import { getReatomCtx } from "../app/ctx";
 import { redirect } from "../router/utils";
 import { isTMA, retrieveLaunchParams } from "@tma.js/sdk";
+import { $alertDialog } from "../../shared/components/alert-dialog.model";
 
 export type User = {
   username: string; // (initially random hash string) (editable)
@@ -57,6 +58,27 @@ export const initUser = reatomAsync(async (ctx) => {
 }, "initUser").pipe(
   withStatusesAtom(),
   withErrorAtom()
+)
+
+export const $logout = atom(null, "logout").pipe(
+  withAssign((_, name) => ({
+    exec: reatomAsync(async (ctx) => {
+      const confirmed = await $alertDialog.open(ctx, {
+        title: "Logout",
+        description: "Are you sure you want to logout?",
+        confirmLabel: "Yes",
+        cancelLabel: "No",
+      });
+
+      if (!confirmed) return false;
+
+      $user.data(ctx, null);
+      return true;
+    }, `${name}.exec`).pipe(
+      withStatusesAtom(),
+      withErrorAtom()
+    )
+  }))
 )
 
 expose(function getCurrentUser() {

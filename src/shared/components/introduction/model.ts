@@ -13,7 +13,7 @@ import { declareModel } from "../../../lib/helpers";
 import { withLog } from "../../../lib/reatom/extensions";
 
 type StageFlow = {
-  callback?: (ctx: Ctx) => Promise<void> | void,
+  callback?: (ctx: Ctx) => Awaitable<void>,
   when?: (ctx: CtxSpy) => boolean,
 }
 
@@ -24,14 +24,26 @@ type Stage = {
   back?: StageFlow,
 }
 
+export const STAGES_MAP = {
+  SPLASH: 0,
+  VALUE_PROPOSITION: 1,
+  WELCOMING: 2,
+  INTERESTS: 3,
+  STYLE: 4,
+  GOALS: 5,
+  PHOTO: 6,
+  LOCATION: 7,
+  CONFIRM: 8,
+} as const;
+
 const stages: Record<number, Stage> = {
-  0: {
+  [STAGES_MAP.SPLASH]: {
     name: "splash",
   },
-  1: {
+  [STAGES_MAP.VALUE_PROPOSITION]: {
     name: "value-proposition",
   },
-  2: {
+  [STAGES_MAP.WELCOMING]: {
     confirm: {
       when: (ctx) => {
         const target = ctx.spy($intro.firstName)
@@ -44,29 +56,29 @@ const stages: Record<number, Stage> = {
     },
     name: "welcoming"
   },
-  3: {
+  [STAGES_MAP.INTERESTS]: {
     confirm: {
       when: (ctx) => ctx.spy($intro.interests).length >= 2 &&
         ctx.spy($intro.interests).length < 4
     },
     name: "interests"
   },
-  4: {
+  [STAGES_MAP.STYLE]: {
     confirm: {
       when: (ctx) => !!ctx.spy($intro.style)
     },
     name: "style"
   },
-  5: {
+  [STAGES_MAP.GOALS]: {
     confirm: {
       when: (ctx) => !!ctx.spy($intro.goal)
     },
     name: "goals"
   },
-  6: {
+  [STAGES_MAP.LOCATION]: {
     name: "location"
   },
-  7: {
+  [STAGES_MAP.CONFIRM]: {
     confirm: {
       callback: async (ctx) => {
         $user.data(ctx, {
@@ -88,7 +100,13 @@ const stages: Record<number, Stage> = {
       }
     },
     name: "summary"
-  }
+  },
+  [STAGES_MAP.PHOTO]: {
+    name: "photo",
+    confirm: {
+      when: (ctx) => !!ctx.spy($intro.photo)
+    }
+  },
 }
 
 type ConditionLabel = {
@@ -97,7 +115,7 @@ type ConditionLabel = {
 };
 
 const STAGES_CONFIRM_LABELS: Record<number, ConditionLabel[]> = {
-  6: [
+  [STAGES_MAP.LOCATION]: [
     {
       when: (ctx) => !ctx.spy($intro.location),
       label: () => "Продолжить без локации",
@@ -107,7 +125,7 @@ const STAGES_CONFIRM_LABELS: Record<number, ConditionLabel[]> = {
       label: () => "Продолжить",
     },
   ],
-  7: [
+  [STAGES_MAP.CONFIRM]: [
     {
       when: () => true,
       label: () => "Завершить",
@@ -127,6 +145,21 @@ type SummaryData = Pick<User, "firstName"> & {
 }
 
 const REFS_KEYS = ["appName", "title", "confirmBtn", "backButton"] as const
+
+function pick<T extends object, K extends keyof T>(
+  obj: T,
+  keys: readonly K[]
+): Pick<T, K> {
+  const result = {} as Pick<T, K>
+
+  for (const key of keys) {
+    if (key in obj) {
+      result[key] = obj[key]
+    }
+  }
+
+  return result
+}
 
 const $introModel = declareModel("intro", ({ name }) => {
   const wrapCb = reatomAsync(async (ctx, cb?: StageFlow["callback"]) => {
@@ -163,12 +196,14 @@ const $introModel = declareModel("intro", ({ name }) => {
       style: atom<UserStyle | null>(null, `${name}.style`).pipe(withReset()),
       goal: atom<string | null>(null, `${name}.goal`).pipe(withReset()),
       location: atom<SummaryData["location"] | null>(null, `${name}.location`).pipe(withReset()),
+      photo: atom<{ src: string } | null>(null, `${name}.photo`).pipe(withReset()),
       resetTargetSummaryFields: action((ctx) => {
         $intro.firstName.reset(ctx);
         $intro.interests.reset(ctx);
         $intro.style.reset(ctx);
         $intro.goal.reset(ctx);
         $intro.location.reset(ctx);
+        $intro.photo.reset(ctx);
       }),
     }))
   )
@@ -186,6 +221,11 @@ const $introModel = declareModel("intro", ({ name }) => {
     if (currIdx === Object.keys(stages).length) return false;
     return true;
   }, name(`isNext`)).pipe(withLog());
+
+  const $currStep = atom((ctx) => {
+    const currIdx = ctx.spy($intro.idx)
+    return pick(getTarget(currIdx), ["name", "description"])
+  }, name(`currStep`)).pipe(withLog())
 
   const $isValid = atom((ctx) => {
     const currIdx = ctx.spy($intro.idx)
@@ -263,9 +303,10 @@ const $introModel = declareModel("intro", ({ name }) => {
     $isNext,
     $isBack,
     $isValid,
+    $currStep
   }
 })
 
 export const {
-  $intro, wrapCb, $isNext, $isBack, $isValid, $confirmLabel, $isGoal, $hasInterest, $isStyle
+  $intro, wrapCb, $isNext, $isBack, $isValid, $confirmLabel, $isGoal, $hasInterest, $isStyle, $currStep
 } = $introModel

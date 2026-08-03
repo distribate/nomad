@@ -1,4 +1,4 @@
-import { action, atom, reatomAsync, sleep } from "@reatom/framework";
+import { action, atom, reatomAsync, sleep, type Ctx } from "@reatom/framework";
 import { rootLogger } from "../logger/logger.model.ts";
 import { isError } from "../utils.ts";
 import { modules } from "./modules.ts";
@@ -6,11 +6,42 @@ import { $appLoading } from "./app.model.ts";
 import { getConfigVal } from "../../const/config.ts";
 import { STATIC_CONFIG_KEYS } from "../dev/const.ts";
 import { withRule } from "../helpers/index.ts";
-import type { AppModule } from "./types.ts";
 
 const APP_LOADING_DELAY = 400;
 
-export const $modules = atom<Array<Pick<AppModule, "name"> & { duration: number, elapsed: number }>>([])
+type AppModuleStatus =
+  | "pending"
+  | "loading"
+  | "loaded"
+  | "skipped"
+  | "failed";
+
+type AppModuleRuntime = {
+  name: string;
+  status: AppModuleStatus;
+  startedAt?: number;
+  finishedAt?: number;
+  duration?: number;
+  error?: unknown;
+  deps?: string[];
+};
+
+export const $modules = atom<Record<string, AppModuleRuntime>>({});
+
+const updateModule = (
+  ctx: Ctx,
+  name: string,
+  patch: Partial<AppModuleRuntime>
+) => {
+  $modules(ctx, state => ({
+    ...state,
+    [name]: {
+      ...state[name],
+      name,
+      ...patch,
+    },
+  }));
+};
 
 export const beforeBoot = action(async (ctx) => {
 
@@ -26,29 +57,42 @@ export const boot = reatomAsync(async (ctx) => {
   $appLoading(ctx, true);
   await sleep(APP_LOADING_DELAY);
 
-  const bootStarted = performance.now();
-
   for (const module of ordered) {
-    if (!module.when?.() && module.when !== undefined) {
+    const name = module.name;
+
+    if (module.when && !module.when()) {
+      updateModule(ctx, name, {
+        status: "skipped",
+      });
+
       continue;
     }
 
-    const moduleStarted = performance.now();
+    const started = performance.now();
+
+    updateModule(ctx, name, {
+      status: "loading",
+      startedAt: started,
+    });
 
     try {
       await module.init(ctx);
 
-      $modules(ctx, state => [
-        ...state,
-        {
-          name: module.name,
-          duration: round(performance.now() - moduleStarted),
-          elapsed: round(performance.now() - bootStarted),
-        },
-      ]);
+      updateModule(ctx, name, {
+        status: "loaded",
+        finishedAt: performance.now(),
+        duration: round(
+          performance.now() - started
+        ),
+      });
     } catch (e) {
+      updateModule(ctx, name, {
+        status: "failed",
+        error: e,
+      });
+
       rootLogger.error(
-        `Failed to boot module "${module.name}" with "${isError(e) ? e.message : "unknown error"}"`,
+        `Module ${name} failed with error ${isError(e) ? e.message : "unknown error"}`,
       );
 
       if (module.critical ?? true) {

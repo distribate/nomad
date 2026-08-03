@@ -56,7 +56,7 @@ export const me_events: MeEvent[] = [
   {
     label: "Edit Info",
     action: action(async (ctx) => {
-      await navigate("/settings", { a: "edit-info" })
+      await navigate("/settings", { a: "account" })
     }),
     icon: "sprite:edit"
   },

@@ -5,7 +5,7 @@ import { GSAP_PLUGIN_LOADERS } from "./plugins";
 import { $settings } from "../../shared/components/settings/model";
 import { getReatomCtx } from "../app/ctx";
 
-type Gsap = typeof import("gsap").default
+type Gsap = typeof import("gsap").gsap;
 let instance: Gsap | null = null;
 
 export const $gsapPlugins = atom<string[]>([]);

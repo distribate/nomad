@@ -1,21 +1,60 @@
 import { MeHeader } from "../me"
 import { For, onCleanup, onMount, Show, type Component, type ParentComponent } from "solid-js"
-import { useCtx } from "@reatom/npm-solid-js";
+import { useAtom, useCtx } from "@reatom/npm-solid-js";
 import { $settings, currentSectionIsDefault, DEFAULT_SETTINGS_NODE_KEY } from "./model";
 import { useAtomAccessor } from "../../../lib/reatom";
 import { Dynamic } from "solid-js/web";
 import { $headerNodes } from "../layout/header/model";
 import { BackButton } from "../../ui/back-button";
 import { SettingsItem } from "./primitives";
-import { action, entries } from "@reatom/framework";
+import { action, atom, entries, reatomMap, type AtomMut } from "@reatom/framework";
 import { WithTopPadding } from "../layouts";
 import { $locale, $localeLabel, LOCALES } from "../../../lib/app/app.model";
-import { $user } from "../../../lib/user/user.model";
+import { $user, $logout } from "../../../lib/user/user.model";
+import { setupDevModule } from "../../../lib/helpers";
+import { Input } from "../../ui/input";
+import { withLog } from "../../../lib/reatom/extensions";
+import { Button } from "../../ui/button";
 
 const SettingsSection: ParentComponent = (props) => {
   return (
     <section class="flex bg-neutral-800 rounded-xl overflow-hidden flex-col gap-2" {...props} />
   )
+}
+
+type AccountField = "firstName" | "photo";
+
+export const $accountFieldsMap = reatomMap<AccountField, AtomMut<string>>(
+  new Map(), "accountFields"
+).pipe(
+  withLog()
+);
+
+export const getFieldAtom = action((ctx, fieldName: AccountField, initialValue = "") => {
+  const map = ctx.get($accountFieldsMap);
+
+  if (map.has(fieldName)) {
+    return map.get(fieldName)!;
+  }
+
+  const $field = atom(initialValue, `accountField.${fieldName}`);
+  $accountFieldsMap.set(ctx, fieldName, $field);
+
+  return $field;
+}, "getFieldAtom");
+
+export const resetAccountForm = action((ctx) => {
+  $accountFieldsMap.clear(ctx);
+}, "resetAccountForm");
+
+function useField(name: AccountField, initialValue = "") {
+  const ctx = useCtx();
+  const $field = getFieldAtom(ctx, name, initialValue);
+
+  const value = useAtomAccessor($field);
+  const onChange = (newValue: string) => $field(ctx, newValue);
+
+  return [value, onChange] as const;
 }
 
 const SETTINGS_COMPONENTS: Record<string, Component> = {
@@ -45,7 +84,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                 type: "page",
                 meta: {
                   title: "Privacy",
-                  description: ""
+                  description: "Devices, Passkeys"
                 },
                 route: "privacy"
               }}
@@ -55,7 +94,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                 type: "page",
                 meta: {
                   title: "Preferences",
-                  description: ""
+                  description: "Animations"
                 },
                 route: "preferences"
               }}
@@ -84,7 +123,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                 route: "ask"
               }}
             />
-            <SettingsItem
+            {/*<SettingsItem
               item={{
                 type: "page",
                 meta: {
@@ -92,7 +131,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                 },
                 route: "faq"
               }}
-            />
+            />*/}
           </SettingsSection>
         </div>
       </>
@@ -157,11 +196,35 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
     )
   },
   "account": () => {
+    const ctx = useCtx();
+
+    const [firstName, setFirstName] = useField("firstName");
+    const [photo, setPhoto] = useField("photo");
+
+    onMount(() => {
+      const curr = ctx.get($user.data)!;
+
+      setFirstName(curr.firstName);
+      setPhoto(curr.photo?.src);
+    });
+
+    onCleanup(() => {
+      resetAccountForm(ctx);
+    });
+
     return (
       <>
         <div class="flex flex-col gap-6">
           <SettingsSection>
-
+            <Input
+              value={firstName()}
+              onInput={(e) => setFirstName(e.target.value)}
+            />
+          </SettingsSection>
+          <SettingsSection>
+            <Button onClick={() => $logout.exec(ctx)}>
+              Log out
+            </Button>
           </SettingsSection>
         </div>
       </>
@@ -171,8 +234,11 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
 
 export const Settings = () => {
   const ctx = useCtx();
-
   const currSection = useAtomAccessor($settings.currentSection);
+
+  setupDevModule(
+    ctx, () => import("./model.dev"), (m) => m.$settingsDev, { persistent: true }
+  )
 
   const ComponentToRender = () => {
     const section = currSection();
