@@ -1,8 +1,8 @@
-import type { Action, AsyncAction } from "@reatom/framework";
+import type { Ctx } from "@reatom/framework";
 
 export type AppModule = {
   name: string;
-  init: Action<[], void | Promise<void>> | AsyncAction<[], void>;
+  init: (ctx: Ctx) => void | Promise<void>;
   /**
    * Initialization order.
    * Lower value = earlier execution.
@@ -11,7 +11,7 @@ export type AppModule = {
   /**
    * Whether the module should be initialized.
    */
-  condition?: () => boolean;
+  when?: () => boolean;
   /**
    * Stop boot process if initialization fails.
    * @default true

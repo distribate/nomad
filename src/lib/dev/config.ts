@@ -2,7 +2,7 @@ import { type Atom, type AtomMut, type Ctx } from "@reatom/framework";
 import { $appState, $lang } from "../app/app.model";
 import { $gsapIsEnabled, $gsapPlugins } from "../gsap";
 import { getConfigVal } from "../../const/config";
-import { INITIAL_CONFIG_KEYS } from "./const";
+import { STATIC_CONFIG_KEYS } from "./const";
 
 export type BindingValue = string[] | Atom<any> | AtomMut<any>;
 
@@ -37,11 +37,11 @@ const BINDINGS = {
     },
   },
   config: {
-    logRouter: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.LOG_ROUTER, { as: "atom" }), { readonly: false }),
-    logActions: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.LOG_APP_ACTIONS, { as: "atom" }), { readonly: false }),
-    logRefAtom: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.LOG_REF_ATOM, { as: "atom" }), { readonly: false }),
-    logDevAtom: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.LOG_DEV, { as: "atom" }), { readonly: false }),
-    gsap: createBinding(getConfigVal(INITIAL_CONFIG_KEYS.GSAP, { as: "atom" }), { readonly: false })
+    logRouter: createBinding(getConfigVal(STATIC_CONFIG_KEYS.LOG_ROUTER, { as: "atom" }), { readonly: false }),
+    logActions: createBinding(getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS, { as: "atom" }), { readonly: false }),
+    logRefAtom: createBinding(getConfigVal(STATIC_CONFIG_KEYS.LOG_REF_ATOM, { as: "atom" }), { readonly: false }),
+    logDevAtom: createBinding(getConfigVal(STATIC_CONFIG_KEYS.LOG_DEV, { as: "atom" }), { readonly: false }),
+    gsap: createBinding(getConfigVal(STATIC_CONFIG_KEYS.GSAP, { as: "atom" }), { readonly: false })
   }
 } satisfies Bindings;
 

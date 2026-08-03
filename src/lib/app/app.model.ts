@@ -1,9 +1,9 @@
-import { action, atom, withAssign } from "@reatom/framework";
+import { action, atom, reatomAsync, sleep, withAssign, withStatusesAtom } from "@reatom/framework";
 import { $isAuthed } from "../user/user.model";
 import { navigate } from "../router/utils";
-import { watch, watchersModel } from "./watchers";
+import { watch, watchersModel } from "../helpers/watchers";
 import { withLocalStorage } from "@reatom/persist-web-storage";
-import { withLog } from "../reatom/extensions";
+import { isError } from "../utils";
 
 // #region app
 type AppState = {
@@ -45,11 +45,26 @@ const appWatchers = watchersModel({
   ]
 })
 
-const defineWatchers = action((ctx) => {
-  appWatchers.define(ctx)
-}, "defineWatchers");
-
 export const defineAppLifecycle = action(async (ctx) => {
-  defineWatchers(ctx);
+  appWatchers.define(ctx)
 }, "defineAppLifecycle")
 // #endregion
+
+// todo: add sentry/something for error reporting
+export const reportError = reatomAsync(async (ctx, e: unknown) => {
+  const finalError = isError(e) ? e : new Error("Unknown error");
+
+  await sleep(2000);
+
+  console.error({
+    cause: import.meta.env.DEV ? ctx.cause : undefined,
+    finalError
+  });
+}, {
+  name: "reportError",
+  onFulfill: (ctx, res) => {
+
+  }
+}).pipe(
+  withStatusesAtom()
+)

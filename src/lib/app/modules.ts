@@ -33,11 +33,12 @@ export const modules: AppModule[] = [
     name: "tma",
     priority: 4,
     init: initAsTMA,
-    condition: isTMA,
+    when: () => isTMA(),
   },
-  import.meta.env.DEV && {
+  {
     name: "dev",
     priority: 5,
+    when: () => import.meta.env.DEV,
     init: async (ctx: Ctx) => {
       const { $pane: $dev } = await import("../dev/pane.model.ts");
       $dev.start(ctx);
@@ -49,4 +50,4 @@ export const modules: AppModule[] = [
     priority: 6,
     init: defineAppLifecycle,
   }
-].filter(Boolean) as AppModule[];
+]

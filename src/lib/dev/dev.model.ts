@@ -4,14 +4,14 @@ import {
 } from "@reatom/framework";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import type { DevFlag } from "./types";
-import { INITIAL_CONFIG_KEYS } from "./const";
+import { STATIC_CONFIG_KEYS } from "./const";
 
 const initialConfig = new Map([
-  [INITIAL_CONFIG_KEYS.LOG_APP_ACTIONS, atom(true)],
-  [INITIAL_CONFIG_KEYS.LOG_REF_ATOM, atom(false)],
-  [INITIAL_CONFIG_KEYS.GSAP, atom(true)],
-  [INITIAL_CONFIG_KEYS.LOG_ROUTER, atom(true)],
-  [INITIAL_CONFIG_KEYS.LOG_DEV, atom(false)],
+  [STATIC_CONFIG_KEYS.LOG_APP_ACTIONS, atom(true)],
+  [STATIC_CONFIG_KEYS.LOG_REF_ATOM, atom(false)],
+  [STATIC_CONFIG_KEYS.GSAP, atom(true)],
+  [STATIC_CONFIG_KEYS.LOG_ROUTER, atom(true)],
+  [STATIC_CONFIG_KEYS.LOG_DEV, atom(false)],
 ])
 
 // todo: add the value formatter

@@ -1,5 +1,5 @@
 import { getConfigVal } from "../../const/config";
-import { INITIAL_CONFIG_KEYS } from "../dev/const";
+import { STATIC_CONFIG_KEYS } from "../dev/const";
 
 export class RedirectError extends Error {
   readonly to: string;
@@ -13,4 +13,4 @@ export class RedirectError extends Error {
   }
 }
 
-export const routerNameRule = getConfigVal(INITIAL_CONFIG_KEYS.LOG_ROUTER);
+export const routerNameRule = getConfigVal(STATIC_CONFIG_KEYS.LOG_ROUTER);

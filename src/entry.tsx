@@ -45,29 +45,25 @@ export const Entry = () => {
   const routeLoading = useAtomAccessor($routeLoading);
 
   return (
-    <>
-      <main class="flex items-center bg-neutral-900 justify-center w-full">
-        <Show
-          when={!appLoading()}
-          fallback={<AppLoader />}
-        >
-          <>
-            <div class="flex flex-col relative items-center justify-center w-full overflow-hidden h-screen max-w-[440px]">
-              <Header />
-              <Show
-                when={!routeLoading()}
-                fallback={null}
-              >
-                <div class="w-full z-1 relative h-full">
-                  <Router />
-                </div>
-              </Show>
-              <Bottom />
+    <Show
+      when={!appLoading()}
+      fallback={<AppLoader />}
+    >
+      <>
+        <div class="flex flex-col relative items-center justify-center w-full overflow-hidden h-screen max-w-[440px]">
+          <Header />
+          <Show
+            when={!routeLoading()}
+            fallback={null}
+          >
+            <div class="w-full z-1 relative h-full">
+              <Router />
             </div>
-            <Global />
-          </>
-        </Show>
-      </main>
-    </>
+          </Show>
+          <Bottom />
+        </div>
+        <Global />
+      </>
+    </Show>
   )
 }

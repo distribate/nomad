@@ -4,7 +4,7 @@ import { withRule } from "./helpers"
 import { getConfigVal } from "../const/config";
 import { $lang } from "./app/app.model";
 import { rootLogger } from "./logger/logger.model";
-import { INITIAL_CONFIG_KEYS } from "./dev/const";
+import { STATIC_CONFIG_KEYS } from "./dev/const";
 
 const locales = {
   ru: () => import("dayjs/locale/ru"),
@@ -25,8 +25,9 @@ export const installDayjsLocale = async (targetLocale: string) => {
 }
 
 export const setupDayjs = action(async (ctx) => {
+  // locale as lang ("ru" | "en" | ...) (??)
   const locale = ctx.get($lang);
   await installDayjsLocale(locale)
-}, withRule("setupDayjs", getConfigVal(INITIAL_CONFIG_KEYS.LOG_APP_ACTIONS)))
+}, withRule("setupDayjs", getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS)))
 
 export const getDayjs = () => dayjs()

@@ -3,7 +3,7 @@ import { FolderApi, Pane } from "tweakpane";
 import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
 import { BINDINGS, type BindingNode, type BindingParams, type BindingValue } from "./config";
 import { expose, isError, isPrimitive } from "../utils";
-import { watch, watchersModel } from "../app/watchers";
+import { watch, watchersModel } from "../helpers/watchers";
 import { getReatomCtx } from "../app/ctx";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 

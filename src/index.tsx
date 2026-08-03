@@ -11,20 +11,51 @@ import { Entry } from './entry'
 import { reatomContext } from '@reatom/npm-solid-js'
 import { getReatomCtx } from './lib/app/ctx.ts';
 import { boot, beforeBoot } from './lib/app/boot.ts';
+import { AppError } from './shared/components/templates/error.tsx';
+import { isError } from './lib/utils.ts';
+import type { ParentComponent } from 'solid-js';
+import { AppLayout } from './shared/components/templates/layout.tsx';
+import { registerPublicApi } from './lib/exposing.ts';
+
+registerPublicApi();
 
 const root = document.getElementById('root')!;
 const ctx = getReatomCtx();
 
-const getRootNode = () => (
+const AppRoot: ParentComponent = (props) => (
   <reatomContext.Provider value={ctx}>
-    <Entry />
+    <AppLayout>
+      {props.children}
+    </AppLayout>
   </reatomContext.Provider>
 );
 
+let dispose: (() => void) | null = null;;
+
 try {
   await beforeBoot(ctx);
-  render(getRootNode, root);
+
+  dispose = render(
+    () => (
+      <AppRoot>
+        <Entry />
+      </AppRoot>
+    ),
+    root
+  );
+
   await boot(ctx);
 } catch (e) {
-  console.error("App error", e)
+  dispose?.();
+
+  if (isError(e)) {
+    render(
+      () => (
+        <AppRoot>
+          <AppError e={e} />
+        </AppRoot>
+      ),
+      root
+    )
+  }
 }

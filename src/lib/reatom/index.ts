@@ -2,7 +2,7 @@ import { type Action, type Atom, type AtomMut, type Ctx, type MapAtom } from "@r
 import { useAtom } from "@reatom/npm-solid-js";
 import { onCleanup } from "solid-js";
 import { getConfigVal } from "../../const/config";
-import { INITIAL_CONFIG_KEYS } from "../dev/const";
+import { STATIC_CONFIG_KEYS } from "../dev/const";
 
 export const useAtomAccessor = <T,>(atom: Atom<T>) => useAtom(atom)[0]
 
@@ -13,7 +13,7 @@ type Target<T> =
 export const defineRefAtom = <T extends HTMLElement>(
   ctx: Ctx, key: string, $target: Target<T>, prefix?: string
 ) => {
-  const withLog = getConfigVal(INITIAL_CONFIG_KEYS.LOG_REF_ATOM);
+  const withLog = getConfigVal(STATIC_CONFIG_KEYS.LOG_REF_ATOM);
 
   const formatMsg = (n: string) => {
     return `${(prefix ? `${prefix}.` : "")}${n}`;
@@ -33,7 +33,7 @@ export const defineRefAtom = <T extends HTMLElement>(
     }
 
     if (withLog) {
-      console.log("[+] Ref atom", { k: formatMsg(key), n: node });
+      console.log("[+] Ref atom", { k: formatMsg(key) });
     }
 
     onCleanup(() => {

@@ -58,6 +58,12 @@ const createRouter = action(async (ctx, { onCreate }: { onCreate: () => void }) 
 }, withRule("createRouter", routerNameRule))
 
 export const startRouter = reatomAsync(async (ctx) => {
+  // Disable name for urlAtom and urlAtom.settingsAtom if logging is disabled
+  if (!routerNameRule) {
+    urlAtom.__reatom.name = `_${urlAtom.__reatom.name}`
+    urlAtom.settingsAtom.__reatom.name = `_${urlAtom.settingsAtom.__reatom.name}`
+  }
+
   await createRouter(ctx, {
     onCreate: () => {
       defineRouteRender(ctx).catch((err) => {

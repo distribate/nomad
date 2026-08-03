@@ -132,13 +132,14 @@ const $introModel = declareModel("intro", ({ name }) => {
   const wrapCb = reatomAsync(async (ctx, cb?: StageFlow["callback"]) => {
     return await cb?.(ctx)
   }, name(`wrapCb`)).pipe(
-    withStatusesAtom(),
-    withErrorAtom()
+    withStatusesAtom(), withErrorAtom()
   )
 
   const $intro = atom(null, name(`intro`)).pipe(
     withAssign((_, name) => ({
-      idx: atom(0, `${name}.idx`).pipe(withReset(), withLog()),
+      idx: atom(0, `${name}.idx`).pipe(
+        withReset()
+      ),
       next: action(async (ctx) => {
         let currIdx = ctx.get($intro.idx)
         const target = getTarget(currIdx)
@@ -153,9 +154,8 @@ const $introModel = declareModel("intro", ({ name }) => {
         let currIdx = ctx.get($intro.idx)
         $intro.idx(ctx, --currIdx);
       }),
-      refsMap: reatomMap<typeof REFS_KEYS[number], HTMLElement | null>(null, `${name}.refsMap`).pipe(
+      refsMap: reatomMap<typeof REFS_KEYS[number], HTMLElement | null>(new Map(), `${name}.refsMap`).pipe(
         withReset(),
-        withLog()
       ),
       // target summary fields (pseudo)
       firstName: atom<string>("", `${name}.firstName`).pipe(withReset()),
