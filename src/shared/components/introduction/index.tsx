@@ -4,7 +4,7 @@ import { Dynamic, For } from "solid-js/web";
 import { createSignal, Match, onMount, type JSX, Switch, type ParentProps } from "solid-js";
 import { Button } from "../../ui/button";
 import { Navigation } from "./navigation";
-import { action, entries, reatomMap } from "@reatom/framework";
+import { action, entries } from "@reatom/framework";
 import { Input } from "../../ui/input";
 import { MasonryGrid } from "../../ui/grid";
 import { GOALS, INTERESTS, STYLES } from "./data";
@@ -20,7 +20,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
     return (
       <div class="flex flex-col text-center h-full w-full items-center justify-between">
         <p
-          ref={defineRefAtom(ctx, "title", $refsMap)}
+          ref={defineRefAtom(ctx, "title", $intro.refsMap, "intro")}
           class={cn(titleTextStyle, "text-center opacity-0")}
         >
           Находи людей.
@@ -102,21 +102,27 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
           items={entries(INTERESTS)}
           columns={3}
           gap="6px"
-          getWeight={([k]) => k.length > 12 ? 2 : 1}
-          renderItem={([k, v]) => (
-            <Block
-              variant={useAtomAccessor($hasInterest(k))() ? "active" : "inactive"}
-              onClick={() => {
-                $intro.interests(ctx, state =>
-                  state.includes(k) ? state.filter(c => c !== k) : [...state, k]
-                );
-              }}
-            >
-              {v}
-            </Block>
-          )}
+          getWeight={([key]) => key.length > 12 ? 2 : 1}
+          renderItem={([key, label]) => {
+            const hasInterest = useAtomAccessor($hasInterest(key));
+
+            const handleClick = () => {
+              $intro.interests(ctx, state =>
+                state.includes(key) ? state.filter(c => c !== key) : [...state, key]
+              );
+            }
+
+            return (
+              <Block
+                variant={hasInterest() ? "active" : "inactive"}
+                onClick={handleClick}
+              >
+                {label}
+              </Block>
+            )
+          }}
         />
-      </div >
+      </div>
     )
   },
   4: () => {
@@ -127,16 +133,22 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
         <Title as="text" msg="Как обычно путешествуешь?" />
         <div class="flex flex-wrap gap-3 w-full">
           <For each={entries(STYLES)}>
-            {([k, v]) => (
-              <Block
-                variant={useAtomAccessor($isStyle(k))() ? "active" : "inactive"}
-                onClick={() => $intro.style(ctx, k)}
-              >
-                <p>
-                  {v}
-                </p>
-              </Block>
-            )}
+            {([key, label]) => {
+              const isStyle = useAtomAccessor($isStyle(key));
+
+              const handleClick = () => {
+                $intro.style(ctx, key)
+              }
+
+              return (
+                <Block
+                  variant={isStyle() ? "active" : "inactive"}
+                  onClick={handleClick}
+                >
+                  {label}
+                </Block>
+              )
+            }}
           </For>
         </div>
       </div>
@@ -150,16 +162,22 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
         <Title as="text" msg="Что хочешь найти?" />
         <div class="flex flex-wrap gap-3 w-full">
           <For each={entries(GOALS)}>
-            {([k, v]) => (
-              <Block
-                variant={useAtomAccessor($isGoal(k))() ? "active" : "inactive"}
-                onClick={() => $intro.goal(ctx, k)}
-              >
-                <p>
-                  {v}
-                </p>
-              </Block>
-            )}
+            {([key, label]) => {
+              const isGoal = useAtomAccessor($isGoal(key));
+
+              const handleClick = () => {
+                $intro.goal(ctx, key)
+              }
+
+              return (
+                <Block
+                  variant={isGoal() ? "active" : "inactive"}
+                  onClick={handleClick}
+                >
+                  {label}
+                </Block>
+              )
+            }}
           </For>
         </div>
       </div>
@@ -236,11 +254,9 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
   }
 }
 
-const $refsMap = reatomMap<"appName" | "title", HTMLParagraphElement | null>(new Map(), "refsMap")
-
 const startFirstFrameAnim = action((ctx) => {
-  const t1 = $refsMap.get(ctx, "appName")
-  const t2 = $refsMap.get(ctx, "title")
+  const t1 = $intro.refsMap.get(ctx, "appName")
+  const t2 = $intro.refsMap.get(ctx, "title")
   const t3 = $intro.refsMap.get(ctx, "confirmBtn")
 
   if (!t1 || !t2 || !t3) {
@@ -309,7 +325,7 @@ export const Introduction = () => {
     <div class="flex flex-col p-4 w-full h-full items-center justify-between">
       <div class="flex h-[40dvh] w-full items-start justify-center">
         <p
-          ref={defineRefAtom(ctx, "appName", $refsMap)}
+          ref={defineRefAtom(ctx, "appName", $intro.refsMap, "intro")}
           class="font-semibold opacity-0 leading-8 relative text-4xl"
         >
           Nomad

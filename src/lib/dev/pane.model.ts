@@ -5,6 +5,7 @@ import { BINDINGS, type BindingNode, type BindingParams, type BindingValue } fro
 import { expose, isError, isPrimitive } from "../utils";
 import { watch, watchersModel } from "../app/watchers";
 import { getReatomCtx } from "../app/ctx";
+import { withLocalStorage } from "@reatom/persist-web-storage";
 
 const $devPaneIsEnabled = atom(import.meta.env.DEV, "devPane")
 
@@ -31,18 +32,24 @@ function isConditionalBinding(node: BindingNode): node is { target: BindingValue
   );
 }
 
+type BindingOptions = {
+  isReadonly: boolean
+}
+
 function renderBindingNode(
   ctx: Ctx,
   container: Pane | FolderApi,
   node: BindingNode,
   keyName: string,
-  isReadonly = true,
+  { isReadonly = true }: BindingOptions = { isReadonly: true }
 ) {
   if (isConditionalBinding(node)) {
     if (node.when && !node.when(ctx)) return;
 
     const effectiveReadonly = node.readonly ?? isReadonly;
-    return renderBindingNode(ctx, container, node.target, keyName, effectiveReadonly);
+    renderBindingNode(ctx, container, node.target, keyName, { isReadonly: effectiveReadonly });
+
+    return;
   }
 
   const val = isAtom(node) ? ctx.get(node) : node;
@@ -83,10 +90,41 @@ function renderBindingNode(
   }
 }
 
+const getInstance = () => {
+  if (!instance) throw new Error("pane is not initialized");
+  return instance;
+}
+
+const devWatchers = watchersModel({
+  name: "pane",
+  watchers: [
+    watch($devPaneIsEnabled, {
+      handler: (ctx, value) => value ? $pane.init(ctx) : $pane.dispose(ctx)
+    })
+  ]
+})
+
+type PaneMeta = {
+  expanded: boolean;
+}
+const $paneMeta = atom<PaneMeta>({ expanded: false }).pipe(
+  withLocalStorage("paneMeta"),
+  withAssign(() => ({
+    update: action((ctx, newState: Partial<PaneMeta>) => {
+      $paneMeta(ctx, s => ({ ...s, ...newState }));
+    })
+  }))
+)
+
 export const $pane = atom(null, "pane").pipe(
   withAssign((_, name) => ({
-    init: action((ctx) => {
+    getOrCreatePane: (): Pane => {
+      if (instance) return instance;
       instance = new Pane();
+      return instance;
+    },
+    init: action((ctx) => {
+      const instance = $pane.getOrCreatePane();
 
       instance.element.style.zIndex = "1000";
       instance.element.style.position = "fixed";
@@ -96,10 +134,17 @@ export const $pane = atom(null, "pane").pipe(
       instance.element.style.maxWidth = window.innerWidth * 0.7 + "px";
 
       function startBindNodes() {
-        if (!instance) return;
+        const instance = getInstance();
 
         // root folder for convenient folding
-        const rootFolder = instance.addFolder({ title: "dev", expanded: false });
+        const rootFolder = instance.addFolder({
+          title: "dev",
+          expanded: ctx.get($paneMeta).expanded
+        });
+
+        rootFolder.on("fold", (e) => {
+          $paneMeta(ctx, { expanded: e.expanded });
+        })
 
         for (const [scope, node] of Object.entries(BINDINGS)) {
           renderBindingNode(ctx, rootFolder, node, scope);
@@ -118,26 +163,19 @@ export const $pane = atom(null, "pane").pipe(
       $pane.init(ctx);
       devWatchers.define(ctx);
     }, `${name}.start`),
-    dispose: () => {
+    dispose: action(() => {
       if (!instance) {
-        console.log("pane is not initialized");
+        console.warn("Pane is not defined");
         return;
       }
 
       instance.dispose();
       instance = null;
-    }
+
+      subs.clear();
+    }, `${name}.dispose`)
   }))
 )
-
-const devWatchers = watchersModel({
-  name: "pane",
-  watchers: [
-    watch($devPaneIsEnabled, {
-      handler: (ctx, value) => !value ? $pane.dispose() : $pane.init(ctx)
-    })
-  ]
-})
 
 expose(function togglePane() {
   $devPaneIsEnabled(getReatomCtx(), s => !s)

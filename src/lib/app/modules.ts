@@ -1,5 +1,5 @@
 import type { AppModule } from "./types";
-import { action } from "@reatom/framework";
+import type { Ctx } from "@reatom/framework";
 import { initUser } from "../user/user.model.ts";
 import { setupDayjs } from "../dayjs.ts";
 import { initGsap } from "../gsap/index.ts";
@@ -38,10 +38,10 @@ export const modules: AppModule[] = [
   import.meta.env.DEV && {
     name: "dev",
     priority: 5,
-    init: action(async (ctx) => {
+    init: async (ctx: Ctx) => {
       const { $pane: $dev } = await import("../dev/pane.model.ts");
       $dev.start(ctx);
-    }),
+    },
     critical: false,
   },
   {

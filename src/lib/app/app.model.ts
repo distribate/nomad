@@ -31,7 +31,7 @@ export const $appState = atom(null, "appState").pipe(
   }))
 )
 
-export const $appLoading = atom(true, "appLoading").pipe(withLog())
+export const $appLoading = atom(true, "appLoading")
 
 const appWatchers = watchersModel({
   name: "app",

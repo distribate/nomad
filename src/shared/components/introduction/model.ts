@@ -126,6 +126,8 @@ type SummaryData = Pick<User, "firstName"> & {
   photo?: UserPhoto
 }
 
+const REFS_KEYS = ["appName", "title", "confirmBtn", "backButton"] as const
+
 const $introModel = declareModel("intro", ({ name }) => {
   const wrapCb = reatomAsync(async (ctx, cb?: StageFlow["callback"]) => {
     return await cb?.(ctx)
@@ -151,7 +153,7 @@ const $introModel = declareModel("intro", ({ name }) => {
         let currIdx = ctx.get($intro.idx)
         $intro.idx(ctx, --currIdx);
       }),
-      refsMap: reatomMap<"confirmBtn" | "backButton", HTMLButtonElement | null>(null, `${name}.refsMap`).pipe(
+      refsMap: reatomMap<typeof REFS_KEYS[number], HTMLElement | null>(null, `${name}.refsMap`).pipe(
         withReset(),
         withLog()
       ),
@@ -213,7 +215,9 @@ const $introModel = declareModel("intro", ({ name }) => {
     const ref = $intro.refsMap.get(ctx, "backButton")
     if (!ref) return;
 
-    ref.disabled = isDisabled
+    if (ref instanceof HTMLButtonElement) {
+      ref.disabled = isDisabled
+    }
   })
 
   $isBack.onChange((ctx, state) => {

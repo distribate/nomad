@@ -11,9 +11,13 @@ type Target<T> =
   | (AtomMut<T | null> & { reset: Action<[], T | null> }); // AtomMut require the reset action
 
 export const defineRefAtom = <T extends HTMLElement>(
-  ctx: Ctx, key: string, $target: Target<T>
+  ctx: Ctx, key: string, $target: Target<T>, prefix?: string
 ) => {
   const withLog = getConfigVal(INITIAL_CONFIG_KEYS.LOG_REF_ATOM);
+
+  const formatMsg = (n: string) => {
+    return `${(prefix ? `${prefix}.` : "")}${n}`;
+  }
 
   return (el: T | null) => {
     const cleanup = "getOrCreate" in $target
@@ -29,14 +33,14 @@ export const defineRefAtom = <T extends HTMLElement>(
     }
 
     if (withLog) {
-      console.log("+ ref atom", { k: key, n: node });
+      console.log("[+] Ref atom", { k: formatMsg(key), n: node });
     }
 
     onCleanup(() => {
       cleanup();
 
       if (withLog) {
-        console.log("- ref atom", { k: key });
+        console.log("[-] Ref atom", { k: formatMsg(key) });
       }
     });
   };

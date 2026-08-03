@@ -1,4 +1,7 @@
-import { action, atom, reatomMap, withReset, type Atom, type Ctx, type Unsubscribe } from "@reatom/framework";
+import {
+  action, atom, reatomMap, withReset,
+  type Atom, type Ctx, type Unsubscribe
+} from "@reatom/framework";
 import { withLog } from "../reatom/extensions";
 
 let watcherId = 0;
@@ -52,7 +55,14 @@ export const watchersModel = ({
     for (const watcher of watchers) {
       const { id, triggerValue, condition, handler } = watcher;
 
+      let isFirst = true;
+
       const rawUnsub = ctx.subscribe(triggerValue, (value) => {
+        if (isFirst) {
+          isFirst = false;
+          return;
+        }
+
         if (condition(value)) {
           void handler(ctx, value);
         }

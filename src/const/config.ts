@@ -15,9 +15,15 @@ const modules = {
   ...(import.meta.env.DEV && { dev: getDevConfig })
 }
 
-exposePublic(function getAppConfig() {
+/**
+ * Returns the current application configuration.
+ * @debugQuery
+ * @returns The configuration of all public modules.
+ */
+export function getAppConfig() {
   const ctx = getReatomCtx()
   const sum: Record<string, any> = {}
   for (const [k, cb] of Object.entries(modules)) sum[k] = cb(ctx)
   return sum
-}, "getAppConfig")
+}
+exposePublic(getAppConfig, "getAppConfig")

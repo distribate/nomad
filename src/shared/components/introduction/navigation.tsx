@@ -17,7 +17,7 @@ export const Navigation = () => {
     <div class="flex items-center h-20 gap-2 w-full justify-center">
       <Show when={isNext()}>
         <Button
-          ref={defineRefAtom(ctx, "confirmBtn", $intro.refsMap)}
+          ref={defineRefAtom(ctx, "confirmBtn", $intro.refsMap, "intro")}
           disabled={!isValid()}
           onClick={() => $intro.next(ctx)}
           class="text-lg w-full py-6 px-6 opacity-0"

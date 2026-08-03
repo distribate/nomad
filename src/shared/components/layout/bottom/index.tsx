@@ -31,12 +31,13 @@ const BottomContent = () => {
     <For each={BADGES}>
       {(badge) => {
         const meta = BADGES_META[badge.origin];
+        const isActive = useAtomAccessor($badgeIsActive(badge.origin));
 
         return (
           <BottomBadge
-            variant={useAtomAccessor($badgeIsActive(badge.origin))() ? "active" : "inactive"}
+            variant={isActive() ? "active" : "inactive"}
             label={badge.label}
-            ref={defineRefAtom(ctx, badge.origin, $bottom.badgesRefs)}
+            ref={defineRefAtom(ctx, badge.origin, $bottom.badgesRefs, "bottom")}
             onClick={() => $badge.execEvent(ctx, badge)}
             disabled={badge.disabled}
             onPointerDown={e => $badge.startMove(ctx, badge, e)}
@@ -81,7 +82,7 @@ export const Bottom = () => {
       }}
     >
       <div
-        ref={defineRefAtom(ctx, "bottomBar", $bottom.barRef)}
+        ref={defineRefAtom(ctx, "bottomBar", $bottom.barRef, "bottom")}
         class="flex items-center p-1.5 w-[calc(100%-44px)] justify-between gap-0.5 h-full bg-neutral-600/10 backdrop-blur-xl rounded-full"
         onPointerMove={(e) =>
           $badge.inMove(ctx, e)
