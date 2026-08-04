@@ -38,8 +38,8 @@ export const resolveRoute = action(async (
 
     await runEffects(ctx, "beforeEnter")
 
-    $route.render.layout(ctx, route.layout);
-    route.fallback && $route.render.fallback(ctx, route.fallback)
+    $route.render.layout(ctx, route.layout ?? null);
+    $route.render.fallback(ctx, route.fallback ?? null)
 
     if (route.loader) {
       $route.meta(ctx, (state) => ({ ...state, withLoader: true }));

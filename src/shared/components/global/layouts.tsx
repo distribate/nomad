@@ -1,7 +1,7 @@
 import { mergeProps, splitProps, type ComponentProps } from "solid-js";
-import { useAtomAccessor } from "../../lib/reatom";
-import { $header } from "./layout/header/model";
-import { $bottom } from "./layout/bottom/model";
+import { useAtomAccessor } from "../../../lib/reatom";
+import { $header } from "../layout/header/model";
+import { $bottom } from "../layout/bottom/model";
 
 type WithTopPaddingProps = ComponentProps<"div"> & {
   withBottom?: boolean;

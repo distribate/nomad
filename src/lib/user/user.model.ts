@@ -5,7 +5,7 @@ import { expose } from "../utils";
 import { getReatomCtx } from "../app/ctx";
 import { redirect } from "../router/utils";
 import { isTMA, retrieveLaunchParams } from "@tma.js/sdk";
-import { $alertDialog } from "../../shared/components/alert-dialog.model";
+import { $alertDialog } from "../../shared/components/global/alert-dialog/model";
 
 export type User = {
   username: string; // (initially random hash string) (editable)

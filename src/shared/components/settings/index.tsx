@@ -11,7 +11,7 @@ import { $headerNodes } from "../layout/header/model";
 import { BackButton } from "../../ui/back-button";
 import { SettingsItem } from "./primitives";
 import { action, entries } from "@reatom/framework";
-import { WithTopPadding } from "../layouts";
+import { WithTopPadding } from "../global/layouts";
 import { $appState, $locale, $localeLabel, LOCALES } from "../../../lib/app/app.model";
 import { $user, $logout } from "../../../lib/user/user.model";
 import { setupDevModule } from "../../../lib/helpers";

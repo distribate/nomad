@@ -1,9 +1,9 @@
 import { action, type Action, type Ctx } from "@reatom/framework";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown";
-import { Icon, type IconName } from "../ui/icon";
 import { useCtx } from "@reatom/npm-solid-js";
 import { For } from "solid-js";
-import { $logout } from "../../lib/user/user.model";
+import { Icon, type IconName } from "../../ui/icon";
+import { $logout } from "../../../lib/user/user.model";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../ui/dropdown";
 
 type MoreEvent = {
   label: string;

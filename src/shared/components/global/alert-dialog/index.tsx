@@ -1,8 +1,8 @@
-import { useAtomAccessor } from "../../lib/reatom";
-import { $alertDialog } from "./alert-dialog.model";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { useAtomAccessor } from "../../../../lib/reatom";
+import { $alertDialog } from "./model";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../../ui/dialog";
 import { createEffect, createSignal } from "solid-js";
-import { Button } from "../ui/button";
+import { Button } from "../../../ui/button";
 
 export const AlertDialog = () => {
   const rawData = useAtomAccessor($alertDialog.data);

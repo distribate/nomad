@@ -2,7 +2,6 @@ import type { ComponentRef, RouteConfig } from "./types"
 import { RedirectError } from "./config"
 import { getReatomCtx } from "../app/ctx"
 import { urlAtom } from "@reatom/url"
-import { lazy, type Component } from "solid-js";
 import { lazyComponent } from "../helpers";
 
 type ComponentRefKeys<T> = {

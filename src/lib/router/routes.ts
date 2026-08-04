@@ -5,8 +5,8 @@ import { $isAuthed, withAuth } from "../user/user.model"
 import type { Routes } from "universal-router"
 import { defineRoute, asDeferred, redirect } from "./utils"
 import { $headerNodes } from "../../shared/components/layout/header/model"
-import { MoreEvents } from "../../shared/components/more"
 import type { RouteEffect } from "./types"
+import { MoreEvents } from "../../shared/components/global/more"
 
 const withAuthEffect = (): RouteEffect => ({
   phase: "beforeEnter",

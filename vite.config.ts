@@ -3,9 +3,9 @@ import solid from 'vite-plugin-solid'
 import UnoCSS from 'unocss/vite'
 import svg from '@neodx/svg/vite';
 import { analyzer } from 'vite-bundle-analyzer'
-import basicSsl from '@vitejs/plugin-basic-ssl'
 import { exposeMacro } from "./plugins/expose-macro.ts"
 import devtools from 'solid-devtools/vite'
+import fs from 'fs'
 
 const config = {
   port: 5273
@@ -29,7 +29,6 @@ export default defineConfig(() => {
         enabled: true,
         analyzerMode: "static"
       }),
-      basicSsl(),
       exposeMacro()
     ],
     build: {
@@ -39,6 +38,10 @@ export default defineConfig(() => {
     server: {
       host: true,
       port: config.port,
+      https: {
+        cert: fs.readFileSync('./certs/127.0.0.1.pem'),
+        key: fs.readFileSync('./certs/127.0.0.1-key.pem')
+      }
     },
     preview: {
       host: true,

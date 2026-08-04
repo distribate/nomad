@@ -2,10 +2,11 @@ import { action, atom, reatomAsync, sleep, type Ctx } from "@reatom/framework";
 import { rootLogger } from "../logger/logger.model.ts";
 import { isError } from "../utils.ts";
 import { modules } from "./modules.ts";
-import { $appLoading } from "./app.model.ts";
+import { $appLoading, $appState } from "./app.model.ts";
 import { getConfigVal } from "../../const/config.ts";
 import { STATIC_CONFIG_KEYS } from "../dev/const.ts";
 import { withRule } from "../helpers/index.ts";
+import { isTMA } from "@tma.js/sdk";
 
 const APP_LOADING_DELAY = 400;
 
@@ -44,7 +45,7 @@ const updateModule = (
 };
 
 export const beforeBoot = action(async (ctx) => {
-
+  $appState.type(ctx, isTMA() ? "tma" : "standalone")
 }, withRule("beforeBoot", getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS)))
 
 const round = (n: number) => Math.round(n * 100) / 100;

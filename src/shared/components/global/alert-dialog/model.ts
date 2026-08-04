@@ -1,5 +1,5 @@
 import { action, atom, withAssign, withReset } from "@reatom/framework";
-import { withLog } from "../../lib/reatom/extensions";
+import { withLog } from "../../../../lib/reatom/extensions";
 
 type AlertDialogOpenParams = {
   title: string;

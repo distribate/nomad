@@ -5,7 +5,7 @@ import { $route, $routeLoading } from "./lib/router"
 import { NotFound } from "./shared/components/templates/not-found"
 import { Bottom } from "./shared/components/layout/bottom"
 import { $appLoading } from "./lib/app/app.model"
-import { AlertDialog } from "./shared/components/alert-dialog"
+import { AlertDialog } from "./shared/components/global/alert-dialog"
 import type { ParentComponent } from "solid-js"
 import { Toaster } from "solid-toast"
 

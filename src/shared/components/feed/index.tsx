@@ -3,7 +3,7 @@ import { toNext, toPrev, $feedStatuses, $visibleProfiles } from "./model"
 import { useAtomAccessor } from "../../../lib/reatom";
 import type { Profile } from "./types";
 import { useCtx } from "@reatom/npm-solid-js";
-import { WithTopPadding } from "../layouts";
+import { WithTopPadding } from "../global/layouts";
 import { Icon } from "../../ui/icon";
 
 const FeedProfilesError = (props: { error: Error }) => {

@@ -3,7 +3,7 @@ import { $user } from "../../../lib/user/user.model"
 import { Button } from "../../ui/button";
 import { For, Show } from "solid-js";
 import { Icon } from "../../ui/icon";
-import { WithTopPadding } from "../layouts";
+import { WithTopPadding } from "../global/layouts";
 import { me_events } from "./model";
 import { useAtomAccessor } from "../../../lib/reatom";
 import { setupDevModule } from "../../../lib/helpers";
