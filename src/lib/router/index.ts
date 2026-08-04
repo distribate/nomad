@@ -53,31 +53,27 @@ export const $routeLoading = atom((ctx) => {
   return ctx.spy($route.isLoading);
 })
 
-const createRouter = action(async (ctx, { onCreate }: { onCreate: () => void }) => {
-  // @ts-expect-error
-  router = new UniversalRouter(routes, {
-    context: {
-      reatomCtx: ctx
-    }
-  })
-
-  onCreate();
-}, withRule("createRouter", routerNameRule))
-
-export const startRouter = reatomAsync(async (ctx) => {
-  // Disable name for urlAtom and urlAtom.settingsAtom if logging is disabled
-  if (!routerNameRule) {
-    urlAtom.__reatom.name = `_${urlAtom.__reatom.name}`
-    urlAtom.settingsAtom.__reatom.name = `_${urlAtom.settingsAtom.__reatom.name}`
-  }
-
-  await createRouter(ctx, {
-    onCreate: () => {
-      defineRouteRender(ctx).catch((err) => {
-        if (!isAbort(err)) {
-          console.error("Navigation error:", err)
+export const $router = atom(null, "router").pipe(
+  withAssign((_, name) => ({
+    _create: action(async (ctx) => {
+      // @ts-expect-error
+      router = new UniversalRouter(routes, {
+        context: {
+          reatomCtx: ctx
         }
-      });
+      })
+    }, withRule(`${name}.create`, routerNameRule)),
+    start: reatomAsync(async (ctx) => {
+      // Disable name for urlAtom and urlAtom.settingsAtom if logging is disabled
+      if (!routerNameRule) {
+        urlAtom.__reatom.name = `_${urlAtom.__reatom.name}`
+        urlAtom.settingsAtom.__reatom.name = `_${urlAtom.settingsAtom.__reatom.name}`
+      }
+
+      await $router._create(ctx)
+
+      // initial route render
+      $router._defineRouteRender(ctx)
 
       urlAtom.settingsAtom(ctx, {
         init: () => new URL(location.href),
@@ -92,19 +88,24 @@ export const startRouter = reatomAsync(async (ctx) => {
         },
       });
 
-      urlAtom.onChange((ctx) => defineRouteRender(ctx))
-    }
-  })
-}, withRule("startRouter", routerNameRule))
+      urlAtom.onChange((ctx) => $router._defineRouteRender(ctx))
+    }, withRule(`${name}.start`, routerNameRule)),
+    _defineRouteRender: reatomAsync(async (ctx) => {
+      const currentUrl = ctx.get(urlAtom)
+      const finalParams = Object.fromEntries(currentUrl.searchParams.entries())
 
-const defineRouteRender = reatomAsync(async (ctx, params?: Record<string, string>) => {
-  const currentUrl = ctx.get(urlAtom)
-  const finalParams = currentUrl.pathname
-    ? params : Object.fromEntries(currentUrl.searchParams.entries())
-
-  await resolveRoute(ctx, currentUrl.pathname, finalParams)
-}, withRule("defineRouteRender", routerNameRule)).pipe(
-  withAbort({ strategy: "last-in-win" }),
+      await resolveRoute(ctx, currentUrl.pathname, finalParams)
+    }, {
+      name: withRule(`${name}.defineRouteRender`, routerNameRule),
+      onReject: (_, err) => {
+        if (!isAbort(err)) {
+          console.error("Navigation error:", err)
+        }
+      }
+    }).pipe(
+      withAbort({ strategy: "last-in-win" }),
+    )
+  }))
 )
 
 if (import.meta.env.DEV && routerNameRule) {

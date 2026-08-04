@@ -1,4 +1,4 @@
-import { action, atom } from "@reatom/framework";
+import { action, atom, withAssign } from "@reatom/framework";
 import { getConfigVal } from "../../const/config";
 import { createNoopProxy } from "../utils";
 import { GSAP_PLUGIN_LOADERS } from "./plugins";
@@ -21,22 +21,26 @@ export const $gsapIsEnabled = atom((ctx) => {
   return fromSettings && fromConfig;
 })
 
-export const initGsap = action(async (ctx) => {
-  const enabled = ctx.get($gsapIsEnabled);
-  if (!enabled) return;
+export const $gsap = atom(null, "gsap").pipe(
+  withAssign((_, name) => ({
+    init: action(async (ctx) => {
+      const enabled = ctx.get($gsapIsEnabled);
+      if (!enabled) return;
 
-  const [gsapModule, ...loadedPlugins] = await Promise.all([
-    import("gsap"),
-    ...GSAP_PLUGIN_LOADERS.map((loader) => loader()),
-  ]);
+      const [gsapModule, ...loadedPlugins] = await Promise.all([
+        import("gsap"),
+        ...GSAP_PLUGIN_LOADERS.map((loader) => loader()),
+      ]);
 
-  const gsap = gsapModule.default || gsapModule.gsap;
+      const gsap = gsapModule.default || gsapModule.gsap;
 
-  gsap.registerPlugin(...loadedPlugins);
-  $gsapPlugins(ctx, loadedPlugins.map(p => p.name))
+      gsap.registerPlugin(...loadedPlugins);
+      $gsapPlugins(ctx, loadedPlugins.map(p => p.name))
 
-  instance = gsap;
-}, "initGsap")
+      instance = gsap;
+    }, `${name}.init`)
+  }))
+)
 
 export const getGsap = (): Gsap => {
   const enabled = getReatomCtx().get($gsapIsEnabled)

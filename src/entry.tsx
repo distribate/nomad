@@ -28,12 +28,12 @@ const Router = () => {
 };
 
 const RouteOutlet = () => {
-  const component = useAtomAccessor($route.render.page);
+  const page = useAtomAccessor($route.render.page);
   const fallback = useAtomAccessor($route.render.fallback);
 
   return (
     <Show
-      when={component()?.value}
+      when={page()?.value}
       fallback={
         <Dynamic component={fallback()?.value ?? NotFound} />
       }
