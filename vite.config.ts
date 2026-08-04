@@ -1,5 +1,5 @@
 import { paraglideVitePlugin } from '@inlang/paraglide-js'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import solid from 'vite-plugin-solid'
 import UnoCSS from 'unocss/vite'
 import svg from '@neodx/svg/vite';
@@ -12,7 +12,12 @@ const config = {
   port: 5273
 }
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd());
+
+  // check the certs folder with certs before enabling HTTPS
+  const withHttps = env["VITE_WITH_HTTPS"] === 'true';
+
   return {
     plugins: [
       paraglideVitePlugin({
@@ -44,10 +49,12 @@ export default defineConfig(() => {
     server: {
       host: true,
       port: config.port,
-      https: {
-        cert: fs.readFileSync('./certs/127.0.0.1.pem'),
-        key: fs.readFileSync('./certs/127.0.0.1-key.pem')
-      }
+      ...(withHttps && {
+        https: {
+          cert: fs.readFileSync('./certs/127.0.0.1.pem'),
+          key: fs.readFileSync('./certs/127.0.0.1-key.pem')
+        }
+      }),
     },
     preview: {
       host: true,

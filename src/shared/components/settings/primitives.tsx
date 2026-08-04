@@ -115,3 +115,9 @@ export const SettingsItem = (props: { item: SettingItem }) => {
     </Switch>
   );
 };
+
+export const SettingsHeaderTitle = (props: { title: string }) => {
+  return (
+    <span class="text-left font-semibold text-primary">{props.title}</span>
+  )
+}

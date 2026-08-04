@@ -6,7 +6,29 @@
     "language": "Language",
     "privacy": "Privacy",
     "help": "Help",
-    "ask-question": "Ask Question"
+    "ask-question": "Ask Question",
+    "account_": {
+      "description": "Name, Bio"
+    },
+    "preferences_": {
+      "description": "Animations, app behavior",
+      "childs": {
+        "animations": {
+          "label": "Animations"
+        }
+      }
+    },
+    "privacy_": {
+      "description": "Devices, Passkeys"
+    },
+    "passcode": "Passcode Lock",
+    "passcode_": {
+      "description": ""
+    },
+    "devices": "Devices",
+    "devices_": {
+      "description": ""
+    }
   },
   "shared": {
     "feed": "Feed",

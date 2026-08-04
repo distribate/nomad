@@ -1,4 +1,4 @@
-import { action, atom, batch, reatomMap, withAssign, withReset, type AtomMut, type Ctx } from "@reatom/framework";
+import { action, atom, batch, isAtom, reatomMap, withAssign, withReset, type Atom, type AtomMut, type Ctx } from "@reatom/framework";
 import { withUndo } from "@reatom/undo";
 import { searchParamsAtom } from '@reatom/url'
 import { navigate } from "../../../lib/router/utils";
@@ -9,6 +9,7 @@ import { useAtomAccessor } from "../../../lib/reatom";
 import { declareModel } from "../../../lib/helpers";
 import { $user } from "../../../lib/user/user.model";
 import { translate } from "../../../lib/app/locale";
+import { $langLabel } from "../../../lib/app/app.model";
 
 export const SETTINGS_SECTION_KEYS = {
   DEFAULT: "default",
@@ -16,15 +17,43 @@ export const SETTINGS_SECTION_KEYS = {
   PREFERENCES: "preferences",
   LANGUAGE: "language",
   PRIVACY: "privacy",
+  PASSCODE: "passcode",
+  DEVICES: "devices",
 } as const;
 
-export const SETTINGS_TITLES_KEYS: Record<string, string> = {
-  [SETTINGS_SECTION_KEYS.DEFAULT]: translate["settings.account"](),
-  [SETTINGS_SECTION_KEYS.ACCOUNT]: translate["settings.account"](),
-  [SETTINGS_SECTION_KEYS.PREFERENCES]: translate["settings.preferences"](),
-  [SETTINGS_SECTION_KEYS.LANGUAGE]: translate["settings.language"](),
-  [SETTINGS_SECTION_KEYS.PRIVACY]: translate["settings.privacy"](),
-}
+export type SettingsSectionKey = typeof SETTINGS_SECTION_KEYS[keyof typeof SETTINGS_SECTION_KEYS];
+type SettingsSectionMetaFields = "title" | "description"
+
+const SETTINGS_SECTION_META = {
+  [SETTINGS_SECTION_KEYS.DEFAULT]: {
+    title: translate["settings.account"](),
+    description: translate["settings.account_.description"](),
+  },
+  [SETTINGS_SECTION_KEYS.ACCOUNT]: {
+    title: translate["settings.account"](),
+    description: translate["settings.account_.description"](),
+  },
+  [SETTINGS_SECTION_KEYS.PREFERENCES]: {
+    title: translate["settings.preferences"](),
+    description: translate["settings.preferences_.description"](),
+  },
+  [SETTINGS_SECTION_KEYS.LANGUAGE]: {
+    title: translate["settings.language"](),
+    description: $langLabel,
+  },
+  [SETTINGS_SECTION_KEYS.PRIVACY]: {
+    title: translate["settings.privacy"](),
+    description: translate["settings.privacy_.description"](),
+  },
+  [SETTINGS_SECTION_KEYS.PASSCODE]: {
+    title: translate["settings.passcode"](),
+    description: translate["settings.passcode_.description"](),
+  },
+  [SETTINGS_SECTION_KEYS.DEVICES]: {
+    title: translate["settings.devices"](),
+    description: translate["settings.devices_.description"](),
+  },
+} as const;
 
 export const DEFAULT_SETTINGS_NODE_KEY = SETTINGS_SECTION_KEYS.DEFAULT
 
@@ -61,11 +90,55 @@ export const $settings = atom(null, "settings").pipe(
   }))
 )
 
-export const getCurrentSectionTitle = (target: string) => {
-  return SETTINGS_TITLES_KEYS[target] ?? "Unknown"
+type MetaValue<
+  T extends SettingsSectionKey, F extends SettingsSectionMetaFields
+> = (typeof SETTINGS_SECTION_META)[T][F];
+
+type IsAtomValue<
+  T extends SettingsSectionKey, F extends SettingsSectionMetaFields
+> = MetaValue<T, F> extends Atom<any> ? true : false;
+
+export function getSectionField<
+  T extends SettingsSectionKey, F extends SettingsSectionMetaFields
+>(ctx: Ctx, target: T, field: F): string;
+export function getSectionField<
+  T extends SettingsSectionKey,
+  F extends SettingsSectionMetaFields
+>(target: IsAtomValue<T, F> extends true ? never : T, field: F): string;
+export function getSectionField(
+  arg1: Ctx | SettingsSectionKey,
+  arg2: SettingsSectionKey | SettingsSectionMetaFields,
+  arg3?: SettingsSectionMetaFields
+): string {
+  let ctx: Ctx | undefined;
+  let target: SettingsSectionKey;
+  let field: SettingsSectionMetaFields;
+
+  if (typeof arg1 === "object" && arg1 !== null) {
+    ctx = arg1 as Ctx;
+    target = arg2 as SettingsSectionKey;
+    field = arg3 as SettingsSectionMetaFields;
+  } else {
+    target = arg1 as SettingsSectionKey;
+    field = arg2 as SettingsSectionMetaFields;
+  }
+
+  const section = SETTINGS_SECTION_META[target];
+  if (!section) return "Unknown";
+
+  const val = section[field];
+
+  if (isAtom(val)) {
+    if (!ctx) {
+      throw new Error(`Ctx is required to read Atom field "${field}" in "${target}" section`);
+    }
+    return ctx.get(val);
+  }
+
+  return val;
 }
 
-export const currentSectionIsDefault = (target: string) => {
+export const currentSectionIsDefault = (target: string): boolean => {
   if (target === '' || target === DEFAULT_SETTINGS_NODE_KEY) return true
   return false
 }

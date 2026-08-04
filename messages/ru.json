@@ -6,7 +6,29 @@
     "language": "Язык",
     "privacy": "Приватность",
     "help": "Помощь",
-    "ask-question": "Задать вопрос"
+    "ask-question": "Задать вопрос",
+    "account_": {
+      "description": "Имя, Био"
+    },
+    "preferences_": {
+      "description": "Анимации, поведение приложения",
+      "childs": {
+        "animations": {
+          "label": "Анимации"
+        }
+      }
+    },
+    "privacy_": {
+      "description": "Устройства, Passkeys"
+    },
+    "passcode": "Пасскод",
+    "passcode_": {
+      "description": ""
+    },
+    "devices": "Устройства",
+    "devices_": {
+      "description": ""
+    }
   },
   "shared": {
     "feed": "Лента",

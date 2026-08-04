@@ -35,8 +35,8 @@ export const DialogContent = <T extends ValidComponent = "div">(
         class={cn(
           `fixed left-[50%] rounded-2xl top-[50%] bg-neutral-800 z-50 grid w-full max-w-[calc(100vw-32px)] translate-x-[-50%]
 					translate-y-[-50%] gap-4 border bg-neutral-800 p-6 shadow-lg duration-200
-					data-[expanded]:(animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-48% duration-200)
-					data-[closed]:(animate-out fade-out-0 zoom-out-95 slide-out-to-left-1/2 slide-out-to-top-48% duration-200)
+					data-[expanded]:(animate-in fade-in-0 zoom-in-95 duration-150)
+					data-[closed]:(animate-out fade-out-0 zoom-out-95 duration-150)
 					md:w-full sm:rounded-lg`,
           local.class,
         )}
