@@ -122,15 +122,6 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
                 route: "ask"
               }}
             />
-            {/*<SettingsItem
-              item={{
-                type: "page",
-                meta: {
-                  title: "FAQ"
-                },
-                route: "faq"
-              }}
-            />*/}
           </SettingsSection>
         </div>
       </>
@@ -138,54 +129,46 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
   },
   [SETTINGS_SECTION_KEYS.PREFERENCES]: () => {
     return (
-      <>
-        <div class="flex flex-col gap-6">
-          <SettingsSection>
-            <SettingsItem
-              item={{
-                type: "action",
-                meta: {
-                  title: "Animations",
-                  description: ""
-                },
-                event: action((ctx, c) => $settings.preferences.animations(ctx, c)),
-                as: "switch",
-                value: $settings.preferences.animations
-              }}
-            />
-          </SettingsSection>
-        </div>
-      </>
+      <SettingsSection>
+        <SettingsItem
+          item={{
+            type: "action",
+            meta: {
+              title: "Animations",
+              description: ""
+            },
+            event: action((ctx, c) => $settings.preferences.animations(ctx, c)),
+            as: "switch",
+            value: $settings.preferences.animations
+          }}
+        />
+      </SettingsSection>
     )
   },
   [SETTINGS_SECTION_KEYS.LANGUAGE]: () => {
     return (
-      <>
-        <SettingsSection title="Language">
-          <div class="flex flex-col">
-            <For each={entries(LANGUAGES)}>
-              {([lang, value]) => {
-                return (
-                  <SettingsItem
-                    item={{
-                      type: "action",
-                      meta: {
-                        title: value.label,
-                        description: value.label
-                      },
-                      event: action(async (ctx) => {
-                        await setLocale(lang)
-                      }),
-                      as: "button",
-                      isActive: lang === useAtomAccessor($lang)()
-                    }}
-                  />
-                )
-              }}
-            </For>
-          </div>
-        </SettingsSection>
-      </>
+      <SettingsSection title="Language">
+        <div class="flex flex-col">
+          <For each={entries(LANGUAGES)}>
+            {([lang, value]) => {
+              return (
+                <SettingsItem
+                  item={{
+                    type: "action",
+                    meta: {
+                      title: value.label,
+                      description: value.label
+                    },
+                    event: action(() => setLocale(lang)),
+                    as: "button",
+                    isActive: lang === useAtomAccessor($lang)()
+                  }}
+                />
+              )
+            }}
+          </For>
+        </div>
+      </SettingsSection>
     )
   },
   [SETTINGS_SECTION_KEYS.ACCOUNT]: () => {

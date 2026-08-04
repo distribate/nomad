@@ -4,7 +4,7 @@ import { withRule } from "./helpers"
 import { getConfigVal } from "../const/config";
 import { rootLogger } from "./logger/logger.model";
 import { STATIC_CONFIG_KEYS } from "./dev/const";
-import { getLocale } from "../paraglide/runtime";
+import { $lang } from "./app/app.model";
 
 const locales = {
   ru: () => import("dayjs/locale/ru"),
@@ -25,8 +25,7 @@ export const installDayjsLocale = async (targetLocale: string) => {
 }
 
 export const setupDayjs = action(async (ctx) => {
-  // locale as lang ("ru" | "en" | ...) (??)
-  const locale = getLocale()
+  const locale = ctx.get($lang)
   await installDayjsLocale(locale)
 }, withRule("setupDayjs", getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS)))
 

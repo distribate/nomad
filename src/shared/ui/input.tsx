@@ -13,17 +13,22 @@ const inputVariant = cva(`
 `, {
   variants: {
     variant: {
-      default: "border-2 border-neutral-400/12 pt-4",
+      default: "pt-4",
       headless: "py-0.5"
+    },
+    borderVariant: {
+      default: "border-2 border-neutral-400/12 ",
+      headless: ""
     }
   },
   defaultVariants: {
-    variant: "default"
+    variant: "default",
+    borderVariant: "default"
   }
 })
 
 export const Input: Component<InputProps & VariantProps<typeof inputVariant>> = (props) => {
-  const [local, inputProps] = splitProps(props, ["class", "id", "variant", "label", "type"])
+  const [local, inputProps] = splitProps(props, ["class", "id", "borderVariant", "variant", "label", "type"])
 
   const generatedId = createUniqueId()
   const inputId = () => local.id || generatedId
@@ -35,7 +40,7 @@ export const Input: Component<InputProps & VariantProps<typeof inputVariant>> = 
         id={inputId()}
         type={local.type || "text"}
         placeholder={local.label ? local.label : inputProps.placeholder}
-        class={inputVariant({ variant: local.variant, class: local.class })}
+        class={inputVariant({ variant: local.variant, borderVariant: local.borderVariant, class: local.class })}
       />
       {local.label && (
         <label

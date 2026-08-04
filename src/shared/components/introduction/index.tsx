@@ -1,10 +1,13 @@
-import { useCtx } from "@reatom/npm-solid-js"
+import { useAtom, useCtx } from "@reatom/npm-solid-js"
 import { $hasInterest, $intro, $isGoal, $isStyle, STAGES_MAP } from "./model";
 import { Dynamic, For } from "solid-js/web";
-import { createSignal, Match, onMount, type JSX, Switch, type ParentProps, onCleanup } from "solid-js";
+import {
+  createSignal, Match, onMount,
+  type JSX, Switch, type ParentProps, onCleanup
+} from "solid-js";
 import { Button } from "../../ui/button";
 import { Navigation } from "./navigation";
-import { action, entries } from "@reatom/framework";
+import { action, entries, reatomAsync, sleep, withErrorAtom, withStatusesAtom } from "@reatom/framework";
 import { Input } from "../../ui/input";
 import { MasonryGrid } from "../../ui/grid";
 import { GOALS, INTERESTS, STYLES } from "./data";
@@ -13,6 +16,61 @@ import { getGsap } from "../../../lib/gsap";
 import { Block, Title, titleTextStyle } from "./primitives";
 import cn from "cnfast";
 import { setupDevModule } from "../../../lib/helpers";
+import { isError } from "../../../lib/utils";
+import toast from "solid-toast";
+
+interface GeolocationError extends Error {
+  code?: number;
+}
+
+export function getCurrentPositionAsync(
+  options?: PositionOptions
+): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation is not supported'));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      (geoError: GeolocationPositionError) => {
+        const err: GeolocationError = new Error(geoError.message);
+        err.code = geoError.code;
+        reject(err);
+      },
+      options
+    );
+  });
+}
+
+const setupLocation = reatomAsync(async (ctx, onSetup: () => void) => {
+  await sleep(800);
+
+  const position = await getCurrentPositionAsync({
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 0
+  });
+
+  const { latitude, longitude } = position.coords;
+
+  $intro.location(ctx, {
+    latitude, longitude,
+  });
+
+  onSetup();
+}, {
+  name: "setupLocation",
+  onReject: (ctx, e) => {
+    if (isError(e)) {
+      toast.error(e.message)
+    }
+  }
+}).pipe(
+  withStatusesAtom(),
+  withErrorAtom()
+)
 
 const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
   [STAGES_MAP.SPLASH]: () => {
@@ -59,7 +117,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
   ),
   [STAGES_MAP.WELCOMING]: () => {
     const ctx = useCtx();
-    const value = useAtomAccessor($intro.firstName);
+    const firstName = useAtomAccessor($intro.firstName);
 
     return (
       <div class="flex flex-col text-center h-full gap-6 w-full items-center">
@@ -72,11 +130,13 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
           class="w-full justify-center flex"
         >
           <Input
+            variant="headless"
             type="text"
             required
-            value={value()}
+            value={firstName()}
             size="lg"
             class="w-full"
+            placeholder="Имя"
             onInput={(e) => $intro.firstName(ctx, e.target.value)}
           />
         </form>
@@ -189,29 +249,18 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
 
     const ctx = useCtx();
 
-    const setupLocation = () => {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-
-        const result = $intro.location(ctx, {
-          latitude, longitude,
-        });
-
-        if (result) {
-          setIsSetuped(true);
-        }
-      });
-    }
-
     return (
       <div class="flex flex-col text-center gap-4 h-full w-full items-center">
         <Title as="text" msg="Где ты сейчас? Мы покажем людей и события рядом" />
         <div class="flex flex-col lg:flex-row gap-2 w-full items-center justify-center">
           <Switch>
+            <Match when={useAtomAccessor(setupLocation.statusesAtom)().isPending}>
+              <p>Загрузка...</p>
+            </Match>
             <Match when={!isSetuped()}>
               <Button
                 class="bg-brand-default text-primary text-sm"
-                onClick={setupLocation}
+                onClick={() => setupLocation(ctx, () => setIsSetuped(true))}
               >
                 📍 Использовать текущую локацию
               </Button>
@@ -263,7 +312,12 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
     });
 
     return (
-      <div class="relative group w-32 h-32 rounded-full overflow-hidden bg-neutral-800 border border-neutral-700">
+      <div
+        class="
+          relative group w-32 h-32 rounded-full
+          overflow-hidden bg-neutral-800 border border-neutral-700
+        "
+      >
         <input
           ref={fileInputRef}
           type="file"
@@ -287,7 +341,8 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
           onClick={() => fileInputRef.click()}
           class="
             absolute inset-0 bg-black/50 text-white text-xs opacity-0
-            group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer font-medium
+            group-hover:opacity-100 transition-opacity
+            flex items-center justify-center cursor-pointer font-medium
           "
         >
           Изменить

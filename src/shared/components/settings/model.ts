@@ -1,4 +1,4 @@
-import { action, atom, reatomMap, withAssign, withReset, type AtomMut, type Ctx } from "@reatom/framework";
+import { action, atom, batch, reatomMap, withAssign, withReset, type AtomMut, type Ctx } from "@reatom/framework";
 import { withUndo } from "@reatom/undo";
 import { searchParamsAtom } from '@reatom/url'
 import { navigate } from "../../../lib/router/utils";
@@ -88,7 +88,7 @@ export const {
     new Map(), name("accountFields")
   )
 
-  const initFields = (ctx: Ctx) => {
+  const initFields = action((ctx: Ctx) => {
     const me = ctx.get($user.data);
 
     if (!me) {
@@ -96,15 +96,17 @@ export const {
       return;
     }
 
-    getOrCreateFieldAtom(ctx, "firstName", me.firstName);
-    getOrCreateFieldAtom(ctx, "photo", me.photo?.src!);
-    getOrCreateFieldAtom(ctx, "bio", "");
-    // @ts-expect-error
-    getOrCreateFieldAtom(ctx, "style", me.style ?? null);
-    // @ts-expect-error
-    getOrCreateFieldAtom(ctx, "interests", me.interests);
-    getOrCreateFieldAtom(ctx, "age", "18");
-  }
+    batch(ctx, () => {
+      getOrCreateFieldAtom(ctx, "firstName", me.firstName);
+      getOrCreateFieldAtom(ctx, "photo", me.photo?.src!);
+      getOrCreateFieldAtom(ctx, "bio", "");
+      // @ts-expect-error
+      getOrCreateFieldAtom(ctx, "style", me.style ?? null);
+      // @ts-expect-error
+      getOrCreateFieldAtom(ctx, "interests", me.interests);
+      getOrCreateFieldAtom(ctx, "age", "18");
+    })
+  }, name("initFields"))
 
   const getOrCreateFieldAtom = (ctx: Ctx, fieldName: AccountField, initialValue = "") => {
     const map = ctx.get($accountFieldsMap);

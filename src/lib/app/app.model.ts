@@ -4,7 +4,7 @@ import { navigate } from "../router/utils";
 import { watch, watchersModel } from "../helpers/watchers";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import { isError } from "../utils";
-import { baseLocale, getLocale, type Locale } from "../../paraglide/runtime";
+import { baseLocale, type Locale } from "../../paraglide/runtime";
 
 // #region app
 type AppState = {
@@ -17,8 +17,8 @@ export const LANGUAGES = {
 } as const;
 
 export const $locale = atom<Locale>(baseLocale, "locale").pipe(withLocalStorage("locale"));
-export const $lang = atom("en", "locale.lang");
-export const $langLabel = atom((ctx) => LANGUAGES[ctx.spy($locale)].label, "langLabel");
+export const $lang = atom<Locale>(baseLocale, "locale.lang");
+export const $langLabel = atom((ctx) => LANGUAGES[ctx.spy($lang)].label, "langLabel");
 
 export const $appState = atom(null, "appState").pipe(
   withAssign((_, name) => ({
@@ -43,8 +43,6 @@ const appWatchers = watchersModel({
 
 export const defineAppLifecycle = action(async (ctx) => {
   appWatchers.define(ctx)
-
-  $lang(ctx, getLocale())
 }, "defineAppLifecycle")
 // #endregion
 
