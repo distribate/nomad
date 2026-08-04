@@ -1,58 +1,55 @@
 import { action } from "@reatom/framework";
 import { urlAtom } from "@reatom/url";
-import type { RouteBase, RouteCallbacks } from "./types";
+import type { RouteConfig, RouteEffectPhase } from "./types";
 import { $route, getRouter } from ".";
 import { RedirectError, routerNameRule } from "./config";
 import { withRule } from "../helpers";
 
-const resolvePrevRouteCbs = action(async (ctx, cbs: RouteCallbacks) => {
-  return async () => {
-    const filtered = Object.values(cbs).filter(Boolean);
+const runEffects = action(async (ctx, phase: RouteEffectPhase) => {
+  const effects = ctx.get($route.effects)
 
-    for (const cb of filtered) {
-      await cb(ctx)
-    }
+  for (const effect of effects) {
+    if (effect.phase !== phase)
+      continue
+
+    await effect.run(ctx)
   }
-}, withRule("resolvePrevRouteCbs", routerNameRule))
+}, withRule("runEffects", routerNameRule))
 
-export const resolveRoute = action(async (ctx, pathname: string, params?: Record<string, string>): Promise<void> => {
-  const cbs = ctx.get($route.callbacks)
+export const resolveRoute = action(async (
+  ctx, pathname: string, params?: Record<string, string>
+): Promise<void> => {
+  await runEffects(ctx, "beforeLeave")
 
-  let resolvePrevCbs: Awaited<ReturnType<Awaited<typeof resolvePrevRouteCbs>>> | undefined;
-
-  if (cbs) {
-    resolvePrevCbs = await resolvePrevRouteCbs(ctx, cbs);
-  }
-
-  $route.render.reset(ctx);
   $route.meta.reset(ctx);
-  $route.callbacks.reset(ctx);
+  $route.effects.reset(ctx);
 
   try {
     const router = getRouter();
-    const route = await router.resolve({ pathname, params }) as RouteBase;
 
-    await resolvePrevCbs?.();
+    const route = await router.resolve({
+      pathname,
+      params
+    }) as RouteConfig;
 
-    $route.isInited(ctx, true);
+    !route.layout && $route.isLoading(ctx, true);
 
-    await route.guard?.(ctx);
+    route.effects && $route.effects(ctx, route.effects);
+
+    await runEffects(ctx, "beforeEnter")
+
+    $route.render.layout(ctx, route.layout);
+    route.fallback && $route.render.fallback(ctx, route.fallback)
 
     if (route.loader) {
       $route.meta(ctx, (state) => ({ ...state, withLoader: true }));
-      $route.render(ctx, (state) => ({ ...state, component: route.loader! }));
+      $route.render.page(ctx, route.loader);
     }
 
-    await route.onEnter?.(ctx);
+    $route.render.page(ctx, route.page)
+    await runEffects(ctx, "afterEnter")
 
-    $route.callbacks(ctx, {
-      onLeave: route.onLeave,
-    })
-
-    $route.render(ctx, {
-      component: route.component,
-      fallback: route.fallback,
-    });
+    $route.isInited(ctx, true);
   } catch (e) {
     if (e instanceof RedirectError) {
       urlAtom(ctx, new URL(e.to, location.origin))
@@ -60,5 +57,7 @@ export const resolveRoute = action(async (ctx, pathname: string, params?: Record
     }
 
     throw e;
+  } finally {
+    $route.isLoading(ctx, false);
   }
 }, withRule("resolveRoute", routerNameRule))

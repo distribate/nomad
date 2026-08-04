@@ -1,11 +1,11 @@
 import { routes } from "./routes"
 import UniversalRouter from "universal-router"
 import {
-  action, atom, isAbort, reatomAsync, withAbort, withAssign, withReset, withStatusesAtom,
+  action, atom, isAbort, reatomAsync, withAbort, withAssign, withReset,
   type Ctx
 } from "@reatom/framework"
 import { withRule } from "../helpers"
-import type { RouteCallbacks, RouteMeta, RouteRender } from "./types"
+import type { RouteEffects, RouteMeta, RouteRender } from "./types"
 import { urlAtom } from "@reatom/url"
 import { resolveRoute } from "./core"
 import { routerNameRule } from "./config"
@@ -24,13 +24,20 @@ const getRouteAtomName = (p: string, c: string) => withRule(`${p}.${c}`, routerN
 
 export const $route = atom(null, "route").pipe(
   withAssign((_, name) => ({
-    render: atom<RouteRender | null>(null, getRouteAtomName(name, "render")).pipe(withReset()),
-    callbacks: atom<RouteCallbacks | null>(null, getRouteAtomName(name, "callbacks")).pipe(withReset()),
+    render: atom(null, getRouteAtomName(name, "render")).pipe(
+      withAssign((_, name) => ({
+        page: atom<RouteRender["page"] | null>(null, `${name}.page`),
+        layout: atom<RouteRender["layout"] | null>(null, `${name}.layout`),
+        fallback: atom<RouteRender["fallback"] | null>(null, `${name}.fallback`),
+      }))
+    ),
+    effects: atom<RouteEffects>([], getRouteAtomName(name, "effects")).pipe(withReset()),
     meta: atom<RouteMeta>({ withLoader: false }, getRouteAtomName(name, "meta")).pipe(withReset()),
     /*
       Atom that indicates whether the initial route has been initialized.
     */
-    isInited: atom(false, getRouteAtomName(name, "isInited"))
+    isInited: atom(false, getRouteAtomName(name, "isInited")),
+    isLoading: atom(true, getRouteAtomName(name, "isLoading")),
   }))
 );
 
@@ -43,7 +50,7 @@ export const $routeLoading = atom((ctx) => {
     return false;
   }
 
-  return ctx.spy(defineRouteRender.statusesAtom).isPending;
+  return ctx.spy($route.isLoading);
 })
 
 const createRouter = action(async (ctx, { onCreate }: { onCreate: () => void }) => {
@@ -97,7 +104,6 @@ const defineRouteRender = reatomAsync(async (ctx, params?: Record<string, string
 
   await resolveRoute(ctx, currentUrl.pathname, finalParams)
 }, withRule("defineRouteRender", routerNameRule)).pipe(
-  withStatusesAtom(),
   withAbort({ strategy: "last-in-win" }),
 )
 

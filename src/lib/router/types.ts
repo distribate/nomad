@@ -1,23 +1,32 @@
 import type { Action, AsyncAction } from "@reatom/framework"
-import type { Component } from "solid-js"
+import type { Component, ParentComponent } from "solid-js"
 
-export type RouteBase = RouteConfig
+export type RouteEffectPhase =
+  | "beforeLeave"
+  | "afterLeave"
+  | "beforeEnter"
+  | "afterEnter";
 
-export type RouteRender = Pick<RouteBase, "component" | "fallback">
+export type RouteEffect = {
+  phase: RouteEffectPhase,
+  run: Action<[], any> | AsyncAction<[], any>,
+}
+export type RouteEffects = RouteEffect[];
 
-type RouteEventCb = Action<[], any> | AsyncAction<[], any>;
+export type RouteRender = Pick<RouteConfig, "page" | "fallback" | "layout">
+
+export type ComponentRef<T extends Function> = {
+  value: T
+}
 
 export type RouteConfig = {
-  guard?: RouteEventCb,
-  onEnter?: RouteEventCb,
-  onLeave?: RouteEventCb,
-  component: Component,
-  fallback?: Component,
-  loader?: Component,
+  loader?: ComponentRef<Component>,
+  page: ComponentRef<Component>;
+  layout?: ComponentRef<ParentComponent>;
+  fallback?: ComponentRef<Component>;
+  effects?: RouteEffects,
 }
 
 export type RouteMeta = {
   withLoader: boolean,
 }
-
-export type RouteCallbacks = Pick<RouteBase, "onLeave">

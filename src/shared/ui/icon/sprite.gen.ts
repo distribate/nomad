@@ -263,6 +263,9 @@ export const sprites = defineSpriteMap([defineSprite(
      ["arrow-right"],
      [24]
    ), defineSpriteSymbol(
+     ["camera"],
+     [24]
+   ), defineSpriteSymbol(
      ["compass"],
      [24]
    ), defineSpriteSymbol(
@@ -287,12 +290,12 @@ export const sprites = defineSpriteMap([defineSprite(
      ["user-circle"],
      [24]
    )],
-  defineExternalAssetMeta('sprite.9a744a29.svg')
+  defineExternalAssetMeta('sprite.e3d7429a.svg')
 )]
 )])
 
 export type SpritesMeta = {
-  "sprite": "arrow-left" | "arrow-right" | "compass" | "dots-vertical" | "edit" | "pencil-check" | "pencil" | "photo-edit" | "settings" | "user-circle";
+  "sprite": "arrow-left" | "arrow-right" | "camera" | "compass" | "dots-vertical" | "edit" | "pencil-check" | "pencil" | "photo-edit" | "settings" | "user-circle";
 }
 
 //#endregion

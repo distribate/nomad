@@ -1,24 +1,53 @@
-import { action } from "@reatom/framework"
-import type { RouteConfig } from "./types"
+import type { ComponentRef, RouteConfig } from "./types"
 import { RedirectError } from "./config"
-import { getConfigVal } from "../../const/config"
 import { getReatomCtx } from "../app/ctx"
 import { urlAtom } from "@reatom/url"
-import { STATIC_CONFIG_KEYS } from "../dev/const"
+import { lazy, type Component } from "solid-js";
+import { lazyComponent } from "../helpers";
+
+type ComponentRefKeys<T> = {
+  [K in keyof T]-?: NonNullable<T[K]> extends ComponentRef<any> ? K : never
+}[keyof T];
+
+type UnwrapComponentRef<T> = NonNullable<T> extends ComponentRef<infer C> ? C : never;
+
+type DefineComponents<T> = {
+  [K in ComponentRefKeys<T>]-?: UnwrapComponentRef<T[K]>
+};
+
+type RequiredKeys<T> = {
+  [K in keyof T]-?: {} extends Pick<T, K> ? never : K
+}[keyof T];
+
+type OptionalKeys<T> = Exclude<keyof T, RequiredKeys<T>>;
+
+type DefineRouteComponents<T> =
+  Pick<DefineComponents<T>, RequiredKeys<Pick<T, ComponentRefKeys<T>>>> &
+  Partial<Pick<DefineComponents<T>, OptionalKeys<Pick<T, ComponentRefKeys<T>>>>>
+
+type DefineRouteConfig = Omit<RouteConfig, ComponentRefKeys<RouteConfig>> & {
+  render: DefineRouteComponents<RouteConfig>
+};
+
+const wrapComponent = <T extends Function>(
+  value?: T,
+): ComponentRef<T> | undefined =>
+  value
+    ? { value }
+    : undefined;
 
 export function defineRoute(
-  routeName: string, config: RouteConfig,
+  _: string, { render, ...config }: DefineRouteConfig,
 ) {
-  const maybe = <T extends (...args: any[]) => any>(cb?: T, name?: string) => (
-    cb ? action(cb, getConfigVal(STATIC_CONFIG_KEYS.LOG_ROUTER) ? `${routeName}.${name ?? "unknown"}` : "_") : undefined
-  );
-
-  const route = {
+  const route: RouteConfig = {
     ...config,
-    guard: maybe(config.guard, "guard"),
-    onEnter: maybe(config.onEnter, "onEnter"),
-    onLeave: maybe(config.onLeave, "onLeave"),
-  }
+    page: {
+      value: render.page,
+    },
+    fallback: wrapComponent(render.fallback),
+    layout: wrapComponent(render.layout),
+    loader: wrapComponent(render.loader),
+  };
 
   return () => route
 }
@@ -44,3 +73,5 @@ export const navigate = async (
 export function redirect(to: string, replace = false): never {
   throw new RedirectError(to, replace);
 }
+
+export const asDeferred = lazyComponent

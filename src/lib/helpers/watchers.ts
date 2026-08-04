@@ -39,14 +39,14 @@ export const watchersModel = ({
     init, getModelName(name, "watchers"),
   ).pipe(
     withReset(),
-    withLog(),
+    // withLog(),
   );
 
   const $watchersSubs = reatomMap<string, Unsubscribe>(
     new Map(), getModelName(name, "watchersSubs"),
   ).pipe(
     withReset(),
-    withLog(),
+    // withLog(),
   );
 
   const define = action((ctx) => {

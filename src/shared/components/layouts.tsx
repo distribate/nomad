@@ -30,7 +30,7 @@ export const WithTopPadding = (rawProps: WithTopPaddingProps) => {
     <div
       style={{
         "padding-top": local.withTop ? `${t()}px` : undefined,
-        "padding-bottom": local.withBottom ? `${b() + 8}px` : undefined,
+        "padding-bottom": local.withBottom ? `${b() + 16}px` : undefined,
         ...(typeof local.style === "object" ? local.style : {}),
       }}
       {...others}

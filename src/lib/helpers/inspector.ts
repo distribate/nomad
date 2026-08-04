@@ -1,6 +1,6 @@
 import { action, atom, entries, isObject, withAssign, type Atom, type Unsubscribe } from "@reatom/framework";
 import type { FolderApi } from "tweakpane";
-import { $pane, writeToBindingValue } from "../dev/pane.model";
+import { tryGetPaneInstance, writeToBindingValue } from "../dev/pane.model";
 
 type InspectorOptions = {
   title: string; expanded?: boolean;
@@ -27,7 +27,9 @@ export const createFeatureInspector = (
       mount: action((ctx) => {
         cleanup();
 
-        const pane = $pane.getOrCreatePane();
+        const pane = tryGetPaneInstance();
+        if (!pane) return;
+
         folder = pane.addFolder({
           title: options.title,
           expanded: options.expanded ?? true,

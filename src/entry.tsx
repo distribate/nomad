@@ -5,25 +5,45 @@ import { $route, $routeLoading } from "./lib/router"
 import { NotFound } from "./shared/components/templates/not-found"
 import { Bottom } from "./shared/components/layout/bottom"
 import { $appLoading } from "./lib/app/app.model"
-import { Toaster } from 'solid-toast';
 import { AlertDialog } from "./shared/components/alert-dialog"
+import type { ParentComponent } from "solid-js"
+import { Toaster } from "solid-toast"
+
+const DefaultLayout: ParentComponent = (props) => props.children;
 
 const Router = () => {
-  const route = useAtomAccessor($route.render);
+  const layout = useAtomAccessor($route.render.layout);
+  const isLoading = useAtomAccessor($routeLoading);
 
   return (
     <Show
-      when={route()?.component}
+      when={!isLoading()}
+      fallback={<AppLoader />}
+    >
+      <Dynamic component={layout()?.value ?? DefaultLayout}>
+        <RouteOutlet />
+      </Dynamic>
+    </Show>
+  );
+};
+
+const RouteOutlet = () => {
+  const component = useAtomAccessor($route.render.page);
+  const fallback = useAtomAccessor($route.render.fallback);
+
+  return (
+    <Show
+      when={component()?.value}
       fallback={
-        <Dynamic
-          component={route()?.fallback ?? NotFound}
-        />
+        <Dynamic component={fallback()?.value ?? NotFound} />
       }
     >
-      {(Component) => <Dynamic component={Component()} />}
+      {(Component) => (
+        <Dynamic component={Component()} />
+      )}
     </Show>
-  )
-}
+  );
+};
 
 const AppLoader = () => {
   return (
@@ -44,7 +64,6 @@ const Global = () => {
 
 export const Entry = () => {
   const appLoading = useAtomAccessor($appLoading);
-  const routeLoading = useAtomAccessor($routeLoading);
 
   return (
     <Show
@@ -54,14 +73,9 @@ export const Entry = () => {
       <>
         <div class="flex flex-col relative items-center justify-center w-full overflow-hidden h-screen max-w-[440px]">
           <Header />
-          <Show
-            when={!routeLoading()}
-            fallback={null}
-          >
-            <div class="w-full z-1 relative h-full">
-              <Router />
-            </div>
-          </Show>
+          <div class="w-full z-1 relative h-full">
+            <Router />
+          </div>
           <Bottom />
         </div>
         <Global />

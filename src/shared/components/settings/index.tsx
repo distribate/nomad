@@ -1,20 +1,23 @@
-import { MeHeader } from "../me"
 import { For, onCleanup, onMount, Show, type Component, type ParentComponent } from "solid-js"
-import { useAtom, useCtx } from "@reatom/npm-solid-js";
-import { $settings, currentSectionIsDefault, DEFAULT_SETTINGS_NODE_KEY } from "./model";
+import { useCtx } from "@reatom/npm-solid-js";
+import {
+  $settings, currentSectionIsDefault,
+  resetAccountForm, SETTINGS_SECTION_KEYS, DEFAULT_SETTINGS_NODE_KEY, useField,
+  initFields
+} from "./model";
 import { useAtomAccessor } from "../../../lib/reatom";
 import { Dynamic } from "solid-js/web";
 import { $headerNodes } from "../layout/header/model";
 import { BackButton } from "../../ui/back-button";
 import { SettingsItem } from "./primitives";
-import { action, atom, entries, reatomMap, type AtomMut } from "@reatom/framework";
+import { action, entries } from "@reatom/framework";
 import { WithTopPadding } from "../layouts";
-import { $locale, $localeLabel, LOCALES } from "../../../lib/app/app.model";
+import { $appState, $locale, $localeLabel, LOCALES } from "../../../lib/app/app.model";
 import { $user, $logout } from "../../../lib/user/user.model";
 import { setupDevModule } from "../../../lib/helpers";
 import { Input } from "../../ui/input";
-import { withLog } from "../../../lib/reatom/extensions";
 import { Button } from "../../ui/button";
+import { MeHeader } from "../me/primitives";
 
 const SettingsSection: ParentComponent = (props) => {
   return (
@@ -22,50 +25,40 @@ const SettingsSection: ParentComponent = (props) => {
   )
 }
 
-type AccountField = "firstName" | "photo";
+const SettingsAppMeta = () => {
+  const version = useAtomAccessor($appState.version);
+  const type = useAtomAccessor($appState.type);
 
-export const $accountFieldsMap = reatomMap<AccountField, AtomMut<string>>(
-  new Map(), "accountFields"
-).pipe(
-  withLog()
-);
-
-export const getFieldAtom = action((ctx, fieldName: AccountField, initialValue = "") => {
-  const map = ctx.get($accountFieldsMap);
-
-  if (map.has(fieldName)) {
-    return map.get(fieldName)!;
-  }
-
-  const $field = atom(initialValue, `accountField.${fieldName}`);
-  $accountFieldsMap.set(ctx, fieldName, $field);
-
-  return $field;
-}, "getFieldAtom");
-
-export const resetAccountForm = action((ctx) => {
-  $accountFieldsMap.clear(ctx);
-}, "resetAccountForm");
-
-function useField(name: AccountField, initialValue = "") {
-  const ctx = useCtx();
-  const $field = getFieldAtom(ctx, name, initialValue);
-
-  const value = useAtomAccessor($field);
-  const onChange = (newValue: string) => $field(ctx, newValue);
-
-  return [value, onChange] as const;
+  return (
+    <div class="flex flex-col w-full items-center justify-center">
+      <p class="text-neutral-400 text-sm font-medium">
+        Nomad v{version()} ({type()})
+      </p>
+    </div>
+  )
 }
 
 const SETTINGS_COMPONENTS: Record<string, Component> = {
-  "default": () => {
+  [SETTINGS_SECTION_KEYS.DEFAULT]: () => {
     const currLang = useAtomAccessor($localeLabel);
     const me = useAtomAccessor($user.data);
+    const [photo, setPhoto] = useField("photo");
 
     return (
       <>
         <Show when={me()}>
-          {(data) => <MeHeader me={data()} />}
+          {(data) => (
+            <MeHeader
+              me={data()}
+              avatar={{
+                as: "editable",
+                onPick: (value) => {
+                  setPhoto(value);
+                },
+                previewImg: photo()
+              }}
+            />
+          )}
         </Show>
         <div class="flex flex-col gap-6">
           <SettingsSection>
@@ -137,7 +130,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
       </>
     )
   },
-  "preferences": () => {
+  [SETTINGS_SECTION_KEYS.PREFERENCES]: () => {
     return (
       <>
         <div class="flex flex-col gap-6">
@@ -159,7 +152,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
       </>
     )
   },
-  "language": () => {
+  [SETTINGS_SECTION_KEYS.LANGUAGE]: () => {
     return (
       <>
         <div class="flex flex-col gap-6">
@@ -195,22 +188,9 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
       </>
     )
   },
-  "account": () => {
+  [SETTINGS_SECTION_KEYS.ACCOUNT]: () => {
     const ctx = useCtx();
-
     const [firstName, setFirstName] = useField("firstName");
-    const [photo, setPhoto] = useField("photo");
-
-    onMount(() => {
-      const curr = ctx.get($user.data)!;
-
-      setFirstName(curr.firstName);
-      setPhoto(curr.photo?.src);
-    });
-
-    onCleanup(() => {
-      resetAccountForm(ctx);
-    });
 
     return (
       <>
@@ -232,19 +212,41 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
   }
 }
 
-export const Settings = () => {
+export const SettingsLayout: ParentComponent = (props) => {
   const ctx = useCtx();
-  const currSection = useAtomAccessor($settings.currentSection);
 
   setupDevModule(
-    ctx, () => import("./model.dev"), (m) => m.$settingsDev, { persistent: true }
+    ctx, () => import("./model.dev"), (m) => m.$settingsDev
   )
 
-  const ComponentToRender = () => {
-    const section = currSection();
-    const key = currentSectionIsDefault(section) ? DEFAULT_SETTINGS_NODE_KEY : section;
-    return SETTINGS_COMPONENTS[key] ?? null;
-  };
+  return (
+    <WithTopPadding class="flex flex-col h-full w-full gap-4 px-4">
+      {props.children}
+    </WithTopPadding>
+  )
+}
+
+const SettingsNotFound = () => {
+  return (
+    <div class="flex flex-col h-screen items-center justify-center w-full gap-4 p-4">
+      Не найдено
+    </div>
+  )
+}
+
+const getComponent = () => {
+  const currSection = useAtomAccessor($settings.currentSection);
+  const section = currSection();
+
+  const key = currentSectionIsDefault(section)
+    ? DEFAULT_SETTINGS_NODE_KEY
+    : section;
+
+  return SETTINGS_COMPONENTS[key] ?? null;
+};
+
+export const SettingsPage = () => {
+  const ctx = useCtx();
 
   // todo: migrate to more declarative control of the backbutton
   onMount(() => {
@@ -264,23 +266,18 @@ export const Settings = () => {
     onCleanup(() => unsub());
   });
 
+  initFields(ctx);
+
+  onCleanup(() => {
+    resetAccountForm(ctx);
+  });
+
   return (
-    <WithTopPadding class="flex flex-col h-full w-full gap-4 px-4">
-      <Show
-        when={ComponentToRender()}
-        fallback={
-          <div class="flex flex-col h-screen items-center justify-center w-full gap-4 p-4">
-            Не найдено
-          </div>
-        }
-      >
-        {(Comp) => (
-          <div class="flex overflow-y-auto flex-col gap-6 w-full h-full">
-            {/*@ts-ignore*/}
-            <Dynamic component={Comp} />
-          </div>
-        )}
-      </Show>
-    </WithTopPadding>
+    <div class="flex flex-col gap-6 justify-between w-full h-full">
+      <div class="flex flex-col gap-4 overflow-y-auto w-full h-full">
+        <Dynamic component={getComponent() ?? SettingsNotFound} />
+      </div>
+      <SettingsAppMeta />
+    </div>
   )
 }

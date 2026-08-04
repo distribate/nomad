@@ -1,11 +1,12 @@
 import type { BindingApi } from "@tweakpane/core";
 import { FolderApi, Pane } from "tweakpane";
 import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
+import { withLocalStorage } from "@reatom/persist-web-storage";
 import { BINDINGS, type BindingNode, type BindingParams, type BindingValue } from "./config";
 import { expose, isError, isPrimitive } from "../utils";
 import { watch, watchersModel } from "../helpers/watchers";
 import { getReatomCtx } from "../app/ctx";
-import { withLocalStorage } from "@reatom/persist-web-storage";
+import { getHeapSizeMB } from "../helpers";
 
 const $devPaneIsEnabled = atom(import.meta.env.DEV, "devPane")
 
@@ -90,10 +91,16 @@ function renderBindingNode(
   }
 }
 
-const getInstance = () => {
-  if (!instance) throw new Error("pane is not initialized");
+export const getPaneInstance = (): Pane => {
+  if (!instance) {
+    throw new Error("pane is not initialized");
+  }
   return instance;
 }
+
+export const tryGetPaneInstance = (): Pane | null => {
+  return instance;
+};
 
 const devWatchers = watchersModel({
   name: "pane",
@@ -116,6 +123,32 @@ const $paneMeta = atom<PaneMeta>({ expanded: false }).pipe(
   }))
 )
 
+const memoryStats = {
+  usedHeapMB: 0
+}
+
+// todo: add to the global pane bindings
+function startOtherBinds(folder: FolderApi) {
+  const otherFolder = folder.addFolder({ title: "other", expanded: false });
+
+  memoryStats.usedHeapMB = getHeapSizeMB()
+
+  const memoryMonitor = otherFolder.addBinding(memoryStats, 'usedHeapMB', {
+    readonly: true,
+    view: 'graph',
+    min: 0,
+    max: 100,
+    label: 'JSHeap (MB)',
+  })
+
+  const intervalId = setInterval(() => {
+    memoryStats.usedHeapMB = getHeapSizeMB();
+    memoryMonitor.refresh();
+  }, 500)
+
+  subs.set("memoryHeap", () => clearInterval(intervalId))
+}
+
 export const $pane = atom(null, "pane").pipe(
   withAssign((_, name) => ({
     getOrCreatePane: (): Pane => {
@@ -133,8 +166,18 @@ export const $pane = atom(null, "pane").pipe(
       instance.element.style.overflow = "auto"
       instance.element.style.maxWidth = window.innerWidth * 0.7 + "px";
 
-      function startBindNodes() {
-        const instance = getInstance();
+      function startBindNodes(folder: FolderApi) {
+        folder.on("fold", (e) => {
+          $paneMeta(ctx, { expanded: e.expanded });
+        })
+
+        for (const [scope, node] of Object.entries(BINDINGS)) {
+          renderBindingNode(ctx, folder, node, scope);
+        }
+      }
+
+      try {
+        const instance = getPaneInstance();
 
         // root folder for convenient folding
         const rootFolder = instance.addFolder({
@@ -142,17 +185,8 @@ export const $pane = atom(null, "pane").pipe(
           expanded: ctx.get($paneMeta).expanded
         });
 
-        rootFolder.on("fold", (e) => {
-          $paneMeta(ctx, { expanded: e.expanded });
-        })
-
-        for (const [scope, node] of Object.entries(BINDINGS)) {
-          renderBindingNode(ctx, rootFolder, node, scope);
-        }
-      }
-
-      try {
-        startBindNodes()
+        startBindNodes(rootFolder);
+        startOtherBinds(rootFolder);
       } catch (e) {
         if (isError(e)) {
           console.error(`Error: "${e.message}", stack: ${e.stack}`)

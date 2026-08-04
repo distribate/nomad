@@ -1,5 +1,5 @@
 import { useCtx } from "@reatom/npm-solid-js";
-import { $user, type User } from "../../../lib/user/user.model"
+import { $user } from "../../../lib/user/user.model"
 import { Button } from "../../ui/button";
 import { For, Show } from "solid-js";
 import { Icon } from "../../ui/icon";
@@ -7,35 +7,7 @@ import { WithTopPadding } from "../layouts";
 import { me_events } from "./model";
 import { useAtomAccessor } from "../../../lib/reatom";
 import { setupDevModule } from "../../../lib/helpers";
-
-export const MeHeader = (props: { me: User }) => {
-  return (
-    <div class="flex flex-col gap-2 items-center justify-center w-full">
-      <div class="flex h-26 aspect-square">
-        <Show
-          when={props.me.photo?.src}
-          fallback={
-            <span class="text-bold text-lg">{props.me.firstName?.[0] ?? " "}</span>
-          }
-        >
-          {(data) => (
-            <img
-              src={data()}
-              alt={props.me.firstName}
-              class="w-full h-full object-cover rounded-full"
-            />
-          )}
-        </Show>
-      </div>
-      <div class="flex flex-col items-center justify-center w-full">
-        <p class="font-semibold text-base">
-          {props.me.firstName}
-        </p>
-        <p class="text-neutral-400 text-sm">online</p>
-      </div>
-    </div>
-  )
-}
+import { MeHeader } from "./primitives";
 
 const MeEvents = () => {
   const ctx = useCtx()
@@ -71,7 +43,12 @@ export const Me = () => {
   return (
     <WithTopPadding class="flex flex-col h-full w-full gap-4 p-4">
       <Show when={me()}>
-        {(data) => <MeHeader me={data()} />}
+        {(data) => (
+          <MeHeader
+            me={data()}
+            avatar={{ as: "readonly", photo: data().photo, alt: data().firstName }}
+          />
+        )}
       </Show>
       <MeEvents />
     </WithTopPadding>
