@@ -2,9 +2,9 @@ import { action } from "@reatom/framework"
 import dayjs from "dayjs"
 import { withRule } from "./helpers"
 import { getConfigVal } from "../const/config";
-import { $lang } from "./app/app.model";
 import { rootLogger } from "./logger/logger.model";
 import { STATIC_CONFIG_KEYS } from "./dev/const";
+import { getLocale } from "../paraglide/runtime";
 
 const locales = {
   ru: () => import("dayjs/locale/ru"),
@@ -26,7 +26,7 @@ export const installDayjsLocale = async (targetLocale: string) => {
 
 export const setupDayjs = action(async (ctx) => {
   // locale as lang ("ru" | "en" | ...) (??)
-  const locale = ctx.get($lang);
+  const locale = getLocale()
   await installDayjsLocale(locale)
 }, withRule("setupDayjs", getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS)))
 

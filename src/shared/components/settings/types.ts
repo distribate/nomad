@@ -13,6 +13,7 @@ type SettingItemPage = {
 type SettingItemAction = {
   type: "action";
   meta: SettingMeta;
+  class?: string
 } & (
   | {
     event: Action<[boolean], any>;

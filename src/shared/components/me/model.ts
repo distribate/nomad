@@ -1,6 +1,7 @@
 import { action, isAbort, type Action } from "@reatom/framework";
 import { navigate } from "../../../lib/router/utils";
 import type { IconName } from "../../ui/icon";
+import { translate } from "../../../lib/app/locale";
 
 type MeEvent = {
   icon: IconName,
@@ -10,7 +11,7 @@ type MeEvent = {
 
 export const me_events: MeEvent[] = [
   {
-    label: "Set Photo",
+    label: translate["profile.set-photo"](),
     action: action(async (ctx) => {
       if ('showOpenFilePicker' in window) {
         try {
@@ -54,14 +55,14 @@ export const me_events: MeEvent[] = [
     icon: "sprite:photo-edit"
   },
   {
-    label: "Edit Info",
+    label: translate["profile.edit-info"](),
     action: action(async (ctx) => {
       await navigate("/settings", { a: "account" })
     }),
     icon: "sprite:edit"
   },
   {
-    label: "Settings",
+    label: translate["shared.settings"](),
     action: action(async (ctx) => {
       await navigate("/settings")
     }),

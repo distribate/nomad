@@ -3,7 +3,8 @@ import { useCtx } from "@reatom/npm-solid-js";
 import {
   $settings, currentSectionIsDefault,
   resetAccountForm, SETTINGS_SECTION_KEYS, DEFAULT_SETTINGS_NODE_KEY, useField,
-  initFields
+  initFields,
+  getCurrentSectionTitle
 } from "./model";
 import { useAtomAccessor } from "../../../lib/reatom";
 import { Dynamic } from "solid-js/web";
@@ -12,16 +13,24 @@ import { BackButton } from "../../ui/back-button";
 import { SettingsItem } from "./primitives";
 import { action, entries } from "@reatom/framework";
 import { WithTopPadding } from "../global/layouts";
-import { $appState, $locale, $localeLabel, LOCALES } from "../../../lib/app/app.model";
+import { $appState, $langLabel, LANGUAGES, $lang } from "../../../lib/app/app.model";
 import { $user, $logout } from "../../../lib/user/user.model";
 import { setupDevModule } from "../../../lib/helpers";
 import { Input } from "../../ui/input";
-import { Button } from "../../ui/button";
 import { MeHeader } from "../me/primitives";
+import { setLocale } from "../../../paraglide/runtime";
+import { translate } from "../../../lib/app/locale";
 
-const SettingsSection: ParentComponent = (props) => {
+const SettingsSection: ParentComponent<{ title?: string }> = (props) => {
   return (
-    <section class="flex bg-neutral-800 rounded-xl overflow-hidden flex-col gap-2" {...props} />
+    <section class="flex bg-neutral-800 py-1 rounded-xl overflow-hidden flex-col gap-2">
+      {props.title && (
+        <h2 class="px-4 text-brand-default pt-2 text-sm text-neutral-400">
+          {props.title}
+        </h2>
+      )}
+      {props.children}
+    </section>
   )
 }
 
@@ -40,7 +49,7 @@ const SettingsAppMeta = () => {
 
 const SETTINGS_COMPONENTS: Record<string, Component> = {
   [SETTINGS_SECTION_KEYS.DEFAULT]: () => {
-    const currLang = useAtomAccessor($localeLabel);
+    const currLang = useAtomAccessor($langLabel);
     const me = useAtomAccessor($user.data);
     const [photo, setPhoto] = useField("photo");
 
@@ -66,7 +75,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
               item={{
                 type: "page",
                 meta: {
-                  title: "Account",
+                  title: translate["settings.account"](),
                   description: "Username, Bio"
                 },
                 route: "account"
@@ -76,7 +85,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
               item={{
                 type: "page",
                 meta: {
-                  title: "Privacy",
+                  title: translate["settings.privacy"](),
                   description: "Devices, Passkeys"
                 },
                 route: "privacy"
@@ -86,7 +95,7 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
               item={{
                 type: "page",
                 meta: {
-                  title: "Preferences",
+                  title: translate["settings.preferences"](),
                   description: "Animations"
                 },
                 route: "preferences"
@@ -96,22 +105,19 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
               item={{
                 type: "page",
                 meta: {
-                  title: "Language",
+                  title: translate["settings.language"](),
                   description: currLang()
                 },
                 route: "language"
               }}
             />
           </SettingsSection>
-          <SettingsSection>
-            <h2 class="px-4 pt-2 text-sm text-neutral-400">
-              Help
-            </h2>
+          <SettingsSection title={translate["settings.help"]()}>
             <SettingsItem
               item={{
                 type: "page",
                 meta: {
-                  title: "Ask a Question"
+                  title: translate["settings.ask-question"]()
                 },
                 route: "ask"
               }}
@@ -155,65 +161,136 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
   [SETTINGS_SECTION_KEYS.LANGUAGE]: () => {
     return (
       <>
-        <div class="flex flex-col gap-6">
-          <SettingsSection>
-            <h2 class="px-4 pt-2 text-sm text-neutral-400">
-              Language
-            </h2>
-            <div class="flex flex-col">
-              <For each={entries(LOCALES)}>
-                {([locale, value]) => {
-                  return (
-                    <SettingsItem
-                      item={{
-                        type: "action",
-                        meta: {
-                          title: value.label,
-                          description: value.label
-                        },
-                        event: action((ctx) => {
-                          $locale(ctx, locale)
-                          window.location.reload();
-                        }),
-                        as: "button",
-                        isActive: locale === useAtomAccessor($locale)()
-                      }}
-                    />
-                  )
-                }}
-              </For>
-            </div>
-          </SettingsSection>
-        </div>
+        <SettingsSection title="Language">
+          <div class="flex flex-col">
+            <For each={entries(LANGUAGES)}>
+              {([lang, value]) => {
+                return (
+                  <SettingsItem
+                    item={{
+                      type: "action",
+                      meta: {
+                        title: value.label,
+                        description: value.label
+                      },
+                      event: action(async (ctx) => {
+                        await setLocale(lang)
+                      }),
+                      as: "button",
+                      isActive: lang === useAtomAccessor($lang)()
+                    }}
+                  />
+                )
+              }}
+            </For>
+          </div>
+        </SettingsSection>
       </>
     )
   },
   [SETTINGS_SECTION_KEYS.ACCOUNT]: () => {
-    const ctx = useCtx();
     const [firstName, setFirstName] = useField("firstName");
+    const [bio, setBio] = useField("bio");
+    const [style, setStyle] = useField("style");
+    const [interests, setInterests] = useField("interests");
+    const [age, setAge] = useField("age");
 
     return (
       <>
-        <div class="flex flex-col gap-6">
-          <SettingsSection>
-            <Input
-              value={firstName()}
-              onInput={(e) => setFirstName(e.target.value)}
-            />
-          </SettingsSection>
-          <SettingsSection>
-            <Button onClick={() => $logout.exec(ctx)}>
-              Log out
-            </Button>
-          </SettingsSection>
-        </div>
+        <SettingsSection title={translate["shared.your-name"]()}>
+          <Input
+            variant="headless"
+            value={firstName()}
+            onInput={(e) => setFirstName(e.target.value)}
+          />
+        </SettingsSection>
+        <SettingsSection>
+          <Input
+            variant="headless"
+            value={bio()}
+            placeholder={translate["shared.bio"]()}
+            onInput={(e) => setBio(e.target.value)}
+          />
+        </SettingsSection>
+        <SettingsSection title={translate["shared.about-you"]()}>
+          <div class="flex flex-col pt-2 pb-1 *:px-4 w-full h-full gap-4">
+            <div>
+              <p>
+                {translate["shared.interests"]()}
+              </p>
+              <div class="flex flex-wrap w-full gap-2">
+                <For each={interests().split(",")}>
+                  {(interest) => (
+                    <div>{interest}</div>
+                  )}
+                </For>
+              </div>
+            </div>
+            <div class="flex items-center w-full gap-2">
+              <p>
+                {translate["shared.style"]()}
+              </p>
+              <SettingsItem
+                item={{
+                  type: "action",
+                  meta: {
+                    title: style() ?? translate["shared.not-selected"]()
+                  },
+                  as: "button",
+                  event: action((ctx) => { }),
+                }}
+              />
+            </div>
+          </div>
+        </SettingsSection>
+        <SettingsSection>
+          <SettingsItem
+            item={{
+              type: "action",
+              meta: {
+                title: translate["shared.logout"]()
+              },
+              as: "button",
+              event: action((ctx) => $logout.exec(ctx)),
+              class: "text-red-500"
+            }}
+          />
+        </SettingsSection>
       </>
     )
   }
 }
 
+const SettingsHeaderTitle = (props: { title: string }) => {
+  return (
+    <span class="text-left font-semibold text-primary">{props.title}</span>
+  )
+}
+
 export const SettingsLayout: ParentComponent = (props) => {
   const ctx = useCtx();
+
+  // todo: migrate to more declarative control of the backbutton
+  onMount(() => {
+    const unsub = ctx.subscribe($settings.currentSection, (state) => {
+      if (currentSectionIsDefault(state)) {
+        $headerNodes.update(ctx, {
+          l: null,
+          c: null
+        })
+        return;
+      }
+
+      $headerNodes.update(ctx, {
+        l: () => <BackButton onClick={() => $settings.back(ctx)} />,
+        c: () => <SettingsHeaderTitle title={getCurrentSectionTitle(state)} />
+      }, {
+        withSnapshot: false
+      })
+    });
+
+    onCleanup(unsub);
+  });
 
   setupDevModule(
     ctx, () => import("./model.dev"), (m) => m.$settingsDev
@@ -247,24 +324,6 @@ const getComponent = () => {
 
 export const SettingsPage = () => {
   const ctx = useCtx();
-
-  // todo: migrate to more declarative control of the backbutton
-  onMount(() => {
-    const unsub = ctx.subscribe($settings.currentSection, (state) => {
-      if (currentSectionIsDefault(state)) {
-        $headerNodes.update(ctx, {
-          l: null
-        })
-        return;
-      }
-
-      $headerNodes.update(ctx, {
-        l: () => <BackButton onClick={() => $settings.back(ctx)} />
-      }, { withSnapshot: false })
-    });
-
-    onCleanup(() => unsub());
-  });
 
   initFields(ctx);
 

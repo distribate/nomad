@@ -1,3 +1,5 @@
+import { translate } from "../../../../lib/app/locale"
+
 const BADGES_KEYS = ["feed", "contacts", "settings", "me"]
 
 export type Badge = {
@@ -10,23 +12,23 @@ export type Badge = {
 export const BADGES: Badge[] = [
   {
     origin: "feed",
-    label: "Feed",
+    label: translate["shared.feed"](),
     target: "/",
   },
   {
     origin: "contacts",
-    label: "Contacts",
+    label: translate["shared.contacts"](),
     target: "/contacts",
     disabled: true,
   },
   {
     origin: "settings",
-    label: "Settings",
+    label: translate["shared.settings"](),
     target: "/settings",
   },
   {
     origin: "me",
     target: "/me",
-    label: "Profile",
+    label: translate["shared.profile"](),
   },
 ]

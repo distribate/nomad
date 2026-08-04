@@ -4,6 +4,7 @@ import { For } from "solid-js";
 import { Icon, type IconName } from "../../ui/icon";
 import { $logout } from "../../../lib/user/user.model";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../ui/dropdown";
+import { translate } from "../../../lib/app/locale";
 
 type MoreEvent = {
   label: string;
@@ -36,7 +37,7 @@ const createActions = <
 
 const MORE_EVENTS = createActions({
   logout: {
-    label: "Log out",
+    label: translate["shared.logout"](),
     icon: "sprite:arrow-left",
     withConfirm: true,
     action(ctx) {

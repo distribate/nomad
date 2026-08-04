@@ -12,6 +12,7 @@ const initialConfig = new Map([
   [STATIC_CONFIG_KEYS.GSAP, atom(true)],
   [STATIC_CONFIG_KEYS.LOG_ROUTER, atom(true)],
   [STATIC_CONFIG_KEYS.LOG_DEV, atom(false)],
+  [STATIC_CONFIG_KEYS.FEATURE_INSPECTOR, atom(false)],
 ])
 
 // todo: add the value formatter

@@ -7,15 +7,24 @@ import { withLog } from "../../../lib/reatom/extensions";
 import { useCtx } from "@reatom/npm-solid-js";
 import { useAtomAccessor } from "../../../lib/reatom";
 import { declareModel } from "../../../lib/helpers";
-import { $user, type User } from "../../../lib/user/user.model";
-import type { Accessor } from "solid-js";
+import { $user } from "../../../lib/user/user.model";
+import { translate } from "../../../lib/app/locale";
 
 export const SETTINGS_SECTION_KEYS = {
   DEFAULT: "default",
   ACCOUNT: "account",
   PREFERENCES: "preferences",
   LANGUAGE: "language",
+  PRIVACY: "privacy",
 } as const;
+
+export const SETTINGS_TITLES_KEYS: Record<string, string> = {
+  [SETTINGS_SECTION_KEYS.DEFAULT]: translate["settings.account"](),
+  [SETTINGS_SECTION_KEYS.ACCOUNT]: translate["settings.account"](),
+  [SETTINGS_SECTION_KEYS.PREFERENCES]: translate["settings.preferences"](),
+  [SETTINGS_SECTION_KEYS.LANGUAGE]: translate["settings.language"](),
+  [SETTINGS_SECTION_KEYS.PRIVACY]: translate["settings.privacy"](),
+}
 
 export const DEFAULT_SETTINGS_NODE_KEY = SETTINGS_SECTION_KEYS.DEFAULT
 
@@ -52,6 +61,10 @@ export const $settings = atom(null, "settings").pipe(
   }))
 )
 
+export const getCurrentSectionTitle = (target: string) => {
+  return SETTINGS_TITLES_KEYS[target] ?? "Unknown"
+}
+
 export const currentSectionIsDefault = (target: string) => {
   if (target === '' || target === DEFAULT_SETTINGS_NODE_KEY) return true
   return false
@@ -60,7 +73,13 @@ export const currentSectionIsDefault = (target: string) => {
 $settings.currentSection.__reatom.name = `settings.currentSection`
 
 //#region
-export type AccountField = "firstName" | "photo";
+export type AccountField =
+  | "firstName"
+  | "photo"
+  | "bio"
+  | "style"
+  | "interests"
+  | "age";
 
 export const {
   $accountFieldsMap, getOrCreateFieldAtom, resetAccountForm, useField, initFields
@@ -79,6 +98,12 @@ export const {
 
     getOrCreateFieldAtom(ctx, "firstName", me.firstName);
     getOrCreateFieldAtom(ctx, "photo", me.photo?.src!);
+    getOrCreateFieldAtom(ctx, "bio", "");
+    // @ts-expect-error
+    getOrCreateFieldAtom(ctx, "style", me.style ?? null);
+    // @ts-expect-error
+    getOrCreateFieldAtom(ctx, "interests", me.interests);
+    getOrCreateFieldAtom(ctx, "age", "18");
   }
 
   const getOrCreateFieldAtom = (ctx: Ctx, fieldName: AccountField, initialValue = "") => {

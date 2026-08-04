@@ -26,15 +26,14 @@ export const DialogContent = <T extends ValidComponent = "div">(
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay
         class={cn(
-          `fixed inset-0 z-50 bg-neutral-900/80
-          data-[expanded]:(animate-in fade-in-0)
-          data-[closed]:(animate-out fade-out-0)`,
+          `fixed inset-0 z-50 bg-black/80
+          data-[expanded]:(animate-in fade-in-0) data-[closed]:(animate-out fade-out-0)`,
         )}
         {...rest}
       />
       <DialogPrimitive.Content
         class={cn(
-          `fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%]
+          `fixed left-[50%] rounded-2xl top-[50%] bg-neutral-800 z-50 grid w-full max-w-[calc(100vw-32px)] translate-x-[-50%]
 					translate-y-[-50%] gap-4 border bg-neutral-800 p-6 shadow-lg duration-200
 					data-[expanded]:(animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-48% duration-200)
 					data-[closed]:(animate-out fade-out-0 zoom-out-95 slide-out-to-left-1/2 slide-out-to-top-48% duration-200)
@@ -44,7 +43,7 @@ export const DialogContent = <T extends ValidComponent = "div">(
         {...rest}
       >
         {local.children}
-        <DialogPrimitive.CloseButton
+        {/*<DialogPrimitive.CloseButton
           class={`
             absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100
             focus:(outline-none ring-1.5 ring-ring ring-offset-2)
@@ -66,7 +65,7 @@ export const DialogContent = <T extends ValidComponent = "div">(
             />
             <title>Close</title>
           </svg>
-        </DialogPrimitive.CloseButton>
+        </DialogPrimitive.CloseButton>*/}
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
   );
@@ -83,7 +82,7 @@ export const DialogTitle = <T extends ValidComponent = "h2">(
 
   return (
     <DialogPrimitive.Title
-      class={cn("text-lg font-semibold text-foreground", local.class)}
+      class={cn("text-lg font-semibold text-primary", local.class)}
       {...rest}
     />
   );
@@ -101,7 +100,7 @@ export const DialogDescription = <T extends ValidComponent = "p">(
 
   return (
     <DialogPrimitive.Description
-      class={cn("text-sm text-muted-foreground", local.class)}
+      class={cn("text-sm text-neutral-400", local.class)}
       {...rest}
     />
   );
@@ -113,7 +112,7 @@ export const DialogHeader = (props: ComponentProps<"div">) => {
   return (
     <div
       class={cn(
-        "flex flex-col space-y-2 text-center sm:text-left",
+        "flex flex-col space-y-1 text-left",
         local.class,
       )}
       {...rest}

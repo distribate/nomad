@@ -8,7 +8,7 @@ import type { SettingItem } from "./types";
 import { cva } from "class-variance-authority";
 
 const settingsItemVariant = cva(
-  `flex items-center justify-between w-full px-4 py-3 hover:bg-neutral-700`,
+  `flex items-center justify-between w-full px-4 py-2 hover:bg-neutral-700`,
   {
     variants: {
       variant: {
@@ -54,7 +54,10 @@ export const SettingsAction = (props: { item: Extract<SettingItem, { type: "acti
   if (item.as === 'button') {
     return (
       <button
-        class={settingsItemVariant({ variant: item.isActive ? 'active' : "inactive" })}
+        class={settingsItemVariant({
+          variant: item.isActive ? 'active' : "inactive",
+          class: item.class
+        })}
         onClick={() => item.event(ctx)}
       >
         <div class="flex flex-col text-left">
@@ -94,9 +97,7 @@ export const SettingsLink = (props: { item: Extract<SettingItem, { type: "page" 
   );
 };
 
-export const SettingsItem = (props: {
-  item: SettingItem;
-}) => {
+export const SettingsItem = (props: { item: SettingItem }) => {
   return (
     <Switch>
       <Match when={props.item.type === "page"}>

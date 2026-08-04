@@ -4,25 +4,21 @@ import { navigate } from "../router/utils";
 import { watch, watchersModel } from "../helpers/watchers";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import { isError } from "../utils";
+import { baseLocale, getLocale, type Locale } from "../../paraglide/runtime";
 
 // #region app
 type AppState = {
   type: "standalone" | "tma"
 }
 
-export const LOCALES = {
-  "en-US": { label: "English", lang: "en" },
-  "ru-RU": { label: "Русский", lang: "ru" },
-  "es-ES": { label: "Español", lang: "es" },
+export const LANGUAGES = {
+  "en": { label: "English" },
+  "ru": { label: "Русский" },
 } as const;
 
-type LocaleCode = keyof typeof LOCALES;
-
-const DEFAULT_LOCALE: LocaleCode = "en-US";
-
-export const $locale = atom<LocaleCode>(DEFAULT_LOCALE, "locale").pipe(withLocalStorage("locale"));
-export const $lang = atom((ctx) => LOCALES[ctx.spy($locale)].lang, "locale.lang");
-export const $localeLabel = atom((ctx) => LOCALES[ctx.spy($locale)].label, "localeLabel");
+export const $locale = atom<Locale>(baseLocale, "locale").pipe(withLocalStorage("locale"));
+export const $lang = atom("en", "locale.lang");
+export const $langLabel = atom((ctx) => LANGUAGES[ctx.spy($locale)].label, "langLabel");
 
 export const $appState = atom(null, "appState").pipe(
   withAssign((_, name) => ({
@@ -47,6 +43,8 @@ const appWatchers = watchersModel({
 
 export const defineAppLifecycle = action(async (ctx) => {
   appWatchers.define(ctx)
+
+  $lang(ctx, getLocale())
 }, "defineAppLifecycle")
 // #endregion
 

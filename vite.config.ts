@@ -1,3 +1,4 @@
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
 import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
 import UnoCSS from 'unocss/vite'
@@ -5,7 +6,7 @@ import svg from '@neodx/svg/vite';
 import { analyzer } from 'vite-bundle-analyzer'
 import { exposeMacro } from "./plugins/expose-macro.ts"
 import devtools from 'solid-devtools/vite'
-import fs from 'fs'
+// import fs from 'fs'
 
 const config = {
   port: 5273
@@ -14,6 +15,11 @@ const config = {
 export default defineConfig(() => {
   return {
     plugins: [
+      paraglideVitePlugin({
+        project: './project.inlang',
+        outdir: './src/paraglide',
+        strategy: ["localStorage", "preferredLanguage", "baseLocale"]
+      }),
       devtools({
         autoname: true,
       }),
@@ -38,10 +44,10 @@ export default defineConfig(() => {
     server: {
       host: true,
       port: config.port,
-      https: {
-        cert: fs.readFileSync('./certs/127.0.0.1.pem'),
-        key: fs.readFileSync('./certs/127.0.0.1-key.pem')
-      }
+      // https: {
+      //   cert: fs.readFileSync('./certs/127.0.0.1.pem'),
+      //   key: fs.readFileSync('./certs/127.0.0.1-key.pem')
+      // }
     },
     preview: {
       host: true,

@@ -46,7 +46,11 @@ export const Me = () => {
         {(data) => (
           <MeHeader
             me={data()}
-            avatar={{ as: "readonly", photo: data().photo, alt: data().firstName }}
+            avatar={{
+              as: "readonly",
+              photo: data().photo,
+              alt: data().firstName
+            }}
           />
         )}
       </Show>

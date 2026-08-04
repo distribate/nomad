@@ -3,5 +3,6 @@ export const STATIC_CONFIG_KEYS = {
   LOG_REF_ATOM: "withRefAtomLog",
   GSAP: "withGsap",
   LOG_ROUTER: "withAppRouterLog",
-  LOG_DEV: "withDevLog"
+  LOG_DEV: "withDevLog",
+  FEATURE_INSPECTOR: "withFeatureInspector",
 } as const;

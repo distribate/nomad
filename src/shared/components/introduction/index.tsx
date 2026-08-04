@@ -379,7 +379,7 @@ export const Introduction = () => {
   const idx = useAtomAccessor($intro.idx);
   const component = () => STEPS[idx()]
 
-  setupDevModule(ctx, () => import('./model.dev'),(m) => m.$introDev);
+  setupDevModule(ctx, () => import('./model.dev'), (m) => m.$introDev);
 
   onMount(() => {
     startFirstFrameAnim(ctx)

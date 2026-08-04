@@ -32,12 +32,14 @@ export const AlertDialog = () => {
           <DialogDescription>{displayData()?.description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button onClick={handleConfirm}>
-            {displayData()?.confirmLabel ?? "Confirm"}
-          </Button>
-          <Button onClick={handleCancel}>
-            {displayData()?.cancelLabel ?? "Cancel"}
-          </Button>
+          <div class="flex items-center *:w-full gap-1 justify-between">
+            <Button onClick={handleConfirm}>
+              {displayData()?.confirmLabel ?? "Confirm"}
+            </Button>
+            <Button onClick={handleCancel}>
+              {displayData()?.cancelLabel ?? "Cancel"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

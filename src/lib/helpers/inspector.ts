@@ -1,6 +1,9 @@
-import { action, atom, entries, isObject, withAssign, type Atom, type Unsubscribe } from "@reatom/framework";
+import { action, atom, entries, isObject, withAssign, type Action, type Atom, type AtomMut, type Unsubscribe } from "@reatom/framework";
 import type { FolderApi } from "tweakpane";
 import { tryGetPaneInstance, writeToBindingValue } from "../dev/pane.model";
+import { getConfigVal } from "../../const/config";
+import { STATIC_CONFIG_KEYS } from "../dev/const";
+import { createNoopProxy } from "../utils";
 
 type InspectorOptions = {
   title: string; expanded?: boolean;
@@ -8,10 +11,18 @@ type InspectorOptions = {
 
 const formatValue = (v: unknown): unknown => isObject(v) ? JSON.stringify(v, null, 2) : v
 
+const noop = createNoopProxy();
+
 export const createFeatureInspector = (
   options: InspectorOptions = { title: "Intro", expanded: true },
   targets: Record<string, Atom<unknown>>
-) => {
+): AtomMut<null> & {
+  mount: Action<[], void>;
+  cleanup: Action<[], void>;
+} => {
+  const isEnabled = getConfigVal(STATIC_CONFIG_KEYS.FEATURE_INSPECTOR)
+  if (!isEnabled) return noop;
+
   let folder: FolderApi | null = null;
   let unsubs: Unsubscribe[] = [];
 
@@ -59,7 +70,6 @@ export const createFeatureInspector = (
           unsubs.push(unsub);
         }
       }, `${name}.mount`),
-
       cleanup: action(() => {
         cleanup();
       }, `${name}.cleanup`),

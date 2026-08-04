@@ -41,6 +41,7 @@ const BINDINGS = {
     logActions: createBinding(getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS, { as: "atom" }), { readonly: false }),
     logRefAtom: createBinding(getConfigVal(STATIC_CONFIG_KEYS.LOG_REF_ATOM, { as: "atom" }), { readonly: false }),
     logDevAtom: createBinding(getConfigVal(STATIC_CONFIG_KEYS.LOG_DEV, { as: "atom" }), { readonly: false }),
+    featureInspector: createBinding(getConfigVal(STATIC_CONFIG_KEYS.FEATURE_INSPECTOR, { as: "atom" }), { readonly: false }),
     gsap: createBinding(getConfigVal(STATIC_CONFIG_KEYS.GSAP, { as: "atom" }), { readonly: false })
   }
 } satisfies Bindings;

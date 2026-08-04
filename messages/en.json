@@ -1,0 +1,30 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "settings": {
+    "account": "Account",
+    "preferences": "Preferences",
+    "language": "Language",
+    "privacy": "Privacy",
+    "help": "Help",
+    "ask-question": "Ask Question"
+  },
+  "shared": {
+    "feed": "Feed",
+    "profile": "Profile",
+    "contacts": "Contacts",
+    "settings": "Settings",
+    "logout": "Log out",
+    "interests": "Interests",
+    "style": "Style",
+    "goal": "Goal",
+    "bio": "Bio",
+    "about-you": "About You",
+    "your-name": "Your Name",
+    "not-selected": "not Selected",
+    "online": "online"
+  },
+  "profile": {
+    "edit-info": "Edit Info",
+    "set-photo": "Set Photo"
+  }
+}

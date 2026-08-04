@@ -17,6 +17,7 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
 
+    "allowJs": true,
     /* Linting */
     "noUnusedLocals": false,
     "noUnusedParameters": false,

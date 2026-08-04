@@ -1,6 +1,7 @@
 import { Show } from "solid-js";
 import type { User } from "../../../lib/user/user.model";
 import { Icon } from "../../ui/icon";
+import { translate } from "../../../lib/app/locale";
 
 type MeHeaderAvatarProps =
   | { as: "editable", onPick: (url: string) => void, previewImg: string }
@@ -86,7 +87,7 @@ export const MeHeader = (props: MeHeaderProps) => {
         <p class="font-semibold text-base">
           {props.me.firstName}
         </p>
-        <p class="text-neutral-400 text-sm">online</p>
+        <p class="text-neutral-400 text-sm">{translate["shared.online"]()}</p>
       </div>
     </div>
   )

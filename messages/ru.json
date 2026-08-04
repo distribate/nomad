@@ -1,0 +1,30 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "settings": {
+    "account": "Аккаунт",
+    "preferences": "Настройки",
+    "language": "Язык",
+    "privacy": "Приватность",
+    "help": "Помощь",
+    "ask-question": "Задать вопрос"
+  },
+  "shared": {
+    "feed": "Лента",
+    "profile": "Профиль",
+    "contacts": "Контакты",
+    "settings": "Настройки",
+    "logout": "Выход из аккаунта",
+    "interests": "Интересы",
+    "style": "Стиль",
+    "goal": "Цель",
+    "bio": "Био",
+    "about-you": "О себе",
+    "your-name": "Имя",
+    "not-selected": "не выбрано",
+    "online": "в сети"
+  },
+  "profile": {
+    "edit-info": "Редактировать",
+    "set-photo": "Изменить Фото"
+  }
+}
