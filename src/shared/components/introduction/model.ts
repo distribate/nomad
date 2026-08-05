@@ -1,16 +1,19 @@
 import {
-  action, atom, reatomAsync, reatomMap, withAssign, withErrorAtom, withReset, withStatusesAtom,
+  action, atom, pick, reatomAsync, reatomMap, sleep, withAssign, withErrorAtom, withReset, withStatusesAtom,
   type Ctx, type CtxSpy
 } from "@reatom/framework";
 import { BackButton } from "../../ui/back-button";
 import { $header, $headerNodes } from "../layout/header/model";
 import { $user, type User } from "../../../lib/user/user.model";
-import { compareAtom } from "../../../lib/utils";
+import { compareAtom, isError } from "../../../lib/utils";
 import { nanoid } from "nanoid";
 import type { UserLocation, UserPhoto, UserStyle } from "../../../lib/user/types";
 import { navigate } from "../../../lib/router/utils";
 import { declareModel } from "../../../lib/helpers";
-import { withLog } from "../../../lib/reatom/extensions";
+import toast from "solid-toast";
+import { getGsap } from "../../../lib/gsap";
+import { getCurrentPositionAsync } from "../../../lib/helpers/specified";
+import type { JSX } from "solid-js";
 
 type StageFlow = {
   callback?: (ctx: Ctx) => Awaitable<void>,
@@ -146,20 +149,26 @@ type SummaryData = Pick<User, "firstName"> & {
 
 const REFS_KEYS = ["appName", "title", "confirmBtn", "backButton"] as const
 
-function pick<T extends object, K extends keyof T>(
-  obj: T,
-  keys: readonly K[]
-): Pick<T, K> {
-  const result = {} as Pick<T, K>
+type AnimInitial = Partial<{
+  before: JSX.CSSProperties;
+  after: JSX.CSSProperties;
+  in: JSX.CSSProperties;
+}>;
 
-  for (const key of keys) {
-    if (key in obj) {
-      result[key] = obj[key]
-    }
+const defineAnimModel = <T extends AnimInitial>({ initial }: { initial: T }) => declareModel("anim", ({ name }) => {
+  const $anim = atom(null, name(`anim`)).pipe(
+    withAssign((_, name) => ({
+      before: atom(initial.before ?? {}, `${name}.before`),
+      after: atom(initial.after ?? {}, `${name}.after`),
+      in: atom(initial.in ?? {}, `${name}.in`),
+    }))
+  )
+
+  return {
+    $anim,
+    initial
   }
-
-  return result
-}
+})
 
 const $introModel = declareModel("intro", ({ name }) => {
   const wrapCb = reatomAsync(async (ctx, cb?: StageFlow["callback"]) => {
@@ -204,7 +213,9 @@ const $introModel = declareModel("intro", ({ name }) => {
         $intro.goal.reset(ctx);
         $intro.location.reset(ctx);
         $intro.photo.reset(ctx);
+        $intro.animEnabled.reset(ctx);
       }),
+      animEnabled: atom(true, `${name}.animEnabled`).pipe(withReset()),
     }))
   )
 
@@ -220,22 +231,22 @@ const $introModel = declareModel("intro", ({ name }) => {
     const currIdx = ctx.spy($intro.idx)
     if (currIdx === Object.keys(stages).length) return false;
     return true;
-  }, name(`isNext`)).pipe(withLog());
+  }, name(`isNext`))
 
   const $currStep = atom((ctx) => {
     const currIdx = ctx.spy($intro.idx)
     return pick(getTarget(currIdx), ["name", "description"])
-  }, name(`currStep`)).pipe(withLog())
+  }, name(`currStep`))
 
   const $isValid = atom((ctx) => {
     const currIdx = ctx.spy($intro.idx)
     const target = getTarget(currIdx);
 
-    const cd = target.confirm?.when;
-    if (!cd) return true;
+    const when = target.confirm?.when;
+    if (!when) return true;
 
-    return cd(ctx)
-  }, name(`isValid`)).pipe(withLog())
+    return when(ctx)
+  }, name(`isValid`))
 
   const $isBack = atom((ctx) => {
     const currIdx = ctx.spy($intro.idx)
@@ -243,11 +254,11 @@ const $introModel = declareModel("intro", ({ name }) => {
 
     const target = getTarget(currIdx);
 
-    const cd = target.back?.when;
-    if (cd === undefined) return true;
+    const when = target.back?.when;
+    if (when === undefined) return true;
 
-    return cd(ctx)
-  }, name(`isBack`)).pipe(withLog());
+    return when(ctx)
+  }, name(`isBack`))
 
   wrapCb.statusesAtom.onChange((ctx, state) => {
     const isDisabled = state.isPending || state.isRejected
@@ -287,15 +298,101 @@ const $introModel = declareModel("intro", ({ name }) => {
     if (!matchedRule) return null;
 
     return matchedRule.label();
-  }, name(`confirmLabel`)).pipe(withLog())
+  }, name(`confirmLabel`))
 
   const $hasInterest = (target: string) => compareAtom($intro.interests, (curr) => curr.includes(target))
   const $isGoal = (target: string) => compareAtom($intro.goal, (curr) => curr === target)
   const $isStyle = (target: string) => compareAtom($intro.style, (curr) => curr === target)
 
+  const setupLocation = reatomAsync(async (ctx, onSetup: () => void) => {
+    await sleep(800);
+
+    const position = await getCurrentPositionAsync({
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    });
+
+    const { latitude, longitude } = position.coords;
+
+    $intro.location(ctx, {
+      latitude, longitude,
+    });
+
+    onSetup();
+  }, {
+    name: name("setupLocation"),
+    onReject: (_, e) => {
+      if (isError(e)) {
+        toast.error(e.message)
+      }
+    }
+  }).pipe(
+    withStatusesAtom(), withErrorAtom()
+  )
+
+  const { $anim, initial } = defineAnimModel({
+    initial: {
+      before: {
+        "opacity": 0
+      },
+      in: {
+        "pointer-events": "none"
+      }
+    }
+  })
+
+  const startFirstFrameAnim = action((ctx) => {
+    const appName = $intro.refsMap.get(ctx, "appName")
+    const splashTitle = $intro.refsMap.get(ctx, "title")
+    const confirmBtn = $intro.refsMap.get(ctx, "confirmBtn")
+
+    if (!appName || !splashTitle || !confirmBtn) {
+      console.warn("t1, t2, or t3 is null", { appName, splashTitle, confirmBtn })
+      return
+    }
+
+    const gsap = getGsap();
+    $anim.before(ctx, {});
+
+    gsap.set(appName, {
+      y: window.innerHeight * 0.3, opacity: 0, filter: "blur(20px)"
+    })
+    gsap.set(confirmBtn, {
+      opacity: 0, filter: "blur(20px)"
+    })
+
+    const tl = gsap.timeline({
+      onStart: () => $intro.animEnabled(ctx, true),
+      onComplete: () => $intro.animEnabled(ctx, false)
+    })
+
+    tl
+      .to(appName, {
+        opacity: 1, filter: "blur(0px)", duration: 0.8,  ease: "power3.out"
+      })
+      .to(appName, {
+        y: 0, duration: 0.4, ease: "power3.inOut"
+      })
+      .to({}, {
+        duration: 0.2
+      })
+      .to(splashTitle, {
+        opacity: 1, duration: 0.6, ease: "power2.out"
+      }, "<0.25")
+      .to(confirmBtn, {
+        opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out"
+      })
+  }, name("startFirstFrameAnim"))
+
+  $intro.animEnabled.onChange((ctx, state) =>
+    !state ? $anim.in(ctx, {}) : $anim.in(ctx, initial.in)
+  )
+
   return {
     $intro,
     wrapCb,
+    $anim,
     $isStyle,
     $isGoal,
     $hasInterest,
@@ -303,10 +400,13 @@ const $introModel = declareModel("intro", ({ name }) => {
     $isNext,
     $isBack,
     $isValid,
-    $currStep
+    $currStep,
+    setupLocation,
+    startFirstFrameAnim,
   }
 })
 
 export const {
-  $intro, wrapCb, $isNext, $isBack, $isValid, $confirmLabel, $isGoal, $hasInterest, $isStyle, $currStep
+  $intro, wrapCb, setupLocation, $anim, startFirstFrameAnim,
+  $isNext, $isBack, $isValid, $confirmLabel, $isGoal, $hasInterest, $isStyle, $currStep
 } = $introModel

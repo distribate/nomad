@@ -18,7 +18,6 @@ const Router = () => {
   return (
     <Show
       when={!isLoading()}
-      fallback={<AppLoader />}
     >
       <Dynamic component={layout()?.value ?? DefaultLayout}>
         <RouteOutlet />

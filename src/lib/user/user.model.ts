@@ -3,9 +3,10 @@ import { withLocalStorage } from '@reatom/persist-web-storage'
 import type { UserPhoto } from "./types";
 import { expose } from "../utils";
 import { getReatomCtx } from "../app/ctx";
-import { redirect } from "../router/utils";
-import { isTMA, retrieveLaunchParams } from "@tma.js/sdk";
+import { navigate, redirect } from "../router/utils";
 import { $alertDialog } from "../../shared/components/global/alert-dialog/model";
+import { $appState } from "../app/app.model";
+import { watch, watchersModel } from "../helpers/watchers";
 
 export type User = {
   username: string; // (initially random hash string) (editable)
@@ -34,7 +35,12 @@ export function withAuth(ctx: Ctx) {
 }
 
 export const initUser = reatomAsync(async (ctx) => {
-  if (isTMA()) {
+  userWatchers.define(ctx);
+
+  const isTMA = ctx.get($appState.type) === 'tma'
+
+  if (isTMA) {
+    const { retrieveLaunchParams } = await import("@tma.js/sdk")
     const launchParams = retrieveLaunchParams();
     const tgUser = launchParams.tgWebAppData?.user;
 
@@ -80,6 +86,18 @@ export const $logout = atom(null, "logout").pipe(
     )
   }))
 )
+
+const userWatchers = watchersModel({
+  name: "app",
+  watchers: [
+    watch($isAuthed, {
+      condition: (isAuthed) => !isAuthed,
+      handler: (_, isAuthed) => {
+        !isAuthed && navigate("/intro");
+      },
+    }),
+  ]
+})
 
 expose(function getCurrentUser() {
   return getReatomCtx().get($user.data);

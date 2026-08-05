@@ -11,7 +11,7 @@ export type AppModule = {
   /**
    * Whether the module should be initialized.
    */
-  when?: () => boolean;
+  when?: (ctx: Ctx) => boolean;
   /**
    * Stop boot process if initialization fails.
    * @default true

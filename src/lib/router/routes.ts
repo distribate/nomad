@@ -1,17 +1,10 @@
-import { loadProfiles } from "../../shared/components/feed/model"
 import { NotFound } from "../../shared/components/templates/not-found"
 import { action } from "@reatom/framework"
-import { $isAuthed, withAuth } from "../user/user.model"
+import { $isAuthed } from "../user/user.model"
 import type { Routes } from "universal-router"
 import { defineRoute, asDeferred, redirect } from "./utils"
 import { $headerNodes } from "../../shared/components/layout/header/model"
-import type { RouteEffect } from "./types"
-import { MoreEvents } from "../../shared/components/global/more"
-
-const withAuthEffect = (): RouteEffect => ({
-  phase: "beforeEnter",
-  run: action((ctx) => withAuth(ctx)),
-})
+import { withAuthEffect } from "./effects"
 
 export const routes: Routes = [
   {
@@ -26,6 +19,7 @@ export const routes: Routes = [
         {
           phase: "afterEnter",
           run: action(async (ctx) => {
+            const { loadProfiles } = await import("../../shared/components/feed/model")
             await loadProfiles(ctx);
           }),
         },
@@ -59,7 +53,8 @@ export const routes: Routes = [
       effects: [
         {
           phase: "afterEnter",
-          run: action((ctx) => {
+          run: action(async (ctx) => {
+            const { MoreEvents } = await import("../../shared/components/global/more")
             $headerNodes.update(ctx, { r: MoreEvents })
           })
         },
@@ -80,10 +75,7 @@ export const routes: Routes = [
         page: asDeferred(() => import("../../shared/components/contacts").then(m => m.Contacts))
       },
       effects: [
-        {
-          phase: "beforeEnter",
-          run: action((ctx) => withAuth(ctx))
-        }
+        withAuthEffect()
       ]
     })
   },

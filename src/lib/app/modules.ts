@@ -1,12 +1,11 @@
 import type { AppModule } from "./types";
 import type { Ctx } from "@reatom/framework";
-import { isTMA } from "@tma.js/sdk";
 import { initUser } from "../user/user.model.ts";
 import { setupDayjs } from "../dayjs.ts";
 import { $gsap } from "../gsap/index.ts";
 import { $router } from "../router/index.ts";
 import { initAsTMA } from "./tma.ts";
-import { defineAppLifecycle } from "./app.model.ts";
+import { $appState, defineAppLifecycle } from "./app.model.ts";
 
 export const modules: AppModule[] = [
   {
@@ -33,7 +32,7 @@ export const modules: AppModule[] = [
     name: "tma",
     priority: 4,
     init: initAsTMA,
-    when: () => isTMA(),
+    when: (ctx) => ctx.get($appState.type) === 'tma',
   },
   {
     name: "dev",

@@ -11,6 +11,8 @@ import { getHeapSizeMB } from "../helpers";
 const $devPaneIsEnabled = atom(import.meta.env.DEV, "devPane")
 
 let instance: Pane | null = null;
+// root folder for convenient folding
+let rootFolder: FolderApi | null = null;
 let subs: Map<string, Unsubscribe> = new Map()
 
 export const writeToBindingValue = (binding: BindingApi) => {
@@ -91,15 +93,15 @@ function renderBindingNode(
   }
 }
 
-export const getPaneInstance = (): Pane => {
-  if (!instance) {
-    throw new Error("pane is not initialized");
+export const getRootFolder = (): FolderApi => {
+  if (!rootFolder) {
+    throw new Error("Root folder is not initialized");
   }
-  return instance;
+  return rootFolder;
 }
 
-export const tryGetPaneInstance = (): Pane | null => {
-  return instance;
+export const tryGetRootFolder = (): FolderApi | null => {
+  return rootFolder;
 };
 
 const devWatchers = watchersModel({
@@ -131,22 +133,28 @@ const memoryStats = {
 function startOtherBinds(folder: FolderApi) {
   const otherFolder = folder.addFolder({ title: "other", expanded: false });
 
-  memoryStats.usedHeapMB = getHeapSizeMB()
+  try {
+    memoryStats.usedHeapMB = getHeapSizeMB()
 
-  const memoryMonitor = otherFolder.addBinding(memoryStats, 'usedHeapMB', {
-    readonly: true,
-    view: 'graph',
-    min: 0,
-    max: 100,
-    label: 'JSHeap (MB)',
-  })
+    const memoryMonitor = otherFolder.addBinding(memoryStats, 'usedHeapMB', {
+      readonly: true,
+      view: 'graph',
+      min: 0,
+      max: 100,
+      label: 'JSHeap (MB)',
+    })
 
-  const intervalId = setInterval(() => {
-    memoryStats.usedHeapMB = getHeapSizeMB();
-    memoryMonitor.refresh();
-  }, 500)
+    const intervalId = setInterval(() => {
+      memoryStats.usedHeapMB = getHeapSizeMB();
+      memoryMonitor.refresh();
+    }, 500)
 
-  subs.set("memoryHeap", () => clearInterval(intervalId))
+    subs.set("memoryHeap", () => clearInterval(intervalId))
+  } catch (e) {
+    if (isError(e)) {
+      console.warn(e.message)
+    }
+  }
 }
 
 export const $pane = atom(null, "pane").pipe(
@@ -158,6 +166,11 @@ export const $pane = atom(null, "pane").pipe(
     },
     init: action((ctx) => {
       const instance = $pane.getOrCreatePane();
+
+      rootFolder = instance.addFolder({
+        title: "dev",
+        expanded: ctx.get($paneMeta).expanded
+      });
 
       instance.element.style.zIndex = "1000";
       instance.element.style.position = "fixed";
@@ -177,14 +190,6 @@ export const $pane = atom(null, "pane").pipe(
       }
 
       try {
-        const instance = getPaneInstance();
-
-        // root folder for convenient folding
-        const rootFolder = instance.addFolder({
-          title: "dev",
-          expanded: ctx.get($paneMeta).expanded
-        });
-
         startBindNodes(rootFolder);
         startOtherBinds(rootFolder);
       } catch (e) {
@@ -205,6 +210,7 @@ export const $pane = atom(null, "pane").pipe(
 
       instance.dispose();
       instance = null;
+      rootFolder = null;
 
       subs.clear();
     }, `${name}.dispose`)

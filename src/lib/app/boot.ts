@@ -63,7 +63,7 @@ export const boot = reatomAsync(async (ctx) => {
   for (const module of ordered) {
     const name = module.name;
 
-    if (module.when && !module.when()) {
+    if (module.when && !module.when(ctx)) {
       updateModule(ctx, name, {
         status: "skipped",
       });

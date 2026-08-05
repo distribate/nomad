@@ -56,8 +56,7 @@ export function setupDevModule<T>(
 export function getHeapSizeMB(): number {
   const mem = (performance as any)?.memory;
   if (!mem) {
-    console.warn("performance.memory is not available");
-    return 0;
+    throw new Error("performance.memory is not available");
   }
   return Number((mem.usedJSHeapSize / 1024 / 1024).toFixed(2));
 }

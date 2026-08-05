@@ -1,6 +1,6 @@
 import { useCtx } from "@reatom/npm-solid-js";
 import { Show } from "solid-js";
-import { $confirmLabel, $intro, $isBack, $isNext, $isValid } from "./model";
+import { $anim, $confirmLabel, $intro, $isBack, $isNext, $isValid } from "./model";
 import { Button } from "../../ui/button";
 import { defineRefAtom, useAtomAccessor } from "../../../lib/reatom";
 
@@ -11,6 +11,9 @@ export const Navigation = () => {
   const isValid = useAtomAccessor($isValid)
   const _ = useAtomAccessor($isBack)
 
+  const inAnimStyle = useAtomAccessor($anim.in)
+  const beforeAnimStyle = useAtomAccessor($anim.before);
+
   const confirmLabel = useAtomAccessor($confirmLabel)
 
   return (
@@ -20,7 +23,11 @@ export const Navigation = () => {
           ref={defineRefAtom(ctx, "confirmBtn", $intro.refsMap, "intro")}
           disabled={!isValid()}
           onClick={() => $intro.next(ctx)}
-          class="text-lg w-full py-6 px-6 opacity-0"
+          class="text-lg w-full py-6 px-6"
+          style={{
+            ...beforeAnimStyle(),
+            ...inAnimStyle()
+          }}
         >
           {confirmLabel() ?? "Продолжить"}
         </Button>

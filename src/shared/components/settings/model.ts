@@ -1,4 +1,7 @@
-import { action, atom, batch, isAtom, reatomMap, withAssign, withReset, type Atom, type AtomMut, type Ctx } from "@reatom/framework";
+import {
+  action, atom, batch, isAtom, reatomMap, withAssign, withReset,
+  type Atom, type AtomMut, type Ctx
+} from "@reatom/framework";
 import { withUndo } from "@reatom/undo";
 import { searchParamsAtom } from '@reatom/url'
 import { navigate } from "../../../lib/router/utils";

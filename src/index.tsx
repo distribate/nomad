@@ -48,6 +48,8 @@ try {
 } catch (e) {
   dispose?.();
 
+  console.error(e);
+
   if (isError(e)) {
     render(
       () => (

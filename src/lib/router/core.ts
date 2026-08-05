@@ -52,6 +52,13 @@ export const resolveRoute = action(async (
     $route.isInited(ctx, true);
   } catch (e) {
     if (e instanceof RedirectError) {
+      if (routerNameRule) {
+        console.log(
+          `%cRedirecting from ${pathname} to ${e.to}`,
+          'color: #e6a23c; font-weight: bold; font-size: 12px;'
+        )
+      }
+
       urlAtom(ctx, new URL(e.to, location.origin))
       return
     }

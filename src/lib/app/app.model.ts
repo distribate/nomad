@@ -1,7 +1,4 @@
 import { action, atom, reatomAsync, sleep, withAssign, withStatusesAtom } from "@reatom/framework";
-import { $isAuthed } from "../user/user.model";
-import { navigate } from "../router/utils";
-import { watch, watchersModel } from "../helpers/watchers";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import { isError } from "../utils";
 import { baseLocale, type Locale } from "../../paraglide/runtime";
@@ -29,20 +26,8 @@ export const $appState = atom(null, "appState").pipe(
 
 export const $appLoading = atom(true, "appLoading")
 
-const appWatchers = watchersModel({
-  name: "app",
-  watchers: [
-    watch($isAuthed, {
-      condition: (isAuthed) => !isAuthed,
-      handler: (_, isAuthed) => {
-        !isAuthed && navigate("/intro");
-      },
-    }),
-  ]
-})
-
 export const defineAppLifecycle = action(async (ctx) => {
-  appWatchers.define(ctx)
+
 }, "defineAppLifecycle")
 // #endregion
 

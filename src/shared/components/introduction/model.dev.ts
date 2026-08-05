@@ -1,4 +1,4 @@
-import { $currStep, $intro, $isValid } from "./model";
+import { $currStep, $intro, $isBack, $isNext, $isValid } from "./model";
 import { createFeatureInspector } from "../../../lib/helpers/inspector";
 
 export const $introDev = createFeatureInspector(
@@ -6,6 +6,8 @@ export const $introDev = createFeatureInspector(
   {
     currentStepIdx: $intro.idx,
     isValid: $isValid,
+    isBack: $isBack,
+    isNext: $isNext,
     currentStep: $currStep,
   }
 );

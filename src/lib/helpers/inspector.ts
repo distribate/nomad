@@ -1,6 +1,6 @@
 import { action, atom, entries, isObject, withAssign, type Action, type Atom, type AtomMut, type Unsubscribe } from "@reatom/framework";
 import type { FolderApi } from "tweakpane";
-import { tryGetPaneInstance, writeToBindingValue } from "../dev/pane.model";
+import { tryGetRootFolder, writeToBindingValue } from "../dev/pane.model";
 import { getConfigVal } from "../../const/config";
 import { STATIC_CONFIG_KEYS } from "../dev/const";
 import { createNoopProxy } from "../utils";
@@ -38,7 +38,7 @@ export const createFeatureInspector = (
       mount: action((ctx) => {
         cleanup();
 
-        const pane = tryGetPaneInstance();
+        const pane = tryGetRootFolder();
         if (!pane) return;
 
         folder = pane.addFolder({
