@@ -155,19 +155,60 @@ type AnimInitial = Partial<{
   in: JSX.CSSProperties;
 }>;
 
-const defineAnimModel = <T extends AnimInitial>({ initial }: { initial: T }) => declareModel("anim", ({ name }) => {
-  const $anim = atom(null, name(`anim`)).pipe(
-    withAssign((_, name) => ({
-      before: atom(initial.before ?? {}, `${name}.before`),
-      after: atom(initial.after ?? {}, `${name}.after`),
-      in: atom(initial.in ?? {}, `${name}.in`),
-    }))
-  )
+const createAnimAtoms = (initial: AnimInitial = {}, baseName: string) => atom(null, `${baseName}.$anim`).pipe(
+  withAssign((_, name) => ({
+    before: atom(initial.before ?? {}, `${name}.before`),
+    after: atom(initial.after ?? {}, `${name}.after`),
+    in: atom(initial.in ?? {}, `${name}.in`),
+  }))
+)
+
+type AnimCallback<P> = (
+  ctx: Ctx,
+  deps: {
+    gsap: typeof gsap;
+    anim: ReturnType<typeof createAnimAtoms>;
+    payload: P;
+  }
+) => gsap.core.Animation | void;
+
+type DefineAnimOptions<T extends AnimInitial, P> = {
+  name?: string;
+  initial?: T;
+  callback: AnimCallback<P>;
+}
+
+const defineAnimModel = <T extends AnimInitial, Payload = void>(
+  instanceName: string = "default",
+  {
+    initial = {} as T,
+    callback,
+  }: DefineAnimOptions<T, Payload>
+) => declareModel(`anim:${instanceName}`, ({ name }) => {
+  const $anim = createAnimAtoms(initial, name("model"));
+  const isPending = atom(false, name("isPending"));
+
+  const start = action((ctx, payload: Payload) => {
+    const gsap = getGsap();
+
+    $anim.before(ctx, {});
+    isPending(ctx, true);
+
+    const animation = callback(ctx, { gsap, anim: $anim, payload });
+
+    if (animation && "then" in animation) {
+      animation.then(() => isPending(ctx, false));
+    }
+
+    return animation;
+  }, name("start"));
 
   return {
     $anim,
-    initial
-  }
+    isPending,
+    initial,
+    start,
+  };
 })
 
 const $introModel = declareModel("intro", ({ name }) => {
@@ -331,59 +372,53 @@ const $introModel = declareModel("intro", ({ name }) => {
     withStatusesAtom(), withErrorAtom()
   )
 
-  const { $anim, initial } = defineAnimModel({
+  const { $anim, initial, start } = defineAnimModel("intro", {
     initial: {
-      before: {
-        "opacity": 0
-      },
-      in: {
-        "pointer-events": "none"
+      before: { "opacity": 0 },
+      in: { "pointer-events": "none" }
+    },
+    callback: (ctx, { gsap }) => {
+      const appName = $intro.refsMap.get(ctx, "appName")
+      const splashTitle = $intro.refsMap.get(ctx, "title")
+      const confirmBtn = $intro.refsMap.get(ctx, "confirmBtn")
+
+      if (!appName || !splashTitle || !confirmBtn) {
+        console.warn("t1, t2, or t3 is null", { appName, splashTitle, confirmBtn })
+        return
       }
+
+      gsap.set(appName, {
+        y: window.innerHeight * 0.3, opacity: 0, filter: "blur(20px)"
+      })
+      gsap.set(confirmBtn, {
+        opacity: 0, filter: "blur(20px)"
+      })
+
+      const tl = gsap.timeline({
+        onStart: () => $intro.animEnabled(ctx, true),
+        onComplete: () => $intro.animEnabled(ctx, false)
+      })
+
+      tl
+        .to(appName, {
+          opacity: 1, filter: "blur(0px)", duration: 0.8, ease: "power3.out"
+        })
+        .to(appName, {
+          y: 0, duration: 0.4, ease: "power3.inOut"
+        })
+        .to({}, {
+          duration: 0.2
+        })
+        .to(splashTitle, {
+          opacity: 1, duration: 0.6, ease: "power2.out"
+        }, "<0.25")
+        .to(confirmBtn, {
+          opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out"
+        });
+
+      return tl;
     }
   })
-
-  const startFirstFrameAnim = action((ctx) => {
-    const appName = $intro.refsMap.get(ctx, "appName")
-    const splashTitle = $intro.refsMap.get(ctx, "title")
-    const confirmBtn = $intro.refsMap.get(ctx, "confirmBtn")
-
-    if (!appName || !splashTitle || !confirmBtn) {
-      console.warn("t1, t2, or t3 is null", { appName, splashTitle, confirmBtn })
-      return
-    }
-
-    const gsap = getGsap();
-    $anim.before(ctx, {});
-
-    gsap.set(appName, {
-      y: window.innerHeight * 0.3, opacity: 0, filter: "blur(20px)"
-    })
-    gsap.set(confirmBtn, {
-      opacity: 0, filter: "blur(20px)"
-    })
-
-    const tl = gsap.timeline({
-      onStart: () => $intro.animEnabled(ctx, true),
-      onComplete: () => $intro.animEnabled(ctx, false)
-    })
-
-    tl
-      .to(appName, {
-        opacity: 1, filter: "blur(0px)", duration: 0.8,  ease: "power3.out"
-      })
-      .to(appName, {
-        y: 0, duration: 0.4, ease: "power3.inOut"
-      })
-      .to({}, {
-        duration: 0.2
-      })
-      .to(splashTitle, {
-        opacity: 1, duration: 0.6, ease: "power2.out"
-      }, "<0.25")
-      .to(confirmBtn, {
-        opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out"
-      })
-  }, name("startFirstFrameAnim"))
 
   $intro.animEnabled.onChange((ctx, state) =>
     !state ? $anim.in(ctx, {}) : $anim.in(ctx, initial.in)
@@ -402,11 +437,11 @@ const $introModel = declareModel("intro", ({ name }) => {
     $isValid,
     $currStep,
     setupLocation,
-    startFirstFrameAnim,
+    start,
   }
 })
 
 export const {
-  $intro, wrapCb, setupLocation, $anim, startFirstFrameAnim,
+  $intro, wrapCb, setupLocation, $anim, start,
   $isNext, $isBack, $isValid, $confirmLabel, $isGoal, $hasInterest, $isStyle, $currStep
 } = $introModel

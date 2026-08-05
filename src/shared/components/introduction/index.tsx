@@ -1,5 +1,5 @@
 import { useCtx } from "@reatom/npm-solid-js"
-import { $hasInterest, $anim, $intro, $isGoal, $isStyle, setupLocation, STAGES_MAP, startFirstFrameAnim } from "./model";
+import { $hasInterest, $anim, $intro, $isGoal, $isStyle, setupLocation, STAGES_MAP, start } from "./model";
 import { Dynamic, For } from "solid-js/web";
 import {
   createSignal, Match, onMount,
@@ -345,7 +345,7 @@ export const Introduction = () => {
   setupDevModule(ctx, () => import('./model.dev'), (m) => m.$introDev);
 
   onMount(() => {
-    startFirstFrameAnim(ctx)
+    start(ctx)
   })
 
   return (

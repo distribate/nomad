@@ -14,33 +14,30 @@ export const defineRefAtom = <T extends HTMLElement>(
   ctx: Ctx, key: string, $target: Target<T>, prefix?: string
 ) => {
   const withLog = getConfigVal(STATIC_CONFIG_KEYS.LOG_REF_ATOM);
-
-  const formatMsg = (n: string) => {
-    return `${(prefix ? `${prefix}.` : "")}${n}`;
-  }
+  const logKey = prefix ? `${prefix}.${key}` : key;
 
   return (el: T | null) => {
-    const cleanup = "getOrCreate" in $target
-      ? () => $target.delete(ctx, key)
-      : () => $target.reset(ctx);
+    if (el) {
+      if ("set" in $target) {
+        $target.set(ctx, key, el);
+      } else {
+        $target(ctx, el);
+      }
 
-    let node: T | null = null;
-
-    if ("getOrCreate" in $target) {
-      node = $target.getOrCreate(ctx, key, () => el);
-    } else {
-      node = $target(ctx, el);
-    }
-
-    if (withLog) {
-      console.log("[+] Ref atom", { k: formatMsg(key) });
+      if (withLog) {
+        console.log("[+] Ref atom", { k: logKey });
+      }
     }
 
     onCleanup(() => {
-      cleanup();
+      if ("delete" in $target) {
+        $target.delete(ctx, key);
+      } else {
+        $target.reset(ctx);
+      }
 
       if (withLog) {
-        console.log("[-] Ref atom", { k: formatMsg(key) });
+        console.log("[-] Ref atom", { k: logKey });
       }
     });
   };
