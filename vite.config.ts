@@ -7,6 +7,7 @@ import { analyzer } from 'vite-bundle-analyzer'
 import { exposeMacro } from "./plugins/expose-macro.ts"
 import devtools from 'solid-devtools/vite'
 import fs from 'fs'
+import { VitePWA } from 'vite-plugin-pwa'
 
 const config = {
   port: 5273
@@ -40,7 +41,10 @@ export default defineConfig(({ mode }) => {
         enabled: true,
         analyzerMode: "static"
       }),
-      exposeMacro()
+      exposeMacro(),
+      VitePWA({
+        registerType: 'autoUpdate'
+      })
     ],
     build: {
       sourcemap: true,

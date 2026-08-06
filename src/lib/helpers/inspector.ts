@@ -1,4 +1,7 @@
-import { action, atom, entries, isObject, withAssign, type Action, type Atom, type AtomMut, type Unsubscribe } from "@reatom/framework";
+import {
+  action, atom, entries, isObject, withAssign,
+  type Action, type Atom, type AtomMut, type Unsubscribe
+} from "@reatom/framework";
 import type { FolderApi } from "tweakpane";
 import { tryGetRootFolder, writeToBindingValue } from "../dev/pane.model";
 import { getConfigVal } from "../../const/config";
@@ -15,7 +18,7 @@ const noop = createNoopProxy();
 
 export const createFeatureInspector = (
   options: InspectorOptions = { title: "Intro", expanded: true },
-  targets: Record<string, Atom<unknown>>
+  targets: Record<string, Atom<unknown> | undefined>
 ): AtomMut<null> & {
   mount: Action<[], void>;
   cleanup: Action<[], void>;
@@ -50,6 +53,8 @@ export const createFeatureInspector = (
         if (head) head.style.backgroundColor = "rgba(255, 0, 0, 0.3)";
 
         for (const [key, targetAtom] of entries(targets)) {
+          if (!targetAtom) continue;
+
           const initialValue = ctx.get(targetAtom);
           const isObj = isObject(initialValue);
 

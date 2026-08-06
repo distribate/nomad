@@ -1,5 +1,6 @@
 import {
-  action, atom, pick, reatomAsync, reatomMap, sleep, withAssign, withErrorAtom, withReset, withStatusesAtom,
+  action, atom, pick, reatomAsync, reatomMap, sleep,
+  withAssign, withErrorAtom, withReset, withStatusesAtom,
   type Ctx, type CtxSpy
 } from "@reatom/framework";
 import { BackButton } from "../../ui/back-button";
@@ -11,9 +12,7 @@ import type { UserLocation, UserPhoto, UserStyle } from "../../../lib/user/types
 import { navigate } from "../../../lib/router/utils";
 import { declareModel } from "../../../lib/helpers";
 import toast from "solid-toast";
-import { getGsap } from "../../../lib/gsap";
-import { getCurrentPositionAsync } from "../../../lib/helpers/specified";
-import type { JSX } from "solid-js";
+import { defineAnimModel, getCurrentPositionAsync } from "../../../lib/helpers/specified";
 
 type StageFlow = {
   callback?: (ctx: Ctx) => Awaitable<void>,
@@ -147,71 +146,14 @@ type SummaryData = Pick<User, "firstName"> & {
   photo?: UserPhoto
 }
 
-const REFS_KEYS = ["appName", "title", "confirmBtn", "backButton"] as const
+const REFS_KEYS = [
+  "appName",
+  "title",
+  "confirmBtn",
+  "backButton",
+] as const
 
-type AnimInitial = Partial<{
-  before: JSX.CSSProperties;
-  after: JSX.CSSProperties;
-  in: JSX.CSSProperties;
-}>;
-
-const createAnimAtoms = (initial: AnimInitial = {}, baseName: string) => atom(null, `${baseName}.$anim`).pipe(
-  withAssign((_, name) => ({
-    before: atom(initial.before ?? {}, `${name}.before`),
-    after: atom(initial.after ?? {}, `${name}.after`),
-    in: atom(initial.in ?? {}, `${name}.in`),
-  }))
-)
-
-type AnimCallback<P> = (
-  ctx: Ctx,
-  deps: {
-    gsap: typeof gsap;
-    anim: ReturnType<typeof createAnimAtoms>;
-    payload: P;
-  }
-) => gsap.core.Animation | void;
-
-type DefineAnimOptions<T extends AnimInitial, P> = {
-  name?: string;
-  initial?: T;
-  callback: AnimCallback<P>;
-}
-
-const defineAnimModel = <T extends AnimInitial, Payload = void>(
-  instanceName: string = "default",
-  {
-    initial = {} as T,
-    callback,
-  }: DefineAnimOptions<T, Payload>
-) => declareModel(`anim:${instanceName}`, ({ name }) => {
-  const $anim = createAnimAtoms(initial, name("model"));
-  const isPending = atom(false, name("isPending"));
-
-  const start = action((ctx, payload: Payload) => {
-    const gsap = getGsap();
-
-    $anim.before(ctx, {});
-    isPending(ctx, true);
-
-    const animation = callback(ctx, { gsap, anim: $anim, payload });
-
-    if (animation && "then" in animation) {
-      animation.then(() => isPending(ctx, false));
-    }
-
-    return animation;
-  }, name("start"));
-
-  return {
-    $anim,
-    isPending,
-    initial,
-    start,
-  };
-})
-
-const $introModel = declareModel("intro", ({ name }) => {
+const $introModel = declareModel("intro", ({ name, $log }) => {
   const wrapCb = reatomAsync(async (ctx, cb?: StageFlow["callback"]) => {
     return await cb?.(ctx)
   }, name(`wrapCb`)).pipe(
@@ -237,7 +179,9 @@ const $introModel = declareModel("intro", ({ name }) => {
         let currIdx = ctx.get($intro.idx)
         $intro.idx(ctx, --currIdx);
       }),
-      refsMap: reatomMap<typeof REFS_KEYS[number], HTMLElement | null>(new Map(), `${name}.refsMap`).pipe(
+      refsMap: reatomMap<typeof REFS_KEYS[number], HTMLElement | null>(
+        new Map(), `${name}.refsMap`
+      ).pipe(
         withReset(),
       ),
       // target summary fields (pseudo)
@@ -245,7 +189,9 @@ const $introModel = declareModel("intro", ({ name }) => {
       interests: atom<string[]>([], `${name}.interests`).pipe(withReset()),
       style: atom<UserStyle | null>(null, `${name}.style`).pipe(withReset()),
       goal: atom<string | null>(null, `${name}.goal`).pipe(withReset()),
-      location: atom<SummaryData["location"] | null>(null, `${name}.location`).pipe(withReset()),
+      location: atom<SummaryData["location"] | null>(null, `${name}.location`).pipe(
+        withReset()
+      ),
       photo: atom<{ src: string } | null>(null, `${name}.photo`).pipe(withReset()),
       resetTargetSummaryFields: action((ctx) => {
         $intro.firstName.reset(ctx);
@@ -266,7 +212,8 @@ const $introModel = declareModel("intro", ({ name }) => {
     return target
   }
 
-  // atom that determines if the next stage is valid based on the current stage's condition
+  // atom that determines if the next stage is valid based
+  // on the current stage's condition
   // by default if value is false, the confirm button is hidden
   const $isNext = atom((ctx) => {
     const currIdx = ctx.spy($intro.idx)
@@ -282,22 +229,17 @@ const $introModel = declareModel("intro", ({ name }) => {
   const $isValid = atom((ctx) => {
     const currIdx = ctx.spy($intro.idx)
     const target = getTarget(currIdx);
-
     const when = target.confirm?.when;
     if (!when) return true;
-
     return when(ctx)
   }, name(`isValid`))
 
   const $isBack = atom((ctx) => {
     const currIdx = ctx.spy($intro.idx)
     if (currIdx === 0) return false;
-
     const target = getTarget(currIdx);
-
     const when = target.back?.when;
-    if (when === undefined) return true;
-
+    if (!when) return true;
     return when(ctx)
   }, name(`isBack`))
 
@@ -332,7 +274,8 @@ const $introModel = declareModel("intro", ({ name }) => {
   })
 
   const $confirmLabel = atom<string | null>((ctx) => {
-    const rules = STAGES_CONFIRM_LABELS[ctx.spy($intro.idx)];
+    const currIdx = ctx.spy($intro.idx)
+    const rules = STAGES_CONFIRM_LABELS[currIdx];
     if (!rules) return null;
 
     const matchedRule = rules.find((rule) => rule.when(ctx));
@@ -341,12 +284,15 @@ const $introModel = declareModel("intro", ({ name }) => {
     return matchedRule.label();
   }, name(`confirmLabel`))
 
-  const $hasInterest = (target: string) => compareAtom($intro.interests, (curr) => curr.includes(target))
-  const $isGoal = (target: string) => compareAtom($intro.goal, (curr) => curr === target)
-  const $isStyle = (target: string) => compareAtom($intro.style, (curr) => curr === target)
+  const $hasInterest = (target: string) =>
+    compareAtom($intro.interests, (curr) => curr.includes(target))
+  const $isGoal = (target: string) =>
+    compareAtom($intro.goal, (curr) => curr === target)
+  const $isStyle = (target: string) =>
+    compareAtom($intro.style, (curr) => curr === target)
 
   const setupLocation = reatomAsync(async (ctx, onSetup: () => void) => {
-    await sleep(800);
+    await sleep(200);
 
     const position = await getCurrentPositionAsync({
       enableHighAccuracy: true,
@@ -383,7 +329,9 @@ const $introModel = declareModel("intro", ({ name }) => {
       const confirmBtn = $intro.refsMap.get(ctx, "confirmBtn")
 
       if (!appName || !splashTitle || !confirmBtn) {
-        console.warn("t1, t2, or t3 is null", { appName, splashTitle, confirmBtn })
+        console.warn("t1, t2, or t3 is null", {
+          appName, splashTitle, confirmBtn
+        })
         return
       }
 
@@ -438,10 +386,12 @@ const $introModel = declareModel("intro", ({ name }) => {
     $currStep,
     setupLocation,
     start,
+    $log
   }
 })
 
 export const {
   $intro, wrapCb, setupLocation, $anim, start,
-  $isNext, $isBack, $isValid, $confirmLabel, $isGoal, $hasInterest, $isStyle, $currStep
+  $isNext, $isBack, $isValid, $confirmLabel, $isGoal,
+  $hasInterest, $isStyle, $currStep, $log
 } = $introModel

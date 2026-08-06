@@ -3,7 +3,7 @@ import { $hasInterest, $anim, $intro, $isGoal, $isStyle, setupLocation, STAGES_M
 import { Dynamic, For } from "solid-js/web";
 import {
   createSignal, Match, onMount,
-  type JSX, Switch, type ParentProps, onCleanup
+  type JSX, Switch, type ParentProps
 } from "solid-js";
 import { Button } from "../../ui/button";
 import { Navigation } from "./navigation";
@@ -40,67 +40,66 @@ const Splash = () => {
 const Photo = () => {
   const ctx = useCtx();
 
-  const [preview, setPreview] = createSignal<string>('');
+  const preview = useAtomAccessor($intro.photo)
   let fileInputRef!: HTMLInputElement;
+
+  const previewSrc = () => preview()?.src ?? ""
 
   const handleFileChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
-    const file = target.files?.[0];
 
+    const file = target.files?.[0];
     if (!file) return;
 
-    if (preview() && preview().startsWith('blob:')) {
-      URL.revokeObjectURL(preview());
+    if (preview() && previewSrc().startsWith('blob:')) {
+      URL.revokeObjectURL(previewSrc());
     }
 
     const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
-
     $intro.photo(ctx, { src: objectUrl })
   };
 
-  onCleanup(() => {
-    if (preview() && preview().startsWith('blob:')) {
-      URL.revokeObjectURL(preview());
-    }
-  });
-
   return (
-    <div
-      class="
-        relative group w-32 h-32 rounded-full
+    <div class="flex flex-col gap-4 border -top-1/2 relative w-full h-full">
+      <p class={cn(titleTextStyle, "text-left")}>
+        Добавь одно фото, желательно себя
+      </p>
+      <div
+        class="
+        relative group w-full h-full rounded-xl
         overflow-hidden bg-neutral-800 border border-neutral-700
       "
-    >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        class="hidden"
-        onChange={handleFileChange}
-      />
-      {preview() ? (
-        <img
-          src={preview()}
-          alt="Profile avatar"
-          class="w-full h-full object-cover"
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          class="hidden"
+          onChange={handleFileChange}
         />
-      ) : (
-        <div class="w-full h-full flex items-center justify-center text-neutral-500 text-sm">
-          Нет фото
-        </div>
-      )}
-      <button
-        type="button"
-        onClick={() => fileInputRef.click()}
-        class="
+        {previewSrc() ? (
+          <img
+            src={previewSrc()}
+            alt="Profile avatar"
+            class="w-full h-full object-cover"
+          />
+        ) : (
+          <div class="w-full h-full flex items-center justify-center text-neutral-500 text-sm">
+            Нет фото
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => fileInputRef.click()}
+          class="
           absolute inset-0 bg-black/50 text-white text-xs opacity-0
           group-hover:opacity-100 transition-opacity
           flex items-center justify-center cursor-pointer font-medium
         "
-      >
-        Изменить
-      </button>
+        >
+          Изменить
+        </button>
+      </div>
     </div>
   )
 }
@@ -326,7 +325,7 @@ const STEPS: Record<number, (props: ParentProps) => JSX.Element> = {
   [STAGES_MAP.SPLASH]: Splash,
   [STAGES_MAP.VALUE_PROPOSITION]: Proposition,
   [STAGES_MAP.WELCOMING]: Welcoming,
-  [STAGES_MAP.INTERESTS]:Interests,
+  [STAGES_MAP.INTERESTS]: Interests,
   [STAGES_MAP.STYLE]: Style,
   [STAGES_MAP.GOALS]: Goals,
   [STAGES_MAP.LOCATION]: Location,
@@ -362,7 +361,7 @@ export const Introduction = () => {
           Nomad
         </p>
       </div>
-      <div class="flex flex-col items-start justify-center gap-6 grow w-full">
+      <div class="flex flex-col items-start justify-start gap-6 grow w-full">
         <Dynamic component={component()} />
       </div>
       <Navigation />

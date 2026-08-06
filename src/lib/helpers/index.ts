@@ -1,4 +1,4 @@
-import type { Ctx } from "@reatom/framework"
+import { atom, type AtomMut, type Ctx } from "@reatom/framework"
 import { lazy, onCleanup, onMount, type Component } from "solid-js"
 
 /**
@@ -13,14 +13,26 @@ export const withRule = (name: string, rule: (() => boolean) | boolean): string 
 
 type ModelContext = {
   name: (childName: string) => string,
+  $log?: AtomMut<boolean>
 }
+
+const MODEL_LOG_DEFAULT = true;
 
 export function declareModel<T>(
   modelName: string,
-  fn: (ctx: ModelContext) => T
+  fn: (ctx: ModelContext) => T,
 ): T {
-  const name = (childName: string) => `${modelName}.${childName}`
-  return fn({ name })
+  let log = MODEL_LOG_DEFAULT;
+  const $log = atom(MODEL_LOG_DEFAULT)
+
+  $log.onChange((_, state) => {
+    log = state;
+  })
+
+  const name = (childName: string) =>
+    `${!log ? "_" : ""}${modelName}.${childName}`
+
+  return fn({ name, $log })
 }
 
 type DevModuleShape = {
@@ -28,6 +40,9 @@ type DevModuleShape = {
   cleanup: (ctx: Ctx) => void;
 }
 
+/**
+ * Function that sets up a dev module, loading it lazily and mounting it on mount.
+ */
 export function setupDevModule<T>(
   ctx: Ctx,
   loader: () => Promise<T>,
@@ -61,7 +76,7 @@ export function getHeapSizeMB(): number {
   return Number((mem.usedJSHeapSize / 1024 / 1024).toFixed(2));
 }
 
-export const lazyComponent =  <T extends Component>(
+export const lazyComponent = <T extends Component>(
   loader: () => Promise<T>
 ) =>
   lazy(() =>
