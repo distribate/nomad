@@ -1,4 +1,4 @@
-import { action, atom, withAssign, type Ctx } from "@reatom/framework";
+import { action, atom, withAssign, withReset, type AtomMut, type Ctx } from "@reatom/framework";
 import { declareModel } from ".";
 import { getGsap } from "../gsap";
 import type { JSX } from "solid-js";
@@ -40,6 +40,9 @@ const createAnimAtoms = (initial: AnimInitial = {}, baseName: string) =>
       before: atom(initial.before ?? {}, `${name}.before`),
       after: atom(initial.after ?? {}, `${name}.after`),
       in: atom(initial.in ?? {}, `${name}.in`),
+      state: {
+        isActive: atom(false, `${name}.state.isActive`).pipe(withReset())
+      }
     }))
   )
 
@@ -56,6 +59,7 @@ type DefineAnimOptions<T extends AnimInitial, P> = {
   name?: string;
   initial?: T;
   callback: AnimCallback<P>;
+  $l: AtomMut<boolean>
 }
 
 export const defineAnimModel = <T extends AnimInitial, Payload = void>(
@@ -63,6 +67,7 @@ export const defineAnimModel = <T extends AnimInitial, Payload = void>(
   {
     initial = {} as T,
     callback,
+    $l,
   }: DefineAnimOptions<T, Payload>
 ) => declareModel(`anim:${instanceName}`, ({ name }) => {
   const $anim = createAnimAtoms(initial, name("model"));
@@ -89,4 +94,6 @@ export const defineAnimModel = <T extends AnimInitial, Payload = void>(
     initial,
     start,
   };
+}, {
+  initialLog: $l
 })

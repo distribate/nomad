@@ -1,5 +1,5 @@
 import { useCtx } from "@reatom/npm-solid-js"
-import { $hasInterest, $anim, $intro, $isGoal, $isStyle, setupLocation, STAGES_MAP, start } from "./model";
+import { $hasInterest, $anim, $intro, $isGoal, $isStyle, setupLocation, STAGES_MAP, start, $refsMap } from "./model";
 import { Dynamic, For } from "solid-js/web";
 import {
   createSignal, Match, onMount,
@@ -24,7 +24,7 @@ const Splash = () => {
   return (
     <div class="flex flex-col text-center h-full w-full items-center justify-between">
       <p
-        ref={defineRefAtom(ctx, "title", $intro.refsMap, "intro")}
+        ref={defineRefAtom(ctx, "title", $refsMap, "intro")}
         class={cn(titleTextStyle, "text-center")}
         style={{
           ...beforeAnimStyle(),
@@ -60,8 +60,8 @@ const Photo = () => {
   };
 
   return (
-    <div class="flex flex-col gap-4 border -top-1/2 relative w-full h-full">
-      <p class={cn(titleTextStyle, "text-left")}>
+    <div class="flex flex-col gap-4  -top-1/2 relative w-full h-full">
+      <p class={cn(titleTextStyle, "leading-none text-left")}>
         Добавь одно фото, желательно себя
       </p>
       <div
@@ -351,7 +351,7 @@ export const Introduction = () => {
     <div class="flex flex-col p-4 w-full h-full items-center justify-between">
       <div class="flex h-[40dvh] w-full items-start justify-center">
         <p
-          ref={defineRefAtom(ctx, "appName", $intro.refsMap, "intro")}
+          ref={defineRefAtom(ctx, "appName", $refsMap, "intro")}
           class="font-semibold leading-8 relative text-4xl"
           style={{
             ...beforeAnimStyle(),

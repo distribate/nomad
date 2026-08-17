@@ -1,5 +1,6 @@
-import { atom, type AtomMut, type Ctx } from "@reatom/framework"
+import { atom, type Atom, type AtomMut, type Ctx } from "@reatom/framework"
 import { lazy, onCleanup, onMount, type Component } from "solid-js"
+import { getReatomCtx } from "../app/ctx"
 
 /**
  * Applies a rule to a given name, returning the name with or without a leading underscore.
@@ -13,21 +14,24 @@ export const withRule = (name: string, rule: (() => boolean) | boolean): string 
 
 type ModelContext = {
   name: (childName: string) => string,
-  $log?: AtomMut<boolean>
+  $log: AtomMut<boolean>
 }
-
-const MODEL_LOG_DEFAULT = true;
-
+type ModelOptions = {
+  initialLog: AtomMut<boolean>
+}
 export function declareModel<T>(
   modelName: string,
   fn: (ctx: ModelContext) => T,
+  options?: ModelOptions
 ): T {
-  let log = MODEL_LOG_DEFAULT;
-  const $log = atom(MODEL_LOG_DEFAULT)
+  let log: boolean;
 
-  $log.onChange((_, state) => {
-    log = state;
-  })
+  const $log = options?.initialLog
+    ? options.initialLog
+    : atom(true, `${modelName}.log`);
+
+  log = getReatomCtx().get($log);
+  getReatomCtx().subscribe($log, (state) => { log = state })
 
   const name = (childName: string) =>
     `${!log ? "_" : ""}${modelName}.${childName}`

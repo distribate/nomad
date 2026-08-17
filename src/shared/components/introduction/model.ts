@@ -1,6 +1,8 @@
 import {
   action, atom, pick, reatomAsync, reatomMap, sleep,
   withAssign, withErrorAtom, withReset, withStatusesAtom,
+  type Atom,
+  type AtomMut,
   type Ctx, type CtxSpy
 } from "@reatom/framework";
 import { BackButton } from "../../ui/back-button";
@@ -13,6 +15,7 @@ import { navigate } from "../../../lib/router/utils";
 import { declareModel } from "../../../lib/helpers";
 import toast from "solid-toast";
 import { defineAnimModel, getCurrentPositionAsync } from "../../../lib/helpers/specified";
+import { withLog } from "../../../lib/reatom/extensions";
 
 type StageFlow = {
   callback?: (ctx: Ctx) => Awaitable<void>,
@@ -96,7 +99,7 @@ const stages: Record<number, Stage> = {
 
         $intro.idx.reset(ctx);
         $intro.resetTargetSummaryFields(ctx);
-        $intro.refsMap.reset(ctx);
+        // $intro.refsMap.reset(ctx);
 
         await navigate("/")
       }
@@ -153,7 +156,23 @@ const REFS_KEYS = [
   "backButton",
 ] as const
 
-const $introModel = declareModel("intro", ({ name, $log }) => {
+const defineRefsAsAtomModel = <T>(name: string, $l: AtomMut<boolean>) => declareModel(`${name}.refsAsAtom`, ({ name }) => {
+  const $refsMap = reatomMap<T, HTMLElement | null>(
+    new Map(), name("refsMap")
+  ).pipe(
+    withReset(),
+  );
+
+  return {
+    $refsMap,
+  }
+}, {
+  initialLog: $l
+})
+
+export const $introLog = atom(true);
+
+const $introModel = declareModel("intro", ({ name }) => {
   const wrapCb = reatomAsync(async (ctx, cb?: StageFlow["callback"]) => {
     return await cb?.(ctx)
   }, name(`wrapCb`)).pipe(
@@ -179,17 +198,14 @@ const $introModel = declareModel("intro", ({ name, $log }) => {
         let currIdx = ctx.get($intro.idx)
         $intro.idx(ctx, --currIdx);
       }),
-      refsMap: reatomMap<typeof REFS_KEYS[number], HTMLElement | null>(
-        new Map(), `${name}.refsMap`
-      ).pipe(
-        withReset(),
-      ),
       // target summary fields (pseudo)
       firstName: atom<string>("", `${name}.firstName`).pipe(withReset()),
       interests: atom<string[]>([], `${name}.interests`).pipe(withReset()),
       style: atom<UserStyle | null>(null, `${name}.style`).pipe(withReset()),
       goal: atom<string | null>(null, `${name}.goal`).pipe(withReset()),
-      location: atom<SummaryData["location"] | null>(null, `${name}.location`).pipe(
+      location: atom<SummaryData["location"] | null>(
+        null, `${name}.location`
+      ).pipe(
         withReset()
       ),
       photo: atom<{ src: string } | null>(null, `${name}.photo`).pipe(withReset()),
@@ -200,10 +216,13 @@ const $introModel = declareModel("intro", ({ name, $log }) => {
         $intro.goal.reset(ctx);
         $intro.location.reset(ctx);
         $intro.photo.reset(ctx);
-        $intro.animEnabled.reset(ctx);
+        $anim.state.isActive.reset(ctx);
       }),
-      animEnabled: atom(true, `${name}.animEnabled`).pipe(withReset()),
     }))
+  )
+
+  const { $refsMap } = defineRefsAsAtomModel<typeof REFS_KEYS[number]>(
+    "intro", $introLog
   )
 
   const getTarget = (idx: number) => {
@@ -246,7 +265,7 @@ const $introModel = declareModel("intro", ({ name, $log }) => {
   wrapCb.statusesAtom.onChange((ctx, state) => {
     const isDisabled = state.isPending || state.isRejected
 
-    const ref = $intro.refsMap.get(ctx, "backButton")
+    const ref = $refsMap.get(ctx, "backButton")
     if (!ref) return;
 
     if (ref instanceof HTMLButtonElement) {
@@ -261,7 +280,7 @@ const $introModel = declareModel("intro", ({ name, $log }) => {
           $intro.back(ctx)
         },
         ref: (el) => {
-          $intro.refsMap.set(ctx, "backButton", el)
+          $refsMap.set(ctx, "backButton", el)
         }
       });
 
@@ -324,9 +343,9 @@ const $introModel = declareModel("intro", ({ name, $log }) => {
       in: { "pointer-events": "none" }
     },
     callback: (ctx, { gsap }) => {
-      const appName = $intro.refsMap.get(ctx, "appName")
-      const splashTitle = $intro.refsMap.get(ctx, "title")
-      const confirmBtn = $intro.refsMap.get(ctx, "confirmBtn")
+      const appName = $refsMap.get(ctx, "appName")
+      const splashTitle = $refsMap.get(ctx, "title")
+      const confirmBtn = $refsMap.get(ctx, "confirmBtn")
 
       if (!appName || !splashTitle || !confirmBtn) {
         console.warn("t1, t2, or t3 is null", {
@@ -343,8 +362,8 @@ const $introModel = declareModel("intro", ({ name, $log }) => {
       })
 
       const tl = gsap.timeline({
-        onStart: () => $intro.animEnabled(ctx, true),
-        onComplete: () => $intro.animEnabled(ctx, false)
+        onStart: () => $anim.state.isActive(ctx, true),
+        onComplete: () => $anim.state.isActive(ctx, false)
       })
 
       tl
@@ -365,10 +384,11 @@ const $introModel = declareModel("intro", ({ name, $log }) => {
         });
 
       return tl;
-    }
+    },
+    $l: $introLog
   })
 
-  $intro.animEnabled.onChange((ctx, state) =>
+  $anim.state.isActive.onChange((ctx, state) =>
     !state ? $anim.in(ctx, {}) : $anim.in(ctx, initial.in)
   )
 
@@ -386,12 +406,14 @@ const $introModel = declareModel("intro", ({ name, $log }) => {
     $currStep,
     setupLocation,
     start,
-    $log
+    $refsMap
   }
+}, {
+  initialLog: $introLog
 })
 
 export const {
-  $intro, wrapCb, setupLocation, $anim, start,
+  $intro, wrapCb, setupLocation, $anim, start, $refsMap,
   $isNext, $isBack, $isValid, $confirmLabel, $isGoal,
-  $hasInterest, $isStyle, $currStep, $log
+  $hasInterest, $isStyle, $currStep
 } = $introModel

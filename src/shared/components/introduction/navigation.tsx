@@ -1,6 +1,6 @@
 import { useCtx } from "@reatom/npm-solid-js";
 import { Show } from "solid-js";
-import { $anim, $confirmLabel, $intro, $isBack, $isNext, $isValid } from "./model";
+import { $anim, $confirmLabel, $intro, $isBack, $isNext, $isValid, $refsMap } from "./model";
 import { Button } from "../../ui/button";
 import { defineRefAtom, useAtomAccessor } from "../../../lib/reatom";
 
@@ -20,7 +20,7 @@ export const Navigation = () => {
     <div class="flex items-center h-20 gap-2 w-full justify-center">
       <Show when={isNext()}>
         <Button
-          ref={defineRefAtom(ctx, "confirmBtn", $intro.refsMap, "intro")}
+          ref={defineRefAtom(ctx, "confirmBtn", $refsMap, "intro")}
           disabled={!isValid()}
           onClick={() => $intro.next(ctx)}
           class="text-lg w-full py-6 px-6"
