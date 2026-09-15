@@ -1,4 +1,4 @@
-import { createNoopProxy } from "../lib/utils"
+import { createNoopProxy } from "../lib/helpers/index"
 import { getReatomCtx } from "../lib/app/ctx";
 import { getConfigValue } from "../lib/dev/dev.model";
 import type { ConfigValOpts, DevFlag } from "../lib/dev/types";

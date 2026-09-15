@@ -11,7 +11,7 @@ import { entries } from "@reatom/framework";
 import { Input } from "../../ui/input";
 import { MasonryGrid } from "../../ui/grid";
 import { GOALS, INTERESTS, STYLES } from "./data";
-import { defineRefAtom, useAtomAccessor } from "../../../lib/reatom";
+import { defineRefAtom, useAtomAccessor } from "../../../lib/helpers/reatom";
 import { Block, Title, titleTextStyle } from "./primitives";
 import cn from "cnfast";
 import { setupDevModule } from "../../../lib/helpers";

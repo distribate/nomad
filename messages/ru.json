@@ -33,7 +33,7 @@
   "shared": {
     "feed": "Лента",
     "profile": "Профиль",
-    "contacts": "Контакты",
+    "friends": "Друзья",
     "settings": "Настройки",
     "logout": "Выход из аккаунта",
     "interests": "Интересы",

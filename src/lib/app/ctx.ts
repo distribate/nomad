@@ -1,13 +1,8 @@
-import { createCtx as createReatomCtx } from "@reatom/framework";
+import { createCtx } from "@reatom/framework";
 
-function createCtx() {
-  const ctx = createReatomCtx();
-  return ctx;
-}
+const ctx = createCtx()
 
-const ctx = createCtx();
-
-/*
+/**
   Return the root reatom context
 */
 export const getReatomCtx = () => ctx

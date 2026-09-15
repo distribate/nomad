@@ -3,7 +3,7 @@ import { $settings } from "./model";
 import { Match, Show } from "solid-js";
 import { Switch } from "solid-js";
 import { SwitchControl, Switch as SwitchPrimitive, SwitchThumb } from "../../ui/switch"
-import { useAtomAccessor } from "../../../lib/reatom";
+import { useAtomAccessor } from "../../../lib/helpers/reatom";
 import type { SettingItem } from "./types";
 import { cva } from "class-variance-authority";
 

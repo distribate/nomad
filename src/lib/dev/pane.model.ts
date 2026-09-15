@@ -4,7 +4,7 @@ import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@r
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import { BINDINGS, type BindingNode, type BindingParams, type BindingValue } from "./config";
 import { expose, isError, isPrimitive } from "../utils";
-import { watch, watchersModel } from "../helpers/watchers";
+import { watch, createWatcherModel } from "../helpers/watchers";
 import { getReatomCtx } from "../app/ctx";
 import { getHeapSizeMB } from "../helpers";
 
@@ -104,7 +104,7 @@ export const tryGetRootFolder = (): FolderApi | null => {
   return rootFolder;
 };
 
-const devWatchers = watchersModel({
+const devWatchers = createWatcherModel({
   name: "pane",
   watchers: [
     watch($devPaneIsEnabled, {

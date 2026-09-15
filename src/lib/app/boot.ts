@@ -52,7 +52,7 @@ export const beforeBoot = action(async (ctx) => {
 
 const round = (n: number) => Math.round(n * 100) / 100;
 
-export const boot = reatomAsync(async (ctx) => {
+export const startBoot = reatomAsync(async (ctx) => {
   const ordered = [...modules].sort(
     (a, b) => (a.priority ?? 0) - (b.priority ?? 0),
   );
@@ -105,4 +105,4 @@ export const boot = reatomAsync(async (ctx) => {
   }
 
   $appLoading(ctx, false);
-}, withRule("boot", getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS)))
+}, withRule("startBoot", getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS)))

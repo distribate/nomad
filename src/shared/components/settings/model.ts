@@ -6,9 +6,9 @@ import { withUndo } from "@reatom/undo";
 import { searchParamsAtom } from '@reatom/url'
 import { navigate } from "../../../lib/router/utils";
 import { withLocalStorage } from "@reatom/persist-web-storage";
-import { withLog } from "../../../lib/reatom/extensions";
+import { withAtomLog } from "@distribate/reatom-kit";
 import { useCtx } from "@reatom/npm-solid-js";
-import { useAtomAccessor } from "../../../lib/reatom";
+import { useAtomAccessor } from "../../../lib/helpers/reatom";
 import { declareModel } from "../../../lib/helpers";
 import { $user } from "../../../lib/user/user.model";
 import { translate } from "../../../lib/app/locale";
@@ -70,13 +70,13 @@ export const $settings = atom(null, "settings").pipe(
         animations: atom(true, `${name}.animations`).pipe(
           withLocalStorage("withAnimations"),
           withReset(),
-          withLog()
+          withAtomLog()
         )
       })),
     ),
     currentSection: searchParamsAtom.lens("a", { path: "/settings" }).pipe(
       withUndo({ length: 50 }),
-      withLog()
+      withAtomLog()
     ),
     to: action((_, target: string) => {
       navigate("/settings", { a: target })

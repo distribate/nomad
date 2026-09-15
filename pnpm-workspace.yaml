@@ -1,3 +1,5 @@
 allowBuilds:
   cbor-extract: false
   esbuild: false
+minimumReleaseAgeExclude:
+  - '@distribate/reatom-kit@0.1.0 || 0.2.0'

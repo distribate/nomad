@@ -1,6 +1,6 @@
 import { Show } from "solid-js";
 import { reportError } from "../../../lib/app/app.model"
-import { useAtomAccessor } from "../../../lib/reatom"
+import { useAtomAccessor } from "../../../lib/helpers/reatom"
 import { Button } from "../../ui/button";
 import { useCtx } from "@reatom/npm-solid-js";
 

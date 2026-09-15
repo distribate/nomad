@@ -72,6 +72,9 @@ export function setupDevModule<T>(
   });
 }
 
+/**
+ * Returns the current heap size in MB.
+ */
 export function getHeapSizeMB(): number {
   const mem = (performance as any)?.memory;
   if (!mem) {
@@ -80,6 +83,9 @@ export function getHeapSizeMB(): number {
   return Number((mem.usedJSHeapSize / 1024 / 1024).toFixed(2));
 }
 
+/**
+ * Lazily loads a component.
+ */
 export const lazyComponent = <T extends Component>(
   loader: () => Promise<T>
 ) =>
@@ -88,3 +94,28 @@ export const lazyComponent = <T extends Component>(
       default: component,
     }))
   );
+
+export function compareAtom<T>(
+  source: Atom<T>,
+  predicate: (value: T) => boolean,
+) {
+  return atom((ctx) => predicate(ctx.spy(source)))
+}
+
+export const createNoopProxy = (): any => {
+  const dummyFn = () => proxy;
+
+  const proxy: any = new Proxy(dummyFn, {
+    get(_target, prop) {
+      if (prop === 'then') return undefined;
+      if (prop === Symbol.toPrimitive) return () => '';
+      if (prop === 'toString' || prop === 'valueOf') return () => 'noop';
+      return proxy;
+    },
+    apply() {
+      return proxy;
+    },
+  });
+
+  return proxy;
+};

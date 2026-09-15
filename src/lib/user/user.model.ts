@@ -6,7 +6,7 @@ import { getReatomCtx } from "../app/ctx";
 import { navigate, redirect } from "../router/utils";
 import { $alertDialog } from "../../shared/components/global/alert-dialog/model";
 import { $appState } from "../app/app.model";
-import { watch, watchersModel } from "../helpers/watchers";
+import { watch, createWatcherModel } from "../helpers/watchers";
 
 export type User = {
   username: string; // (initially random hash string) (editable)
@@ -87,7 +87,7 @@ export const $logout = atom(null, "logout").pipe(
   }))
 )
 
-const userWatchers = watchersModel({
+const userWatchers = createWatcherModel({
   name: "app",
   watchers: [
     watch($isAuthed, {

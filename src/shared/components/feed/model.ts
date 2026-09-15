@@ -4,15 +4,13 @@ import profiles from "../../../../seed/profiles.json" with { type: "json" }
 
 const PAGE_SIZE = 2;
 const WINDOW = 3;
-const PREFETCH_OFFSET = 1;
 
 export const $feed = atom(null).pipe(
   withAssign(() => ({
+    offsetY: atom(0),
     order: atom<string[]>([]),
     entities: atom(new Map<string, Profile>()),
     currentId: atom<string | null>(null),
-    nextOffset: atom(0),
-    hasNext: atom(true),
     isFetching: atom(false),
   }))
 )
@@ -77,16 +75,13 @@ export const loadProfiles = reatomAsync(async (ctx) => {
   name: "_",
   onFulfill: (ctx, res) => {
     appendProfiles(ctx, res.items);
-
-    $feed.hasNext(ctx, res.hasNext);
-    $feed.nextOffset(ctx, res.nextOffset);
   }
 }).pipe(
   withStatusesAtom(),
   withErrorAtom()
 );
 
-export const appendProfiles = action((ctx, profiles: Profile[]) => {
+const appendProfiles = action((ctx, profiles: Profile[]) => {
   const entities = new Map(ctx.get($feed.entities));
   const order = [...ctx.get($feed.order)];
 
@@ -103,101 +98,4 @@ export const appendProfiles = action((ctx, profiles: Profile[]) => {
   if (!ctx.get($feed.currentId) && order.length) {
     $feed.currentId(ctx, order[0]);
   }
-});
-
-export const toNext = action(async (ctx) => {
-  const currentId = ctx.get($feed.currentId);
-  if (!currentId) return;
-
-  let order = ctx.get($feed.order);
-
-  let index = order.indexOf(currentId);
-  if (index === -1) return;
-
-  let nextId = order[index + 1];
-
-  if (!nextId && ctx.get($feed.hasNext)) {
-    await loadNextPage(ctx);
-
-    order = ctx.get($feed.order);
-    index = order.indexOf(currentId);
-
-    nextId = order[index + 1];
-  }
-
-  if (nextId) {
-    $feed.currentId(ctx, nextId);
-  }
-
-  const remaining = order.length - index - 1;
-
-  if (remaining <= PREFETCH_OFFSET && ctx.get($feed.hasNext)) {
-    loadNextPage(ctx);
-  }
-
-  cleanupFeed(ctx);
-});
-
-export const toPrev = action((ctx) => {
-  const order = ctx.get($feed.order);
-  const current = ctx.get($feed.currentId);
-  if (!current) return;
-
-  const index = order.indexOf(current);
-  if (index <= 0) return;
-
-  const prev = order[index - 1];
-  $feed.currentId(ctx, prev);
-});
-
-export const loadNextPage = reatomAsync(async (ctx) => {
-  if (ctx.get($feed.isFetching)) return null;
-
-  $feed.isFetching(ctx, true);
-
-  return getPage(ctx.get($feed.nextOffset));
-}, {
-  name: "_",
-  onFulfill(ctx, res) {
-    if (!res) return;
-
-    appendProfiles(ctx, res.items);
-
-    $feed.nextOffset(ctx, res.nextOffset);
-    $feed.hasNext(ctx, res.hasNext);
-    $feed.isFetching(ctx, false);
-  },
-  onReject(ctx) {
-    $feed.isFetching(ctx, false);
-  }
-});
-
-export const cleanupFeed = action((ctx) => {
-  const order = ctx.get($feed.order);
-  const entities = ctx.get($feed.entities);
-  const currentId = ctx.get($feed.currentId);
-  if (!currentId) return
-
-  const index = order.indexOf(currentId);
-  if (index === -1) return;
-
-  const KEEP_BEFORE = 16;
-  const KEEP_AFTER = 16;
-
-  const start = Math.max(0, index - KEEP_BEFORE);
-  const end = Math.min(order.length, index + KEEP_AFTER + 1);
-
-  const newOrder = order.slice(start, end);
-  const newEntities = new Map<string, Profile>();
-
-  for (const id of newOrder) {
-    const profile = entities.get(id);
-
-    if (profile) {
-      newEntities.set(id, profile);
-    }
-  }
-
-  $feed.order(ctx, newOrder);
-  $feed.entities(ctx, newEntities);
 });

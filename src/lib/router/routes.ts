@@ -69,10 +69,10 @@ export const routes: Routes = [
     })
   },
   {
-    path: "/contacts",
-    action: defineRoute("contacts", {
+    path: "/friends",
+    action: defineRoute("friends", {
       render: {
-        page: asDeferred(() => import("../../shared/components/contacts").then(m => m.Contacts))
+        page: asDeferred(() => import("../../shared/components/friends").then(m => m.Friends))
       },
       effects: [
         withAuthEffect()

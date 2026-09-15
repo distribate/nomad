@@ -1,10 +1,12 @@
-import { For, Show } from "solid-js"
-import { toNext, toPrev, $feedStatuses, $visibleProfiles } from "./model"
-import { useAtomAccessor } from "../../../lib/reatom";
+import { For, onMount, Show } from "solid-js"
+import { $feedStatuses, $visibleProfiles, $feed } from "./model"
+import { useAtomAccessor } from "../../../lib/helpers/reatom";
 import type { Profile } from "./types";
-import { useCtx } from "@reatom/npm-solid-js";
+import { useAtom, useCtx } from "@reatom/npm-solid-js";
 import { WithTopPadding } from "../global/layouts";
-import { Icon } from "../../ui/icon";
+import { Icon, type IconName } from "../../ui/icon";
+import { onCleanup } from "solid-js";
+import { $bottom } from "../layout/bottom/model";
 
 const FeedProfilesError = (props: { error: Error }) => {
   return (
@@ -16,25 +18,32 @@ const FeedProfilesError = (props: { error: Error }) => {
 
 const FeedProfileInfo = (props: { profile: Profile }) => {
   return (
-    <div class="absolute bottom-0 left-0 right-16 p-5 z-20 flex flex-col gap-2">
+    <div class="absolute bottom-0 left-0 right-16 p-4 z-20 flex flex-col gap-2">
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-2xl font-bold tracking-wide drop-shadow">
+        <span class="text-2xl font-bold tracking-wide">
           {props.profile.firstName}
         </span>
-        <span class="text-xl font-normal text-white/80">
+        <span class="text-xl text-white/80">
           {props.profile.age}
         </span>
-        <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-white/20 backdrop-blur-md border border-white/30 capitalize">
+        <span
+          class="
+            px-2 py-0.5 text-xs font-semibold rounded-full
+            bg-white/20 backdrop-blur-md border border-white/20 capitalize
+          "
+        >
           {props.profile.style}
         </span>
       </div>
-      <p class="text-sm text-white/90 line-clamp-2 leading-relaxed drop-shadow">
+      <p class="text-sm text-white/90 line-clamp-2 leading-relaxed">
         {props.profile.description}
       </p>
       {props.profile.goal && (
-        <div class="flex items-center gap-1.5 text-xs font-medium text-amber-300 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-xl border border-amber-300/30 w-fit">
+        <div class="flex items-center gap-1 text-xs bg-black/50 px-3 py-1 rounded-xl w-fit">
           <span>✨</span>
-          <span class="truncate">{props.profile.goal}</span>
+          <span class="truncate">
+            {props.profile.goal}
+          </span>
         </div>
       )}
       <div class="flex flex-wrap gap-1.5 pt-1">
@@ -50,56 +59,39 @@ const FeedProfileInfo = (props: { profile: Profile }) => {
   )
 }
 
+const FeedProfileEventChild = (props: { text: string, icon: IconName }) => {
+  return (
+    <div class="flex flex-col items-center">
+      <div class="w-10 h-10 rounded-full flex items-center justify-center">
+        <Icon name={props.icon} class="size-8 fill-white" />
+      </div>
+      <span class="text-sm font-semibold">{props.text}</span>
+    </div>
+  )
+}
+
 const FeedProfileEvents = (props: { profile: Profile }) => {
   return (
     <div class="absolute right-4 bottom-20 z-20 flex flex-col items-center gap-5">
       <div class="relative mb-2">
-        <div class="w-12 h-12 rounded-full border-2 border-white overflow-hidden">
+        <div class="w-12 h-12 rounded-full bg-black overflow-hidden">
           <img
             src={props.profile.photo?.src}
             alt={props.profile.firstName}
             class="w-full h-full object-cover"
           />
         </div>
-        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center text-xs text-white font-bold">
+        <div
+          class="
+            absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 bg-white
+            rounded-full flex items-center justify-center text-black font-bold
+          "
+        >
           +
         </div>
       </div>
-      <div class="flex flex-col items-center gap-1">
-        <div class="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
-          <svg class="w-6 h-6 text-white fill-white" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-          </svg>
-        </div>
-        <span class="text-xs font-semibold drop-shadow">Like</span>
-      </div>
-      <div class="flex flex-col items-center gap-1">
-        <div class="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
-          <svg
-            class="w-6 h-6 text-white"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </div>
-        <span class="text-xs font-semibold drop-shadow">Pass</span>
-      </div>
-      <div class="flex flex-col items-center gap-1">
-        <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
-          <svg
-            class="w-5 h-5 text-white"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-          </svg>
-        </div>
-      </div>
+      <FeedProfileEventChild icon="sprite:heart" text="0" />
+      <FeedProfileEventChild icon="sprite:share-3" text="0" />
     </div>
   )
 }
@@ -109,29 +101,50 @@ const FeedProfileImage = (props: { profile: Profile }) => {
       src={props.profile.photo?.src}
       alt={props.profile.firstName}
       class="absolute inset-0 w-full h-full object-cover"
+      loading="eager"
     />
   )
 }
 
+const FeedOverlay = () => (
+  <div
+    class="absolute inset-0 bg-linear-to-b
+      from-black/20 via-transparent to-black/90 pointer-events-none"
+  />
+)
+
 const FeedProfile = (props: { profile: Profile }) => {
   const ctx = useCtx();
 
+  const [offsetY, setOffsetY] = useAtom($feed.offsetY);
+
+  onMount(() => {
+    const bottomHeight = ctx.get($bottom.height);
+    setOffsetY(-bottomHeight);
+
+    onCleanup(() => {
+      setOffsetY(0);
+    })
+  })
+
   return (
     <WithTopPadding
-      class="relative w-full h-screen overflow-hidden bg-black text-white shadow-2xl select-none font-sans"
+      id={`feed-profile-${props.profile.id}`}
+      class="relative w-full h-screen overflow-hidden select-none"
       withBottom={true}
       withTop={false}
     >
       <FeedProfileImage profile={props.profile} />
-      <div class="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/90 pointer-events-none" />
-      <FeedProfileEvents profile={props.profile} />
-      <FeedProfileInfo profile={props.profile} />
+      <FeedOverlay />
       <div
-        class="absolute flex items-center justify-center rounded-full right-4 top-1/2 translate-y-1/2 bg-white w-12 aspect-square z-4"
+        id={`feed-profile-content-${props.profile.id}`}
+        class="flex absolute h-full w-full items-center justify-center"
+        style={{
+          transform: `translateY(${offsetY()}px)`
+        }}
       >
-        <Icon onClick={() => toNext(ctx)}
-          name="sprite:arrow-right" class="text-neutral-900 w-6 h-6" />
-        <Icon onClick={() => toPrev(ctx)} name="sprite:arrow-left" class="text-neutral-900 w-6 h-6" />
+        <FeedProfileEvents profile={props.profile} />
+        <FeedProfileInfo profile={props.profile} />
       </div>
     </WithTopPadding>
   )
@@ -154,8 +167,7 @@ export const Feed = () => {
         <FeedProfilesError error={err()!} />
       }
     >
-      <div
-      >
+      <div id="feed-root">
         <For each={data()}>
           {(p) => <FeedProfile profile={p} />}
         </For>

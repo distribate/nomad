@@ -7,7 +7,7 @@ import {
   getSectionField,
   type SettingsSectionKey
 } from "./model";
-import { useAtomAccessor } from "../../../lib/reatom";
+import { useAtomAccessor } from "../../../lib/helpers/reatom";
 import { Dynamic } from "solid-js/web";
 import { $headerNodes } from "../layout/header/model";
 import { BackButton } from "../../ui/back-button";

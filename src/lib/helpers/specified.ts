@@ -7,6 +7,9 @@ interface GeolocationError extends Error {
   code?: number;
 }
 
+/**
+ * Gets the current position asynchronously.
+ */
 export function getCurrentPositionAsync(
   options?: PositionOptions
 ): Promise<GeolocationPosition> {

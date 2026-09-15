@@ -1,6 +1,6 @@
 import { action, atom, withAssign } from "@reatom/framework";
 import { getConfigVal } from "../../const/config";
-import { createNoopProxy } from "../utils";
+import { createNoopProxy } from "../helpers/index";
 import { GSAP_PLUGIN_LOADERS } from "./plugins";
 import { $settings } from "../../shared/components/settings/model";
 import { getReatomCtx } from "../app/ctx";

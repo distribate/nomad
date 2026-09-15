@@ -1,21 +1,19 @@
 import {
   action, atom, pick, reatomAsync, reatomMap, sleep,
   withAssign, withErrorAtom, withReset, withStatusesAtom,
-  type Atom,
   type AtomMut,
   type Ctx, type CtxSpy
 } from "@reatom/framework";
 import { BackButton } from "../../ui/back-button";
 import { $header, $headerNodes } from "../layout/header/model";
 import { $user, type User } from "../../../lib/user/user.model";
-import { compareAtom, isError } from "../../../lib/utils";
+import { isError } from "../../../lib/utils";
 import { nanoid } from "nanoid";
 import type { UserLocation, UserPhoto, UserStyle } from "../../../lib/user/types";
 import { navigate } from "../../../lib/router/utils";
-import { declareModel } from "../../../lib/helpers";
+import { compareAtom, declareModel } from "../../../lib/helpers";
 import toast from "solid-toast";
 import { defineAnimModel, getCurrentPositionAsync } from "../../../lib/helpers/specified";
-import { withLog } from "../../../lib/reatom/extensions";
 
 type StageFlow = {
   callback?: (ctx: Ctx) => Awaitable<void>,

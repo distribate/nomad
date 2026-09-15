@@ -2,7 +2,7 @@ import { useCtx } from "@reatom/npm-solid-js";
 import { Show } from "solid-js";
 import { $anim, $confirmLabel, $intro, $isBack, $isNext, $isValid, $refsMap } from "./model";
 import { Button } from "../../ui/button";
-import { defineRefAtom, useAtomAccessor } from "../../../lib/reatom";
+import { defineRefAtom, useAtomAccessor } from "../../../lib/helpers/reatom";
 
 export const Navigation = () => {
   const ctx = useCtx();

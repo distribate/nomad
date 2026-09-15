@@ -1,4 +1,4 @@
-import { useAtomAccessor } from "../../../../lib/reatom";
+import { useAtomAccessor } from "../../../../lib/helpers/reatom";
 import { $alertDialog } from "./model";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../../ui/dialog";
 import { createEffect, createSignal } from "solid-js";

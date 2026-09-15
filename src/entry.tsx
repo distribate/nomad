@@ -1,6 +1,6 @@
 import { Header } from "./shared/components/layout/header"
 import { Dynamic, Show } from "solid-js/web"
-import { useAtomAccessor } from "./lib/reatom"
+import { useAtomAccessor } from "./lib/helpers/reatom"
 import { $route, $routeLoading } from "./lib/router"
 import { NotFound } from "./shared/components/templates/not-found"
 import { Bottom } from "./shared/components/layout/bottom"

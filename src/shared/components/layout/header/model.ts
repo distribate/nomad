@@ -29,7 +29,7 @@ export const $headerNodes = {
 
     $header.snapshot.reset(ctx)
   }, "revertHeaderNodes"),
-  /*
+  /**
     @params
     withSnapshot - whether to save the current state to the snapshot before updating
   */

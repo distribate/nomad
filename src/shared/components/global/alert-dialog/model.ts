@@ -1,5 +1,5 @@
 import { action, atom, withAssign, withReset } from "@reatom/framework";
-import { withLog } from "../../../../lib/reatom/extensions";
+import { withAtomLog } from "@distribate/reatom-kit";
 
 type AlertDialogOpenParams = {
   title: string;
@@ -16,7 +16,7 @@ export const $alertDialog = atom(null, "alertDialog").pipe(
   withAssign((_, name) => {
     const data = atom<AlertDialogState>(null, `${name}.data`).pipe(
       withReset(),
-      withLog()
+      withAtomLog()
     );
 
     return {

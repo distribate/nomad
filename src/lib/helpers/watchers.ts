@@ -2,11 +2,10 @@ import {
   action, atom, reatomMap, withReset,
   type Atom, type Ctx, type Unsubscribe
 } from "@reatom/framework";
-import { withLog } from "../reatom/extensions";
 
 let watcherId = 0;
 
-export type Watcher<T> = {
+type Watcher<T> = {
   id: string;
   triggerValue: Atom<T>;
   condition: (value: T) => boolean;
@@ -15,7 +14,7 @@ export type Watcher<T> = {
 
 const always = () => true;
 
-export const watch = <T>(
+const watch = <T>(
   triggerValue: Atom<T>,
   options: {
     condition?: (value: T) => boolean;
@@ -30,23 +29,19 @@ export const watch = <T>(
 
 const getModelName = (p: string, c: string) => `${p}.watchers.${c}`;
 
-export const watchersModel = ({
+const createWatcherModel = ({
   name, watchers: init
 }: {
   name: string, watchers: Watcher<any>[]
 }) => {
-  const $watchers = atom(
-    init, getModelName(name, "watchers"),
-  ).pipe(
+  const $watchers = atom(init, getModelName(name, "watchers")).pipe(
     withReset(),
-    // withLog(),
   );
 
   const $watchersSubs = reatomMap<string, Unsubscribe>(
     new Map(), getModelName(name, "watchersSubs"),
   ).pipe(
     withReset(),
-    // withLog(),
   );
 
   const define = action((ctx) => {
@@ -104,4 +99,10 @@ export const watchersModel = ({
     $watchersSubs,
     $watchers,
   }
+}
+
+export {
+  watch,
+  createWatcherModel,
+  type Watcher
 }

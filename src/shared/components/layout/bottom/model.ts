@@ -43,12 +43,15 @@ export const $badge = atom(null, "badge").pipe(
 
 export const $bottom = atom(null, "bottom").pipe(
   withAssign((_, name) => ({
+    offsetY: atom(0, `${name}.offsetY`),
     isEnabled: atom((ctx) => ctx.spy($isAuthed)),
     barRef: atom<HTMLDivElement | null>(null).pipe(withReset()),
     badgesRefs: reatomMap<string, HTMLButtonElement | null>(new Map()),
     height: atom(0, `${name}.height`),
   }))
 )
+
+$bottom.offsetY.onChange((_, s) => console.log($bottom.offsetY.__reatom.name, s));
 
 export const getBottomBadge = (ctx: Ctx, o: string): HTMLButtonElement => {
   const target = $bottom.badgesRefs.get(ctx, o)

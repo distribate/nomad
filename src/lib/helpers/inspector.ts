@@ -6,7 +6,7 @@ import type { FolderApi } from "tweakpane";
 import { tryGetRootFolder, writeToBindingValue } from "../dev/pane.model";
 import { getConfigVal } from "../../const/config";
 import { STATIC_CONFIG_KEYS } from "../dev/const";
-import { createNoopProxy } from "../utils";
+import { createNoopProxy } from "./index";
 
 type InspectorOptions = {
   title: string; expanded?: boolean;
@@ -16,6 +16,9 @@ const formatValue = (v: unknown): unknown => isObject(v) ? JSON.stringify(v, nul
 
 const noop = createNoopProxy();
 
+/**
+ * Creates a feature inspector.
+ */
 export const createFeatureInspector = (
   options: InspectorOptions = { title: "Intro", expanded: true },
   targets: Record<string, Atom<unknown> | undefined>

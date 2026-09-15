@@ -1,5 +1,5 @@
 import { mergeProps, splitProps, type ComponentProps } from "solid-js";
-import { useAtomAccessor } from "../../../lib/reatom";
+import { useAtomAccessor } from "../../../lib/helpers/reatom";
 import { $header } from "../layout/header/model";
 import { $bottom } from "../layout/bottom/model";
 

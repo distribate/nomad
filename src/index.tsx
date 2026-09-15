@@ -10,12 +10,12 @@ import { render } from 'solid-js/web'
 import { Entry } from './entry'
 import { reatomContext } from '@reatom/npm-solid-js'
 import { getReatomCtx } from './lib/app/ctx.ts';
-import { boot, beforeBoot } from './lib/app/boot.ts';
+import { startBoot, beforeBoot } from './lib/app/boot.ts';
 import { AppError } from './shared/components/templates/error.tsx';
 import { isError } from './lib/utils.ts';
 import type { ParentComponent } from 'solid-js';
 import { AppLayout } from './shared/components/templates/layout.tsx';
-import { registerPublicApi } from './lib/exposing.ts';
+import { registerPublicApi } from './shared/api/exposing.ts';
 
 registerPublicApi();
 
@@ -44,7 +44,7 @@ try {
     root
   );
 
-  await boot(ctx);
+  await startBoot(ctx);
 } catch (e) {
   dispose?.();
 

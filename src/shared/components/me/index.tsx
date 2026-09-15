@@ -5,7 +5,7 @@ import { For, Show } from "solid-js";
 import { Icon } from "../../ui/icon";
 import { WithTopPadding } from "../global/layouts";
 import { me_events } from "./model";
-import { useAtomAccessor } from "../../../lib/reatom";
+import { useAtomAccessor } from "../../../lib/helpers/reatom";
 import { setupDevModule } from "../../../lib/helpers";
 import { MeHeader } from "./primitives";
 

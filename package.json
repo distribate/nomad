@@ -1,7 +1,7 @@
 {
   "name": "nomad",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5273",
@@ -11,8 +11,10 @@
     "docs:debug": "tsx ./scripts/generate-docs.ts",
     "machine-translate": "inlang machine translate --project project.inlang"
   },
+  "sideEffects": false,
   "dependencies": {
     "@ark-ui/solid": "^5.37.1",
+    "@distribate/reatom-kit": "0.2.0",
     "@kobalte/core": "0.13.12",
     "@logtape/logtape": "2.2.4",
     "@reatom/framework": "3.4.68",
@@ -23,7 +25,7 @@
     "@tma.js/sdk": "^3.2.3",
     "cbor-x": "^1.6.5",
     "class-variance-authority": "^0.7.1",
-    "cnfast": "^0.0.8",
+    "cnfast": "^0.2.0",
     "dayjs": "^1.11.21",
     "gsap": "^3.15.0",
     "magic-string": "1.1.0",
@@ -33,7 +35,6 @@
     "solid-toast": "0.5.0",
     "universal-router": "10.0.3"
   },
-  "sideEffects": false,
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
     "@inlang/cli": "^3.0.0",

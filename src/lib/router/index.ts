@@ -33,7 +33,7 @@ export const $route = atom(null, "route").pipe(
     ),
     effects: atom<RouteEffects>([], getRouteAtomName(name, "effects")).pipe(withReset()),
     meta: atom<RouteMeta>({ withLoader: false }, getRouteAtomName(name, "meta")).pipe(withReset()),
-    /*
+    /**
       Atom that indicates whether the initial route has been initialized.
     */
     isInited: atom(false, getRouteAtomName(name, "isInited")),

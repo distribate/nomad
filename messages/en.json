@@ -33,7 +33,7 @@
   "shared": {
     "feed": "Feed",
     "profile": "Profile",
-    "contacts": "Contacts",
+    "friends": "Friends",
     "settings": "Settings",
     "logout": "Log out",
     "interests": "Interests",
