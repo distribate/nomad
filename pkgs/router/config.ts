@@ -1,6 +1,3 @@
-import { getConfigVal } from "@/const/config";
-import { STATIC_CONFIG_KEYS } from "../dev/const";
-
 export class RedirectError extends Error {
   readonly to: string;
   readonly replace: boolean;
@@ -13,4 +10,7 @@ export class RedirectError extends Error {
   }
 }
 
-export const routerNameRule = getConfigVal(STATIC_CONFIG_KEYS.LOG_ROUTER);
+export let routerLog = false;
+export const updateRouterLog = (log: boolean) => {
+  routerLog = log;
+};

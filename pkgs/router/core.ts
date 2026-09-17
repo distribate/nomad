@@ -1,12 +1,15 @@
-import { action, pick, reatomAsync } from "@reatom/framework";
+import type { Routes } from "universal-router";
+import { action, isAbort, pick, reatomAsync, withAbort } from "@reatom/framework";
 import { urlAtom } from "@reatom/url";
-import type { RouteData, RouteEffectPhase } from "./types";
-import { $route, getRouter, getRoutes } from ".";
-import { RedirectError, routerNameRule } from "./config";
-import { createPerfTimer, withRule } from "../helpers";
-import type { ResolvedRouteConfig } from "./types";
-import { matchPath, parseSearchParams, serializeSearchParams, type NestedSearchParams } from "./utils";
+import type { RouteData, RouteEffect, RouteEffectPhase, ResolvedRouteConfig } from "./types";
 import { withCallParams } from "@distribate/reatom-kit";
+import { $route, getRouter, getRoutes, setRoutes } from "./index";
+import { RedirectError, routerLog } from "./config";
+import {
+  createPerfTimer, matchPath, parseSearchParams, serializeSearchParams,
+  type NestedSearchParams
+} from "./utils";
+import { withRule } from "utils/index";
 
 type RunEffectsArgs =
   | [phase: RouteEffectPhase, data: RouteData]
@@ -29,7 +32,7 @@ const runEffects = reatomAsync(async (ctx, ...args: RunEffectsArgs) => {
   perf?.end()
 
   return perf?.value
-}, withRule("runEffects", routerNameRule)).pipe(
+}, withRule("runEffects", routerLog)).pipe(
   withCallParams()
 )
 
@@ -92,7 +95,7 @@ export const resolveRoute = action(async (
     $route.isInited(ctx, true);
   } catch (e) {
     if (e instanceof RedirectError) {
-      if (routerNameRule) {
+      if (routerLog) {
         console.log(
           `%cRedirecting from ${pathname} to ${e.to}`,
           'color: #e6a23c; font-weight: bold; font-size: 12px;'
@@ -107,11 +110,32 @@ export const resolveRoute = action(async (
   } finally {
     $route.isLoading(ctx, false);
   }
-}, withRule("resolveRoute", routerNameRule))
+}, withRule("resolveRoute", routerLog))
+
+export const defineRouteRender = reatomAsync(async (ctx) => {
+  const currentUrl = ctx.get(urlAtom)
+
+  await resolveRoute(
+    ctx,
+    currentUrl.pathname,
+    parseSearchParams(currentUrl.searchParams),
+  )
+}, withRule(`defineRouteRender`, routerLog)).pipe(
+  withAbort({ strategy: "last-in-win" }),
+)
+
+defineRouteRender.onReject.onCall((_, err) => {
+  if (!isAbort(err)) {
+    console.error("Navigation error:", err)
+  }
+})
 
 if (import.meta.env.DEV) {
-  runEffects.onCall((_, __, params) => routerNameRule &&
+  runEffects.onCall((_, __, params) => routerLog &&
     console.log(`[${params[0]}]`, `->`))
-  runEffects.onFulfill.onCall((ctx, __, duration) => routerNameRule &&
+  runEffects.onFulfill.onCall((ctx, __, duration) => routerLog &&
     console.log(`[${ctx.get(runEffects.callParamsAtom)[0]}]`, `<-`, `${duration}ms`))
 }
+
+export const defineRoutes = <T extends Routes>(value: T): void => setRoutes(value);
+export const defineEffect = <T extends RouteEffect>(effect: T): T => effect;

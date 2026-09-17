@@ -1,7 +1,7 @@
 import { Header } from "./shared/components/layout/header"
 import { Dynamic, Show } from "solid-js/web"
 import { useAtomAccessor } from "./lib/helpers/reatom"
-import { $route, $routeLoading } from "./lib/router"
+import { $route, $routeLoading } from "router/index"
 import { NotFound } from "./shared/components/templates/not-found"
 import { Bottom } from "./shared/components/layout/bottom"
 import { $appLoading } from "./lib/app/app.model"

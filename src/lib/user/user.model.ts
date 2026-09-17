@@ -1,9 +1,9 @@
 import { atom, reatomAsync, withAssign, withErrorAtom, withStatusesAtom, type Ctx } from "@reatom/framework";
 import { withLocalStorage } from '@reatom/persist-web-storage'
 import type { UserPhoto } from "./types";
-import { expose } from "../utils";
+import { expose } from "utils/index";
 import { getReatomCtx } from "../app/ctx";
-import { navigate, redirect } from "../router/utils";
+import { navigate, redirect } from "router/utils";
 import { $alertDialog } from "../../shared/components/global/alert-dialog/model";
 import { $appState } from "../app/app.model";
 import { watch, createWatcherModel } from "../helpers/watchers";

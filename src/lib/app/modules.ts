@@ -3,9 +3,11 @@ import type { Ctx } from "@reatom/framework";
 import { initUser } from "@/lib/user/user.model.ts";
 import { setupDayjs } from "@/lib/dayjs.ts";
 import { $gsap } from "@/lib/gsap/index.ts";
-import { $router } from "@/lib/router/index.ts";
+import { $router } from "router/index";
 import { initAsTMA } from "./tma.ts";
 import { $appState, defineAppLifecycle } from "./app.model.ts";
+import { getConfigVal } from "@/const/config.ts";
+import { STATIC_CONFIG_KEYS } from "../dev/const.ts";
 
 export const modules: AppModule[] = [
   {
@@ -26,7 +28,7 @@ export const modules: AppModule[] = [
   {
     name: "router",
     priority: 3,
-    init: $router.start,
+    init: async (ctx) => $router.start(ctx, { log: getConfigVal(STATIC_CONFIG_KEYS.LOG_ROUTER) }),
   },
   {
     name: "tma",

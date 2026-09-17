@@ -1,6 +1,6 @@
 import { action, atom, reatomAsync, sleep, type Ctx } from "@reatom/framework";
 import { rootLogger } from "../logger/logger.model.ts";
-import { isError } from "../utils.ts";
+import { isError } from "utils/index";
 import { modules } from "./modules.ts";
 import { $appLoading, $appState, $lang } from "./app.model.ts";
 import { getConfigVal } from "../../const/config.ts";

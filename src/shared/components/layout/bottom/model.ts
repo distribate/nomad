@@ -1,5 +1,5 @@
 import { action, atom, reatomMap, withAssign, withReset, type Ctx } from "@reatom/framework"
-import { navigate } from "@/lib/router/utils"
+import { navigate } from "router/utils"
 import { urlAtom } from "@reatom/url"
 import { $isAuthed, $user } from "@/lib/user/user.model"
 import { BADGES, type Badge } from "./const"

@@ -6,7 +6,7 @@ import { useCtx } from "@reatom/npm-solid-js";
 import { atom, pick } from "@reatom/framework";
 import { $headerNodes } from "../layout/header/model";
 import { BackButton, triggerButtonVariant } from "@/shared/ui/back-button";
-import { navigate } from "@/lib/router/utils";
+import { navigate } from "router/utils";
 import { createMoreActions, MoreEvents } from "../global/more";
 import { Skeleton } from "@/shared/ui/skeleton";
 

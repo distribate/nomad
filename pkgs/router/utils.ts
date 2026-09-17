@@ -1,8 +1,8 @@
+import { lazy, type Component } from "solid-js";
+import { urlAtom } from "@reatom/url"
 import type { ComponentRef, ResolvedRouteConfig, RouteConfig, RoutePathParams } from "./types"
 import { RedirectError } from "./config"
-import { getReatomCtx } from "../app/ctx"
-import { urlAtom } from "@reatom/url"
-import { lazyComponent } from "../helpers";
+import { getRouterCtx } from "./index";
 
 type ComponentRefKeys<T> = {
   [K in keyof T]-?: NonNullable<T[K]> extends ComponentRef<any> ? K : never
@@ -53,14 +53,12 @@ export function defineRoute(
 }
 
 export const navigate = async (
-  pathname: string,
-  params?: Record<string, string | number | boolean | undefined | null>
+  pathname: string, searchParams?: NestedSearchParams
 ) => {
-  const ctx = getReatomCtx();
-
+  const ctx = getRouterCtx().reatomCtx;
   const url = new URL(pathname, location.origin)
 
-  Object.entries(params ?? {})
+  Object.entries(searchParams ?? {})
     .forEach(([k, v]) => {
       if (v !== undefined && v !== null) {
         url.searchParams.set(k, String(v))
@@ -73,6 +71,18 @@ export const navigate = async (
 export function redirect(to: string, replace = false): never {
   throw new RedirectError(to, replace);
 }
+
+/**
+ * Lazily loads a component.
+ */
+export const lazyComponent = <T extends Component>(
+  loader: () => Promise<T>
+) =>
+  lazy(() =>
+    loader().then(component => ({
+      default: component,
+    }))
+  );
 
 export const asDeferred = lazyComponent
 
@@ -173,4 +183,21 @@ export const parseSearchParams = (
   }
 
   return result
+}
+
+export const createPerfTimer = () => {
+  let startedAt = 0
+  let value = 0
+  return {
+    start() {
+      startedAt = performance.now()
+    },
+    end() {
+      value = performance.now() - startedAt
+      return value
+    },
+    get value() {
+      return value.toFixed(2)
+    },
+  }
 }

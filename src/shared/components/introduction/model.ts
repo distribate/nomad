@@ -7,10 +7,10 @@ import {
 import { BackButton } from "@/ui/back-button";
 import { $header, $headerNodes } from "../layout/header/model";
 import { $user, type User } from "@/lib/user/user.model";
-import { isError } from "@/lib/utils";
+import { isError } from "utils/index";
 import { nanoid } from "nanoid";
 import type { UserLocation, UserPhoto, UserStyle } from "@/lib/user/types";
-import { navigate } from "@/lib/router/utils";
+import { navigate } from "router/utils";
 import { compareAtom, declareModel } from "@/lib/helpers";
 import toast from "solid-toast";
 import { defineAnimModel, getCurrentPositionAsync } from "@/lib/helpers/specified";

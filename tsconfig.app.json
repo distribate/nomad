@@ -27,9 +27,11 @@
       "@/*": ["./src/*"],
       "@/shared/*": ["./src/shared/*"],
       "@/ui/*": ["./src/shared/ui/*"],
-      "i18n": ["./src/shared/i18n/index.ts"]
+      "i18n": ["./src/shared/i18n/index.ts"],
+      "router/*": ["./pkgs/router/*"],
+      "utils/*": ["./pkgs/utils/*"]
     }
   },
   "files": ["node_modules/gsap/types/index.d.ts"],
-  "include": ["src", "global.d.ts"]
+  "include": ["src", "pkgs", "global.d.ts"]
 }

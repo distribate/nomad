@@ -1,6 +1,6 @@
 import { getDayjs } from "@/lib/dayjs";
 import type { Chat } from "./types"
-import { navigate } from "@/lib/router/utils";
+import { navigate } from "router/utils";
 import { action } from "@reatom/framework";
 import { useCtx } from "@reatom/npm-solid-js";
 

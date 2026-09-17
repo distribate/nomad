@@ -1,4 +1,4 @@
-import { exposePublic } from "../../lib/utils"
+import { exposePublic } from "utils/index"
 import { getAppConfig } from "../../lib/app/config"
 
 export function registerPublicApi() {

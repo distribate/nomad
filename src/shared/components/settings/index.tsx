@@ -22,7 +22,7 @@ import { translate } from "i18n";
 import { $chats, $chatsFolders, $folderIsRemovable, createFolder, deleteFolder } from "../chats/model";
 import { createMoreActions, MoreEvents } from "../global/more";
 import toast from "solid-toast";
-import { isError } from "@/lib/utils";
+import { isError } from "utils/index";
 
 const SettingsSection: ParentComponent<{ title?: string }> = (props) => {
   return (

@@ -4,7 +4,7 @@ import { setupDevModule } from "@/lib/helpers";
 import { ChatHeader } from "./chat-header";
 import { ChatBody } from "./chat-body";
 import { ChatFooter } from "./chat-footer";
-import { navigate } from "@/lib/router/utils";
+import { navigate } from "router/utils";
 import { tinykeys } from "tinykeys"
 
 const bindListeners = (ref: HTMLDivElement) => tinykeys(ref, {

@@ -1,13 +1,21 @@
+import { defineRoute, asDeferred, redirect } from "router/utils"
+import { defineRoutes, defineEffect } from "router/core"
 import { NotFound } from "./shared/components/templates/not-found"
 import { action, reatomAsync } from "@reatom/framework"
 import { $isAuthed } from "./lib/user/user.model"
-import { defineRoute, asDeferred, redirect } from "./lib/router/utils"
 import { $headerNodes } from "./shared/components/layout/header/model"
 import { defineChat, unloadChat } from "./shared/components/chat/model"
 import { Chat } from "./shared/components/chat"
 import { Chats } from "./shared/components/chats"
-import { defineRoutes } from "./lib/router"
-import { withAuthEffect } from "./effects"
+import { withAuth } from "./lib/user/user.model";
+import { Me } from "./shared/components/me/index"
+import { Friends } from "./shared/components/friends"
+import { SettingsLayout, SettingsPage } from "./shared/components/settings"
+
+const withAuthEffect = defineEffect({
+  phase: "beforeEnter",
+  run: () => action((ctx) => withAuth(ctx)),
+})
 
 export const registerRoutes = () => {
   defineRoutes([
@@ -66,7 +74,7 @@ export const registerRoutes = () => {
       name: "me",
       action: defineRoute("me", {
         render: {
-          page: asDeferred(() => import("./shared/components/me").then(m => m.Me))
+          page: Me
         },
         effects: [
           {
@@ -91,7 +99,7 @@ export const registerRoutes = () => {
       name: "friends",
       action: defineRoute("friends", {
         render: {
-          page: asDeferred(() => import("./shared/components/friends").then(m => m.Friends))
+          page: Friends
         },
         effects: [
           withAuthEffect
@@ -103,8 +111,8 @@ export const registerRoutes = () => {
       name: "settings",
       action: defineRoute("settings", {
         render: {
-          page: asDeferred(() => import("./shared/components/settings").then(m => m.SettingsPage)),
-          layout: asDeferred(() => import("./shared/components/settings").then(m => m.SettingsLayout))
+          page: SettingsPage,
+          layout: SettingsLayout
         },
         effects: [
           withAuthEffect

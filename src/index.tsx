@@ -12,7 +12,7 @@ import { reatomContext } from '@reatom/npm-solid-js'
 import { getReatomCtx } from './lib/app/ctx.ts';
 import { startBoot, beforeBoot } from './lib/app/boot.ts';
 import { AppError } from './shared/components/templates/error.tsx';
-import { isError } from './lib/utils.ts';
+import { isError } from 'utils/index';
 import type { ParentComponent } from 'solid-js';
 import { AppLayout } from './shared/components/templates/layout.tsx';
 import { registerPublicApi } from './shared/api/exposing.ts';

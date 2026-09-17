@@ -4,7 +4,7 @@ import {
 } from "@reatom/framework";
 import type { Chat, ChatMessage } from "../chats/types";
 import { $chats } from "../chats/model";
-import { invariant } from "@/lib/utils";
+import { invariant } from "utils/index";
 import { nanoid } from "nanoid";
 import { withCallParams } from "@distribate/reatom-kit";
 

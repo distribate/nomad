@@ -4,7 +4,7 @@ import {
 } from "@reatom/framework";
 import { withUndo } from "@reatom/undo";
 import { searchParamsAtom } from '@reatom/url'
-import { navigate } from "@/lib/router/utils";
+import { navigate } from "router/utils";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import { withAtomLog } from "@distribate/reatom-kit";
 import { useCtx } from "@reatom/npm-solid-js";

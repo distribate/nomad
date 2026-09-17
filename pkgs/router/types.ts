@@ -3,7 +3,7 @@ import type { Component, ParentComponent } from "solid-js"
 import type UniversalRouter from "universal-router";
 import type { NestedSearchParams } from "./utils";
 
-export type RouterCtx = { reatomCtx: Ctx }
+export type RouterCtx = { reatomCtx: Ctx, meta?: { log?: boolean } }
 export type Router = UniversalRouter<any, RouterCtx>;
 
 export type RouteEffectPhase =

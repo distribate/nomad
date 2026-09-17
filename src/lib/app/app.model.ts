@@ -1,6 +1,6 @@
 import { action, atom, reatomAsync, sleep, withAssign, withStatusesAtom } from "@reatom/framework";
 import { withLocalStorage } from "@reatom/persist-web-storage";
-import { isError } from "../utils";
+import { isError } from "utils/index";
 import { baseLocale, type Locale } from "../../paraglide/runtime";
 
 // #region app

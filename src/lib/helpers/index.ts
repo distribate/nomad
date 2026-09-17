@@ -83,18 +83,6 @@ export function getHeapSizeMB(): number {
   return Number((mem.usedJSHeapSize / 1024 / 1024).toFixed(2));
 }
 
-/**
- * Lazily loads a component.
- */
-export const lazyComponent = <T extends Component>(
-  loader: () => Promise<T>
-) =>
-  lazy(() =>
-    loader().then(component => ({
-      default: component,
-    }))
-  );
-
 export function compareAtom<T>(
   source: Atom<T>,
   predicate: (value: T) => boolean,
@@ -119,20 +107,3 @@ export const createNoopProxy = (): any => {
 
   return proxy;
 };
-
-export const createPerfTimer = () => {
-  let startedAt = 0
-  let value = 0
-  return {
-    start() {
-      startedAt = performance.now()
-    },
-    end() {
-      value = performance.now() - startedAt
-      return value
-    },
-    get value() {
-      return value.toFixed(2)
-    },
-  }
-}
