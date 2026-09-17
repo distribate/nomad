@@ -28,6 +28,10 @@
     "devices": "Устройства",
     "devices_": {
       "description": ""
+    },
+    "folders": "Папки",
+    "folders_": {
+      "description": ""
     }
   },
   "shared": {

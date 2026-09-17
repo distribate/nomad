@@ -1,70 +1,84 @@
 import { action, type Action, type Ctx } from "@reatom/framework";
 import { useCtx } from "@reatom/npm-solid-js";
 import { For } from "solid-js";
-import { Icon, type IconName } from "../../ui/icon";
-import { $logout } from "../../../lib/user/user.model";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../ui/dropdown";
-import { translate } from "../../../lib/app/locale";
+import { Icon, type IconName } from "@/ui/icon";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown";
+import cn from "cnfast";
 
 type MoreEvent = {
-  label: string;
-  icon: IconName;
-  withConfirm?: boolean;
-};
+  label: string
+  icon?: IconName
+  withConfirm?: boolean,
+  disabled?: boolean,
+  as?: "click" | "select"
+}
 
-type MoreAction = (ctx: Ctx, event: MoreEvent) => void;
+type MoreActionItem = MoreEvent & {
+  action: (ctx: Ctx, event: MoreEvent & { name: string }) => void
+}
 
-const createActions = <
-  T extends Record<string, MoreEvent & { action: MoreAction }>
->(events: T) => {
+type MoreActions<T extends Record<string, MoreActionItem>> = {
+  [K in keyof T]: T[K] & {
+    execute: Action<[], void>
+  }
+}
+
+export const createMoreActions = <
+  T extends Record<string, MoreActionItem>,
+>(events: T): MoreActions<T> => {
   return Object.fromEntries(
-    Object.entries(events).map(([key, config]) => [
-      key,
+    Object.entries(events).map(([name, config]) => [
+      name,
       {
         ...config,
+        as: config.as ?? "select",
         execute: action(
-          (ctx: Ctx) => config.action(ctx, config),
-          `${key}.cb`
+          (ctx: Ctx) => config.action(ctx, { ...config, name }),
+          `${name}.cb`,
         ),
       },
-    ])
-  ) as {
-    [K in keyof T]: T[K] & {
-      execute: Action<[], any>
-    }
-  };
-};
+    ]),
+  ) as MoreActions<T>
+}
 
-const MORE_EVENTS = createActions({
-  logout: {
-    label: translate["shared.logout"](),
-    icon: "sprite:arrow-left",
-    withConfirm: true,
-    action(ctx) {
-      $logout.exec(ctx)
-    },
-  },
-});
+type MoreEventsProps<T extends Record<string, MoreActionItem>> = {
+  class?: string
+  disabled?: boolean
+  events: MoreActions<T>
+}
 
-const executeEvent = (ctx: Ctx, name: keyof typeof MORE_EVENTS) => {
-  MORE_EVENTS[name].execute(ctx);
-};
-
-export const MoreEvents = () => {
-  const ctx = useCtx();
+export const MoreEvents = <
+  T extends Record<string, MoreActionItem>,
+>(props: MoreEventsProps<T>) => {
+  const ctx = useCtx()
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        class={cn(
+          "disabled:opacity-50 pointer-events-auto disabled:pointer-events-none",
+          props.class,
+        )}
+        disabled={props.disabled}
+      >
         <Icon name="sprite:dots-vertical" class="size-5" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <For each={Object.entries(MORE_EVENTS)}>
-          {([name, event]) => (
-            <DropdownMenuItem onSelect={() => executeEvent(ctx, name as keyof typeof MORE_EVENTS)}>
-              <span>{event.label}</span>
-            </DropdownMenuItem>
-          )}
+        <For each={Object.entries(props.events)}>
+          {([name, event]) => {
+            return (
+              <DropdownMenuItem
+                disabled={event.disabled}
+                closeOnSelect={event.as !== "click"}
+                onSelect={() => {
+                  event.execute(ctx, { ...event, name })
+                }}
+              >
+                {event.icon && <Icon name={event.icon} />}
+                <span>{event.label}</span>
+              </DropdownMenuItem>
+            )
+          }}
         </For>
       </DropdownMenuContent>
     </DropdownMenu>

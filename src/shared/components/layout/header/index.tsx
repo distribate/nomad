@@ -1,14 +1,30 @@
-import { useAtom, useCtx } from "@reatom/npm-solid-js"
+import { useCtx } from "@reatom/npm-solid-js"
 import { $header } from "./model"
-import { onCleanup, onMount } from "solid-js";
+import { onCleanup, onMount, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
+import { useAtomAccessor } from "@/lib/helpers/reatom";
 
-const Empty = () => <div />
+const Slot = (props: {
+  component?: AnyComponent | null
+  class: string
+}) => (
+  <div
+    class={`pointer-events-none flex min-w-0 ${props.class}`}
+    classList={{
+      "pointer-events-auto": !!props.component,
+    }}
+  >
+    <Show when={props.component}>
+      {component => <Dynamic component={component()} />}
+    </Show>
+  </div>
+)
 
 export const Header = () => {
   const ctx = useCtx();
 
-  const [elements] = useAtom($header.nodes);
+  const elements = useAtomAccessor($header.nodes);
+  const meta = useAtomAccessor($header.meta);
 
   let ref!: HTMLElement
 
@@ -23,18 +39,36 @@ export const Header = () => {
   })
 
   return (
-    <div
-      ref={el => (ref = el)}
-      class="flex z-4 gap-4 items-center justify-between w-full px-4 py-1 h-14 rounded-b-lg absolute top-0 right-0 left-0"
-    >
-      <div class="w-1/4 shrink-0 flex items-center justify-start min-w-0">
-        <Dynamic component={elements().l ?? Empty} />
-      </div>
-      <div class="flex-1 min-w-0 text-center truncate">
-        <Dynamic component={elements().c ?? Empty} />
-      </div>
-      <div class="w-1/4 shrink-0 flex items-center justify-end min-w-0">
-        <Dynamic component={elements().r ?? Empty} />
+    <div class="relative w-full">
+      <Show when={meta().withBlur}>
+        {(_) => (
+          <div
+            class="
+              pointer-events-none
+              absolute inset-x-0 top-0 z-2
+              h-20 backdrop-blur-md
+              mask-[linear-gradient(to_bottom,black_0%,black_35%,transparent_100%)]
+              bg-linear-to-b from-white/10 via-white/10 to-transparent
+            "
+          />
+        )}
+      </Show>
+      <div
+        ref={el => (ref = el)}
+        class="pointer-events-none absolute top-2 right-4 left-4 z-4 flex h-14 items-center justify-between gap-2"
+      >
+        <Slot
+          component={elements().l}
+          class="w-10 shrink-0 justify-start"
+        />
+        <Slot
+          component={elements().c}
+          class="flex-1 justify-center text-center"
+        />
+        <Slot
+          component={elements().r}
+          class="max-w-1/6 shrink-0 justify-end"
+        />
       </div>
     </div>
   )

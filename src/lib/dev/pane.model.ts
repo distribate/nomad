@@ -3,10 +3,10 @@ import { FolderApi, Pane } from "tweakpane";
 import { action, atom, isAtom, withAssign, type Ctx, type Unsubscribe } from "@reatom/framework";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import { BINDINGS, type BindingNode, type BindingParams, type BindingValue } from "./config";
-import { expose, isError, isPrimitive } from "../utils";
-import { watch, createWatcherModel } from "../helpers/watchers";
-import { getReatomCtx } from "../app/ctx";
-import { getHeapSizeMB } from "../helpers";
+import { expose, isError, isPrimitive } from "@/lib/utils";
+import { watch, createWatcherModel } from "@/lib/helpers/watchers";
+import { getReatomCtx } from "@/lib/app/ctx";
+import { getHeapSizeMB } from "@/lib/helpers";
 
 const $devPaneIsEnabled = atom(import.meta.env.DEV, "devPane")
 

@@ -1,8 +1,8 @@
 import { Show, splitProps, type ComponentProps } from "solid-js";
-import { useAtomAccessor } from "../../../../lib/helpers/reatom";
+import { useAtomAccessor } from "@/lib/helpers/reatom";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { BadgeBase } from "./types";
-import { Icon } from "../../../ui/icon";
+import { Icon } from "@/shared/ui/icon";
 
 const bottomBadgeVariant = cva(
   `

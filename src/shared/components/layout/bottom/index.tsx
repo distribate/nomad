@@ -1,5 +1,5 @@
 import { createSignal, For, onCleanup, onMount } from "solid-js"
-import { defineRefAtom, useAtomAccessor } from "../../../../lib/helpers/reatom"
+import { defineRefAtom, useAtomAccessor } from "@/lib/helpers/reatom"
 import { useCtx } from "@reatom/npm-solid-js"
 import { $userFirstLetterInFirstName, $userPhoto, $badge, $bottom, $badgeIsActive } from "./model"
 import type { BadgeBase } from "./types"
@@ -78,7 +78,7 @@ export const Bottom = () => {
   return (
     <div
       ref={el => (ref = el)}
-      class="flex z-4 items-center justify-center absolute bottom-2 h-16 w-full right-0 left-0"
+      class="flex z-4 items-center duration-150 transition-transform justify-center absolute bottom-2 h-16 w-full right-0 left-0"
       style={{
         display: isDisplay() ? "flex" : "none",
         transform: `translateY(${offsetY()}px)`,
@@ -86,7 +86,7 @@ export const Bottom = () => {
     >
       <div
         ref={defineRefAtom(ctx, "bottomBar", $bottom.barRef, "bottom")}
-        class="flex items-center p-1.5 w-[calc(100%-36px)] justify-between gap-0.5 h-full bg-neutral-600/10 backdrop-blur-xl rounded-full"
+        class="flex items-center p-1.5 w-[calc(100%-36px)] justify-between gap-0.5 h-full bg-neutral-800/80 border border-neutral-700/30 backdrop-blur-xl rounded-full"
         onPointerMove={(e) =>
           $badge.inMove(ctx, e)
         }

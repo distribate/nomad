@@ -1,7 +1,4 @@
 import { action, atom, withAssign, withReset } from "@reatom/framework";
-import type { Component } from "solid-js";
-
-type AnyComponent = Component<any>;
 
 const init = { l: null, c: null, r: null };
 
@@ -15,7 +12,8 @@ export const $header = atom(null, "header").pipe(
     snapshot: atom<HeaderNodes | null>(null, `${name}.snapshot`).pipe(
       withReset()
     ),
-    height: atom<number>(0, `${name}.height`).pipe(withReset())
+    height: atom<number>(0, `${name}.height`).pipe(withReset()),
+    meta: atom<{ withBlur: boolean }>({ withBlur: false }, `${name}.meta`).pipe(withReset())
   }))
 )
 
@@ -35,12 +33,16 @@ export const $headerNodes = {
   */
   update: action((
     ctx, data: Partial<HeaderNodes>,
-    params: { withSnapshot: boolean } = { withSnapshot: true }
+    params: { withSnapshot?: boolean, withBlur?: boolean } = { withSnapshot: true }
   ) => {
     const curr = ctx.get($header.nodes);
 
     if (params.withSnapshot) {
       $header.snapshot(ctx, curr);
+    }
+
+    if (params.withBlur !== undefined) {
+      $header.meta(ctx, { withBlur: params.withBlur });
     }
 
     $header.nodes(ctx, (state) => ({ ...state, ...data }));

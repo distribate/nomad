@@ -1,5 +1,5 @@
 import { $currStep, $intro, $isBack, $isNext, $isValid, $introLog } from "./model";
-import { createFeatureInspector } from "../../../lib/helpers/inspector";
+import { createFeatureInspector } from "@/lib/helpers/inspector";
 
 export const $introDev = createFeatureInspector(
   { title: "Intro" },

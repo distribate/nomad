@@ -1,5 +1,5 @@
 import { mergeProps, splitProps, type ComponentProps } from "solid-js";
-import { useAtomAccessor } from "../../../lib/helpers/reatom";
+import { useAtomAccessor } from "@/lib/helpers/reatom";
 import { $header } from "../layout/header/model";
 import { $bottom } from "../layout/bottom/model";
 
@@ -29,7 +29,7 @@ export const WithTopPadding = (rawProps: WithTopPaddingProps) => {
   return (
     <div
       style={{
-        "padding-top": local.withTop ? `${t()}px` : undefined,
+        "padding-top": local.withTop ? `${t() + 16}px` : undefined,
         "padding-bottom": local.withBottom ? `${b() + 16}px` : undefined,
         ...(typeof local.style === "object" ? local.style : {}),
       }}

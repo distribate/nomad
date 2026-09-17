@@ -16,8 +16,10 @@ import { isError } from './lib/utils.ts';
 import type { ParentComponent } from 'solid-js';
 import { AppLayout } from './shared/components/templates/layout.tsx';
 import { registerPublicApi } from './shared/api/exposing.ts';
+import { registerRoutes } from './routes.ts';
 
 registerPublicApi();
+registerRoutes();
 
 const root = document.getElementById('root')!;
 const ctx = getReatomCtx();

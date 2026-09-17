@@ -29,4 +29,4 @@ export const setupDayjs = action(async (ctx) => {
   await installDayjsLocale(locale)
 }, withRule("setupDayjs", getConfigVal(STATIC_CONFIG_KEYS.LOG_APP_ACTIONS)))
 
-export const getDayjs = () => dayjs()
+export const getDayjs = () => dayjs

@@ -28,6 +28,10 @@
     "devices": "Devices",
     "devices_": {
       "description": ""
+    },
+    "folders": "Folders",
+    "folders_": {
+      "description": ""
     }
   },
   "shared": {

@@ -4,15 +4,15 @@ import {
 } from "@reatom/framework";
 import { withUndo } from "@reatom/undo";
 import { searchParamsAtom } from '@reatom/url'
-import { navigate } from "../../../lib/router/utils";
+import { navigate } from "@/lib/router/utils";
 import { withLocalStorage } from "@reatom/persist-web-storage";
 import { withAtomLog } from "@distribate/reatom-kit";
 import { useCtx } from "@reatom/npm-solid-js";
-import { useAtomAccessor } from "../../../lib/helpers/reatom";
-import { declareModel } from "../../../lib/helpers";
-import { $user } from "../../../lib/user/user.model";
-import { translate } from "../../../lib/app/locale";
-import { $langLabel } from "../../../lib/app/app.model";
+import { useAtomAccessor } from "@/lib/helpers/reatom";
+import { declareModel } from "@/lib/helpers";
+import { $user } from "@/lib/user/user.model";
+import { translate } from "i18n";
+import { $langLabel } from "@/lib/app/app.model";
 
 export const SETTINGS_SECTION_KEYS = {
   DEFAULT: "default",
@@ -22,6 +22,8 @@ export const SETTINGS_SECTION_KEYS = {
   PRIVACY: "privacy",
   PASSCODE: "passcode",
   DEVICES: "devices",
+  FOLDERS: "folders",
+  NEWFOLDER: "new-folder"
 } as const;
 
 export type SettingsSectionKey = typeof SETTINGS_SECTION_KEYS[keyof typeof SETTINGS_SECTION_KEYS];
@@ -55,6 +57,13 @@ const SETTINGS_SECTION_META = {
   [SETTINGS_SECTION_KEYS.DEVICES]: {
     title: translate["settings.devices"](),
     description: translate["settings.devices_.description"](),
+  },
+  [SETTINGS_SECTION_KEYS.FOLDERS]: {
+    title: translate["settings.folders"](),
+    description: translate["settings.folders_.description"](),
+  },
+  [SETTINGS_SECTION_KEYS.NEWFOLDER]: {
+    title: "New Folder",
   },
 } as const;
 
@@ -95,6 +104,7 @@ export const $settings = atom(null, "settings").pipe(
 
 type MetaValue<
   T extends SettingsSectionKey, F extends SettingsSectionMetaFields
+  // @ts-expect-error
 > = (typeof SETTINGS_SECTION_META)[T][F];
 
 type IsAtomValue<
@@ -129,6 +139,7 @@ export function getSectionField(
   const section = SETTINGS_SECTION_META[target];
   if (!section) return "Unknown";
 
+  // @ts-expect-error
   const val = section[field];
 
   if (isAtom(val)) {

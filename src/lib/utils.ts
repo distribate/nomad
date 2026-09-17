@@ -32,3 +32,12 @@ export const isPrimitive = (val: unknown): val is string | number | boolean =>
   typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean';
 export const isError = (val: unknown): val is Error =>
   val instanceof Error;
+
+export function invariant(
+  condition: any,
+  message?: string,
+): asserts condition {
+  if (!condition) {
+    throw new Error(message);
+  }
+}

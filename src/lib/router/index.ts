@@ -1,43 +1,50 @@
-import { routes } from "./routes"
-import UniversalRouter from "universal-router"
+import UniversalRouter, { type Routes } from "universal-router"
 import {
-  action, atom, isAbort, reatomAsync, withAbort, withAssign, withReset,
-  type Ctx
+  action, atom, isAbort, reatomAsync,
+  withAbort, withAssign, withReset,
 } from "@reatom/framework"
 import { withRule } from "../helpers"
-import type { RouteEffects, RouteMeta, RouteRender } from "./types"
+import type { RouteData, RouteEffect, RouteEffects, RouteMeta, Router, RouteRender } from "./types"
 import { urlAtom } from "@reatom/url"
 import { resolveRoute } from "./core"
 import { routerNameRule } from "./config"
-
-export type RouterCtx = { reatomCtx: Ctx }
-export type Router = UniversalRouter<any, RouterCtx>;
+import { invariant } from "../utils"
+import { parseSearchParams } from "./utils"
 
 let router: Router
+let routes: Routes
 
-export const getRouter = () => {
-  if (!router) throw new Error("Router is not initialized")
+export const getRouter = (): Router => {
+  invariant(router, "Router is not initialized")
   return router
 }
+export const getRoutes = (): Routes => {
+  const router = getRouter();
+  return router.root.children as Routes
+}
 
-const getRouteAtomName = (p: string, c: string) => withRule(`${p}.${c}`, routerNameRule)
+export const defineRoutes = <T extends Routes>(value: T): void => {routes = value};
+export const defineEffect = <T extends RouteEffect>(effect: T): T => effect;
+
+const getAtomName = (p: string, c: string) => withRule(`${p}.${c}`, routerNameRule)
 
 export const $route = atom(null, "route").pipe(
   withAssign((_, name) => ({
-    render: atom(null, getRouteAtomName(name, "render")).pipe(
+    render: atom(null, getAtomName(name, "render")).pipe(
       withAssign((_, name) => ({
         page: atom<RouteRender["page"] | null>(null, `${name}.page`),
         layout: atom<RouteRender["layout"] | null>(null, `${name}.layout`),
         fallback: atom<RouteRender["fallback"] | null>(null, `${name}.fallback`),
       }))
     ),
-    effects: atom<RouteEffects>([], getRouteAtomName(name, "effects")).pipe(withReset()),
-    meta: atom<RouteMeta>({ withLoader: false }, getRouteAtomName(name, "meta")).pipe(withReset()),
+    effects: atom<RouteEffects>([], getAtomName(name, "effects")).pipe(withReset()),
+    data: atom<RouteData | null>(null, getAtomName(name, "data")).pipe(withReset()),
+    meta: atom<RouteMeta>({ withLoader: false }, getAtomName(name, "meta")).pipe(withReset()),
     /**
       Atom that indicates whether the initial route has been initialized.
     */
-    isInited: atom(false, getRouteAtomName(name, "isInited")),
-    isLoading: atom(true, getRouteAtomName(name, "isLoading")),
+    isInited: atom(false, getAtomName(name, "isInited")),
+    isLoading: atom(true, getAtomName(name, "isLoading")),
   }))
 );
 
@@ -92,21 +99,23 @@ export const $router = atom(null, "router").pipe(
     }, withRule(`${name}.start`, routerNameRule)),
     _defineRouteRender: reatomAsync(async (ctx) => {
       const currentUrl = ctx.get(urlAtom)
-      const finalParams = Object.fromEntries(currentUrl.searchParams.entries())
 
-      await resolveRoute(ctx, currentUrl.pathname, finalParams)
-    }, {
-      name: withRule(`${name}.defineRouteRender`, routerNameRule),
-      onReject: (_, err) => {
-        if (!isAbort(err)) {
-          console.error("Navigation error:", err)
-        }
-      }
-    }).pipe(
+      await resolveRoute(
+        ctx,
+        currentUrl.pathname,
+        parseSearchParams(currentUrl.searchParams),
+      )
+    }, withRule(`${name}.defineRouteRender`, routerNameRule)).pipe(
       withAbort({ strategy: "last-in-win" }),
     )
   }))
 )
+
+$router._defineRouteRender.onReject.onCall((_, err) => {
+  if (!isAbort(err)) {
+    console.error("Navigation error:", err)
+  }
+})
 
 if (import.meta.env.DEV && routerNameRule) {
   urlAtom.onChange((_, s) => console.log(urlAtom.__reatom.name, s))

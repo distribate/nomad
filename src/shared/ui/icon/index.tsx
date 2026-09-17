@@ -1,6 +1,6 @@
 import cn from "cnfast";
 import { createMemo, splitProps, type ComponentProps } from "solid-js";
-import { sprites, type SpritePrepareConfig, type SpritesMeta } from "./icon/sprite.gen";
+import { sprites, type SpritePrepareConfig, type SpritesMeta } from "./sprite.gen";
 
 /** Icon props extending SVG props and requiring specific icon name */
 export interface IconProps extends ComponentProps<'svg'> {

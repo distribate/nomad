@@ -1,7 +1,7 @@
 import { type Atom, type AtomMut, type Ctx } from "@reatom/framework";
-import { $appState, $lang } from "../app/app.model";
-import { $gsapIsEnabled, $gsapPlugins } from "../gsap";
-import { getConfigVal } from "../../const/config";
+import { $appState, $lang } from "@/lib/app/app.model";
+import { $gsapIsEnabled, $gsapPlugins } from "@/lib/gsap";
+import { getConfigVal } from "@/const/config";
 import { STATIC_CONFIG_KEYS } from "./const";
 
 export type BindingValue = string[] | Atom<any> | AtomMut<any>;

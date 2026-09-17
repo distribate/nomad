@@ -4,7 +4,7 @@ import solid from 'vite-plugin-solid'
 import UnoCSS from 'unocss/vite'
 import svg from '@neodx/svg/vite';
 import { analyzer } from 'vite-bundle-analyzer'
-import { exposeMacro } from "./plugins/expose-macro.ts"
+import { exposeMacro } from "./.plugins/expose-macro.ts"
 import devtools from 'solid-devtools/vite'
 import fs from 'fs'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -49,6 +49,9 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: true,
       minify: true
+    },
+    resolve: {
+      tsconfigPaths: true
     },
     server: {
       host: true,

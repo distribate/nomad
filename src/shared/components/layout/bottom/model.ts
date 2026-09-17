@@ -1,7 +1,7 @@
 import { action, atom, reatomMap, withAssign, withReset, type Ctx } from "@reatom/framework"
-import { navigate } from "../../../../lib/router/utils"
+import { navigate } from "@/lib/router/utils"
 import { urlAtom } from "@reatom/url"
-import { $isAuthed, $user } from "../../../../lib/user/user.model"
+import { $isAuthed, $user } from "@/lib/user/user.model"
 import { BADGES, type Badge } from "./const"
 
 export const $badgeIsActive = (target: string) => atom((ctx): boolean => {
@@ -51,7 +51,11 @@ export const $bottom = atom(null, "bottom").pipe(
   }))
 )
 
-$bottom.offsetY.onChange((_, s) => console.log($bottom.offsetY.__reatom.name, s));
+export const calcBottomHeight = (bottomHeight: number) => `${bottomHeight + 16}px`;
+
+if (import.meta.env.DEV) {
+  $bottom.offsetY.onChange((_, s) => console.log($bottom.offsetY.__reatom.name, s));
+}
 
 export const getBottomBadge = (ctx: Ctx, o: string): HTMLButtonElement => {
   const target = $bottom.badgesRefs.get(ctx, o)

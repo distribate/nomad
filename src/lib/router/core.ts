@@ -1,25 +1,47 @@
-import { action } from "@reatom/framework";
+import { action, pick, reatomAsync } from "@reatom/framework";
 import { urlAtom } from "@reatom/url";
-import type { RouteConfig, RouteEffectPhase } from "./types";
-import { $route, getRouter } from ".";
+import type { RouteData, RouteEffectPhase } from "./types";
+import { $route, getRouter, getRoutes } from ".";
 import { RedirectError, routerNameRule } from "./config";
-import { withRule } from "../helpers";
+import { createPerfTimer, withRule } from "../helpers";
+import type { ResolvedRouteConfig } from "./types";
+import { matchPath, parseSearchParams, serializeSearchParams, type NestedSearchParams } from "./utils";
+import { withCallParams } from "@distribate/reatom-kit";
 
-const runEffects = action(async (ctx, phase: RouteEffectPhase) => {
+type RunEffectsArgs =
+  | [phase: RouteEffectPhase, data: RouteData]
+
+const runEffects = reatomAsync(async (ctx, ...args: RunEffectsArgs) => {
+  const perf = import.meta.env.DEV ? createPerfTimer() : null
+
+  perf?.start()
+
+  const [phase, resolvedRoute] = args
   const effects = ctx.get($route.effects)
 
   for (const effect of effects) {
     if (effect.phase !== phase)
       continue
 
-    await effect.run(ctx)
+    await effect.run(resolvedRoute)(ctx)
   }
-}, withRule("runEffects", routerNameRule))
+
+  perf?.end()
+
+  return perf?.value
+}, withRule("runEffects", routerNameRule)).pipe(
+  withCallParams()
+)
 
 export const resolveRoute = action(async (
-  ctx, pathname: string, params?: Record<string, string>
+  ctx, pathname: string, searchParams?: NestedSearchParams,
 ): Promise<void> => {
-  await runEffects(ctx, "beforeLeave")
+  const $data = ctx.get($route.data);
+
+  if ($data) {
+    const resolved = pick($data, ["params", "search"]);
+    await runEffects(ctx, "onLeave", resolved)
+  }
 
   $route.meta.reset(ctx);
   $route.effects.reset(ctx);
@@ -27,28 +49,46 @@ export const resolveRoute = action(async (
   try {
     const router = getRouter();
 
-    const route = await router.resolve({
-      pathname,
-      params
-    }) as RouteConfig;
+    const formalPathname = new URL(pathname, window.location.origin)
+    formalPathname.search = searchParams
+      ? serializeSearchParams(searchParams)
+      : ""
 
-    !route.layout && $route.isLoading(ctx, true);
+    const resolvedRoute = await router.resolve(formalPathname.pathname) as ResolvedRouteConfig;
 
-    route.effects && $route.effects(ctx, route.effects);
+    if (!resolvedRoute.layout) {
+      $route.isLoading(ctx, true);
+    };
 
-    await runEffects(ctx, "beforeEnter")
+    resolvedRoute.effects && $route.effects(ctx, resolvedRoute.effects);
 
-    $route.render.layout(ctx, route.layout ?? null);
-    $route.render.fallback(ctx, route.fallback ?? null)
+    const routes = getRoutes();
+    const routeDeclaration = routes.find(d => d.name === resolvedRoute.name);
 
-    if (route.loader) {
+    const pathParams = routeDeclaration?.path
+      ? matchPath(routeDeclaration.path as string, pathname)
+      : null;
+
+    const routeData: RouteData = {
+      params: pathParams,
+      search: parseSearchParams(formalPathname.searchParams)
+    };
+
+    await runEffects(ctx, "beforeEnter", routeData)
+
+    $route.render.layout(ctx, resolvedRoute.layout ?? null);
+    $route.render.fallback(ctx, resolvedRoute.fallback ?? null)
+
+    if (resolvedRoute.loader) {
       $route.meta(ctx, (state) => ({ ...state, withLoader: true }));
-      $route.render.page(ctx, route.loader);
+      $route.render.page(ctx, resolvedRoute.loader);
     }
 
-    $route.render.page(ctx, route.page)
-    await runEffects(ctx, "afterEnter")
+    $route.render.page(ctx, resolvedRoute.page)
 
+    await runEffects(ctx, "afterEnter", routeData);
+
+    $route.data(ctx, routeData);
     $route.isInited(ctx, true);
   } catch (e) {
     if (e instanceof RedirectError) {
@@ -68,3 +108,10 @@ export const resolveRoute = action(async (
     $route.isLoading(ctx, false);
   }
 }, withRule("resolveRoute", routerNameRule))
+
+if (import.meta.env.DEV) {
+  runEffects.onCall((_, __, params) => routerNameRule &&
+    console.log(`[${params[0]}]`, `->`))
+  runEffects.onFulfill.onCall((ctx, __, duration) => routerNameRule &&
+    console.log(`[${ctx.get(runEffects.callParamsAtom)[0]}]`, `<-`, `${duration}ms`))
+}

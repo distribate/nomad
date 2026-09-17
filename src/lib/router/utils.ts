@@ -1,4 +1,4 @@
-import type { ComponentRef, RouteConfig } from "./types"
+import type { ComponentRef, ResolvedRouteConfig, RouteConfig, RoutePathParams } from "./types"
 import { RedirectError } from "./config"
 import { getReatomCtx } from "../app/ctx"
 import { urlAtom } from "@reatom/url"
@@ -36,10 +36,11 @@ const wrapComponent = <T extends Function>(
     : undefined;
 
 export function defineRoute(
-  _: string, { render, ...config }: DefineRouteConfig,
-) {
-  const route: RouteConfig = {
+  name: string, { render, ...config }: DefineRouteConfig,
+): () => ResolvedRouteConfig {
+  const route = {
     ...config,
+    name,
     page: {
       value: render.page,
     },
@@ -74,3 +75,102 @@ export function redirect(to: string, replace = false): never {
 }
 
 export const asDeferred = lazyComponent
+
+export function matchPath (
+  pattern: string,
+  pathname: string,
+): RoutePathParams {
+  const patternSegments = pattern.split("/").filter(Boolean)
+  const pathSegments = pathname.split("/").filter(Boolean)
+
+  if (patternSegments.length !== pathSegments.length)
+    return null
+
+  const params: NonNullable<RoutePathParams> = {}
+
+  for (let i = 0; i < patternSegments.length; i++) {
+    const patternSegment = patternSegments[i]
+    const pathSegment = pathSegments[i]
+
+    if (patternSegment.startsWith(":")) {
+      params[patternSegment.slice(1)] = pathSegment
+      continue
+    }
+
+    if (patternSegment !== pathSegment)
+      return null
+  }
+
+  return params
+}
+
+export interface NestedSearchParams {
+  [key: string]: string | NestedSearchParams
+}
+
+export const serializeSearchParams = (
+  params: NestedSearchParams,
+): string => {
+  const search = new URLSearchParams()
+
+  const append = (
+    value: string | NestedSearchParams,
+    key: string,
+  ) => {
+    if (typeof value === "string") {
+      search.append(key, value)
+      return
+    }
+
+    for (const [childKey, childValue] of Object.entries(value)) {
+      append(childValue, `${key}[${childKey}]`)
+    }
+  }
+
+  for (const [key, value] of Object.entries(params)) {
+    append(value, key)
+  }
+
+  return search.toString()
+}
+export const parseSearchParams = (
+  search: URLSearchParams,
+): NestedSearchParams => {
+  const result: NestedSearchParams = {}
+
+  const setNested = (
+    target: NestedSearchParams,
+    keys: string[],
+    value: string,
+  ) => {
+    const [key, ...rest] = keys
+
+    if (!rest.length) {
+      target[key] = value
+      return
+    }
+
+    if (
+      !target[key] ||
+      typeof target[key] === "string"
+    ) {
+      target[key] = {}
+    }
+
+    setNested(
+      target[key] as NestedSearchParams,
+      rest,
+      value,
+    )
+  }
+
+  for (const [key, value] of search) {
+    const keys = key
+      .replace(/\]/g, "")
+      .split("[")
+
+    setNested(result, keys, value)
+  }
+
+  return result
+}

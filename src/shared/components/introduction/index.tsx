@@ -5,16 +5,16 @@ import {
   createSignal, Match, onMount,
   type JSX, Switch, type ParentProps
 } from "solid-js";
-import { Button } from "../../ui/button";
+import { Button } from "@/ui/button";
 import { Navigation } from "./navigation";
 import { entries } from "@reatom/framework";
-import { Input } from "../../ui/input";
-import { MasonryGrid } from "../../ui/grid";
+import { Input } from "@/ui/input";
+import { MasonryGrid } from "@/ui/grid";
 import { GOALS, INTERESTS, STYLES } from "./data";
-import { defineRefAtom, useAtomAccessor } from "../../../lib/helpers/reatom";
+import { defineRefAtom, useAtomAccessor } from "@/lib/helpers/reatom";
 import { Block, Title, titleTextStyle } from "./primitives";
 import cn from "cnfast";
-import { setupDevModule } from "../../../lib/helpers";
+import { setupDevModule } from "@/lib/helpers";
 
 const Splash = () => {
   const ctx = useCtx();

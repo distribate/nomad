@@ -2,25 +2,27 @@ import { For, onCleanup, onMount, Show, type Component, type ParentComponent } f
 import { useCtx } from "@reatom/npm-solid-js";
 import {
   $settings, currentSectionIsDefault,
-  resetAccountForm, SETTINGS_SECTION_KEYS, DEFAULT_SETTINGS_NODE_KEY, useField,
-  initFields,
-  getSectionField,
+  resetAccountForm, SETTINGS_SECTION_KEYS, DEFAULT_SETTINGS_NODE_KEY, useField, initFields, getSectionField,
   type SettingsSectionKey
 } from "./model";
-import { useAtomAccessor } from "../../../lib/helpers/reatom";
+import { useAtomAccessor } from "@/lib/helpers/reatom";
 import { Dynamic } from "solid-js/web";
 import { $headerNodes } from "../layout/header/model";
-import { BackButton } from "../../ui/back-button";
+import { BackButton } from "@/ui/back-button";
 import { SettingsHeaderTitle, SettingsItem } from "./primitives";
-import { action, entries } from "@reatom/framework";
+import { action, atom, entries, withAssign, withReset } from "@reatom/framework";
 import { WithTopPadding } from "../global/layouts";
-import { $appState, LANGUAGES, $lang } from "../../../lib/app/app.model";
-import { $user, $logout } from "../../../lib/user/user.model";
-import { setupDevModule } from "../../../lib/helpers";
-import { Input } from "../../ui/input";
+import { $appState, LANGUAGES, $lang } from "@/lib/app/app.model";
+import { $user, $logout } from "@/lib/user/user.model";
+import { setupDevModule } from "@/lib/helpers";
+import { Input } from "@/ui/input";
 import { MeHeader } from "../me/primitives";
-import { setLocale } from "../../../paraglide/runtime";
-import { translate } from "../../../lib/app/locale";
+import { setLocale } from "@/paraglide/runtime";
+import { translate } from "i18n";
+import { $chats, $chatsFolders, $folderIsRemovable, createFolder, deleteFolder } from "../chats/model";
+import { createMoreActions, MoreEvents } from "../global/more";
+import toast from "solid-toast";
+import { isError } from "@/lib/utils";
 
 const SettingsSection: ParentComponent<{ title?: string }> = (props) => {
   return (
@@ -270,6 +272,15 @@ const SettingsDefault = () => {
             item={{
               type: "page",
               meta: {
+                title: translate["settings.folders"]()
+              },
+              route: "folders"
+            }}
+          />
+          <SettingsItem
+            item={{
+              type: "page",
+              meta: {
                 title: translate["settings.language"](),
                 description: getSectionField(ctx, "language", "description")
               },
@@ -296,6 +307,173 @@ const SettingsDefault = () => {
   )
 }
 
+const $newFolder = atom(null, "newFolder").pipe(
+  withAssign((_, name) => ({
+    title: atom("", `${name}.title`).pipe(withReset()),
+    includedChats: atom<string[]>([], `${name}.includedChats`).pipe(withReset()),
+    excludedChats: atom<string[]>([], `${name}.excludedChats`).pipe(withReset()),
+  }))
+)
+const $isValidForSave = atom((ctx) => {
+  if (ctx.spy($newFolder.title).trim().length >= 1) {
+    return true;
+  }
+  return false;
+})
+
+const SettingsFoldersNewFolder = () => {
+  const ctx = useCtx();
+
+  onMount(() => {
+    const sub = ctx.subscribe($isValidForSave, (state) => {
+      if (state) {
+        $headerNodes.update(ctx, {
+          r: () => (
+            <button
+              class="text-sm! pointer-events-auto"
+              onClick={() => {
+                // todo: remove in future
+                const chats = ctx.get($chats);
+                const randomizedChatsIdx = chats.toSorted(() => Math.random() - 0.5).slice(0, 6).map(d => d.id)
+                $newFolder.includedChats(ctx, randomizedChatsIdx)
+                //
+
+                createFolder(ctx, {
+                  title: ctx.get($newFolder.title),
+                  initialChats: {
+                    included: ctx.get($newFolder.includedChats),
+                    excluded: ctx.get($newFolder.excludedChats),
+                  }
+                });
+
+                $settings.back(ctx)
+              }}
+            >
+              Save
+            </button>
+          )
+        })
+      } else {
+        $headerNodes.update(ctx, {
+          r: null
+        })
+      }
+    })
+
+    onCleanup(() => {
+      sub();
+
+      $newFolder.title.reset(ctx);
+      $newFolder.includedChats.reset(ctx);
+      $newFolder.excludedChats.reset(ctx);
+    })
+  })
+
+  const newFolderTitle = useAtomAccessor($newFolder.title)
+
+  return (
+    <>
+      <SettingsSection title="Folder title">
+        <Input
+          variant="headless"
+          borderVariant="headless"
+          value={newFolderTitle()}
+          maxLength={16}
+          placeholder="Folder title"
+          onInput={(e) => $newFolder.title(ctx, e.target.value)}
+        />
+      </SettingsSection>
+      <SettingsSection title="Included Chats">
+        <SettingsItem
+          item={{
+            type: "action",
+            meta: {
+              title: "Add Chats",
+            },
+            as: "button",
+            event: action((ctx) => {
+              console.log("add-chats")
+            }),
+          }}
+        />
+      </SettingsSection>
+      <SettingsSection title="Excluded Chats">
+        <SettingsItem
+          item={{
+            type: "action",
+            meta: {
+              title: "Add Chats to Exclude",
+            },
+            as: "button",
+            event: action((ctx) => {
+              console.log("add-chats-to-exclude")
+            }),
+          }}
+        />
+      </SettingsSection>
+    </>
+  )
+}
+
+const SettingsFolders = () => {
+  const folders = useAtomAccessor($chatsFolders);
+
+  return (
+    <>
+      <SettingsSection>
+        <For each={folders()}>
+          {(folder) => {
+            const isRemovable = useAtomAccessor($folderIsRemovable(folder.id))
+
+            return (
+              <div class="flex items-center pr-2 justify-between w-full">
+                <SettingsItem
+                  item={{
+                    type: "page",
+                    meta: {
+                      title: folder.title
+                    },
+                    route: folder.id.toString()
+                  }}
+                />
+                <Show when={!isRemovable()}>
+                  <MoreEvents
+                    events={
+                      createMoreActions({
+                        delete: {
+                          label: "Delete",
+                          action: (ctx) => {
+                            try {
+                              deleteFolder(ctx, folder.id)
+                            } catch (e) {
+                              toast.error(isError(e) ? e.message : "Unknown error")
+                            }
+                          }
+                        }
+                      })
+                    }
+                  />
+                </Show>
+              </div>
+            )
+          }}
+        </For>
+      </SettingsSection>
+      <SettingsSection>
+        <SettingsItem
+          item={{
+            type: "page",
+            meta: {
+              title: "Create new Folder"
+            },
+            route: "new-folder"
+          }}
+        />
+      </SettingsSection>
+    </>
+  )
+}
+
 const SETTINGS_COMPONENTS: Record<string, Component> = {
   [SETTINGS_SECTION_KEYS.DEFAULT]: SettingsDefault,
   [SETTINGS_SECTION_KEYS.PREFERENCES]: SettingsPreferences,
@@ -303,6 +481,8 @@ const SETTINGS_COMPONENTS: Record<string, Component> = {
   [SETTINGS_SECTION_KEYS.ACCOUNT]: SettingsAccount,
   [SETTINGS_SECTION_KEYS.PRIVACY]: SettingsPrivacy,
   [SETTINGS_SECTION_KEYS.PASSCODE]: SettingsPasscode,
+  [SETTINGS_SECTION_KEYS.FOLDERS]: SettingsFolders,
+  [SETTINGS_SECTION_KEYS.NEWFOLDER]: SettingsFoldersNewFolder,
 }
 
 export const SettingsLayout: ParentComponent = (props) => {
@@ -321,7 +501,8 @@ export const SettingsLayout: ParentComponent = (props) => {
 
       $headerNodes.update(ctx, {
         l: () => <BackButton onClick={() => $settings.back(ctx)} />,
-        c: () => <SettingsHeaderTitle title={getSectionField(state as SettingsSectionKey, "title")} />
+        c: () => <SettingsHeaderTitle title={getSectionField(state as SettingsSectionKey, "title")} />,
+        r: () => <div class="w-10"></div>
       }, {
         withSnapshot: false
       })

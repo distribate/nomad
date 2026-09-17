@@ -1,4 +1,4 @@
-import { getConfigVal } from "../../const/config";
+import { getConfigVal } from "@/const/config";
 import { STATIC_CONFIG_KEYS } from "../dev/const";
 
 export class RedirectError extends Error {

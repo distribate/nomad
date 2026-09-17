@@ -1,13 +1,30 @@
 import { useCtx } from "@reatom/npm-solid-js";
-import { $user } from "../../../lib/user/user.model"
-import { Button } from "../../ui/button";
+import { $logout, $user } from "@/lib/user/user.model"
+import { Button } from "@/ui/button";
 import { For, Show } from "solid-js";
-import { Icon } from "../../ui/icon";
+import { Icon } from "@/ui/icon";
 import { WithTopPadding } from "../global/layouts";
 import { me_events } from "./model";
-import { useAtomAccessor } from "../../../lib/helpers/reatom";
-import { setupDevModule } from "../../../lib/helpers";
+import { useAtomAccessor } from "@/lib/helpers/reatom";
+import { setupDevModule } from "@/lib/helpers";
 import { MeHeader } from "./primitives";
+import { createMoreActions, MoreEvents } from "../global/more";
+import { translate } from "@/shared/i18n";
+
+const MORE_EVENTS = createMoreActions({
+  logout: {
+    label: translate["shared.logout"](),
+    icon: "sprite:arrow-left",
+    withConfirm: true,
+    action(ctx) {
+      $logout.exec(ctx)
+    },
+  },
+});
+
+export const MeMore = () => {
+  return <MoreEvents events={MORE_EVENTS} />
+}
 
 const MeEvents = () => {
   const ctx = useCtx()

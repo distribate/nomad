@@ -1,9 +1,9 @@
 import type { AppModule } from "./types";
 import type { Ctx } from "@reatom/framework";
-import { initUser } from "../user/user.model.ts";
-import { setupDayjs } from "../dayjs.ts";
-import { $gsap } from "../gsap/index.ts";
-import { $router } from "../router/index.ts";
+import { initUser } from "@/lib/user/user.model.ts";
+import { setupDayjs } from "@/lib/dayjs.ts";
+import { $gsap } from "@/lib/gsap/index.ts";
+import { $router } from "@/lib/router/index.ts";
 import { initAsTMA } from "./tma.ts";
 import { $appState, defineAppLifecycle } from "./app.model.ts";
 

@@ -1,6 +1,6 @@
 import type { Ctx } from "@reatom/framework"
-import { getDevConfig } from "../dev/dev.model"
-import { getHeapSizeMB } from "../helpers"
+import { getDevConfig } from "@/lib/dev/dev.model"
+import { getHeapSizeMB } from "@/lib/helpers"
 import { $modules as $bootModules } from "./boot"
 import { getReatomCtx } from "./ctx"
 

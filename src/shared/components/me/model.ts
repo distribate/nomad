@@ -1,7 +1,7 @@
 import { action, isAbort, type Action } from "@reatom/framework";
 import { navigate } from "../../../lib/router/utils";
-import type { IconName } from "../../ui/icon";
-import { translate } from "../../../lib/app/locale";
+import type { IconName } from "@/ui/icon";
+import { translate } from "i18n";
 
 type MeEvent = {
   icon: IconName,

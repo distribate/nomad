@@ -1,7 +1,7 @@
 import { Show } from "solid-js";
-import type { User } from "../../../lib/user/user.model";
-import { Icon } from "../../ui/icon";
-import { translate } from "../../../lib/app/locale";
+import type { User } from "@/lib/user/user.model";
+import { Icon } from "@/ui/icon";
+import { translate } from "i18n";
 
 type MeHeaderAvatarProps =
   | { as: "editable", onPick: (url: string) => void, previewImg: string }

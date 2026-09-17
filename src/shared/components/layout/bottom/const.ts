@@ -1,4 +1,4 @@
-import { translate } from "../../../../lib/app/locale"
+import { translate } from "i18n"
 
 const BADGES_KEYS = ["feed", "friends", "settings", "me"] as const;
 

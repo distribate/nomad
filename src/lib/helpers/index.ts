@@ -119,3 +119,20 @@ export const createNoopProxy = (): any => {
 
   return proxy;
 };
+
+export const createPerfTimer = () => {
+  let startedAt = 0
+  let value = 0
+  return {
+    start() {
+      startedAt = performance.now()
+    },
+    end() {
+      value = performance.now() - startedAt
+      return value
+    },
+    get value() {
+      return value.toFixed(2)
+    },
+  }
+}
