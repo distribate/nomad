@@ -1,5 +1,5 @@
 import { atom, type Atom, type AtomMut, type Ctx } from "@reatom/framework"
-import { lazy, onCleanup, onMount, type Component } from "solid-js"
+import { onCleanup, onMount } from "solid-js"
 import { getReatomCtx } from "../app/ctx"
 
 /**

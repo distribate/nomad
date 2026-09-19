@@ -25,7 +25,7 @@ export const defineRefAtom = <T extends HTMLElement>(
       }
 
       if (withLog) {
-        console.log("[+] Ref atom", { k: logKey });
+        console.log("$ref ->", { k: logKey, el });
       }
     }
 
@@ -37,7 +37,7 @@ export const defineRefAtom = <T extends HTMLElement>(
       }
 
       if (withLog) {
-        console.log("[-] Ref atom", { k: logKey });
+        console.log("$ref <-", { k: logKey });
       }
     });
   };

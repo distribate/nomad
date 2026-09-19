@@ -16,9 +16,7 @@ const Router = () => {
   const isLoading = useAtomAccessor($routeLoading);
 
   return (
-    <Show
-      when={!isLoading()}
-    >
+    <Show when={!isLoading()}>
       <Dynamic component={layout()?.value ?? DefaultLayout}>
         <RouteOutlet />
       </Dynamic>

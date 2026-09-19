@@ -4,19 +4,22 @@ import 'virtual:uno.css'
 
 import 'solid-devtools'
 
-import "./lib/logger/setup.ts";
+import "@/lib/logger/setup.ts";
 
 import { render } from 'solid-js/web'
-import { Entry } from './entry'
 import { reatomContext } from '@reatom/npm-solid-js'
-import { getReatomCtx } from './lib/app/ctx.ts';
-import { startBoot, beforeBoot } from './lib/app/boot.ts';
-import { AppError } from './shared/components/templates/error.tsx';
-import { isError } from 'utils/index';
 import type { ParentComponent } from 'solid-js';
-import { AppLayout } from './shared/components/templates/layout.tsx';
-import { registerPublicApi } from './shared/api/exposing.ts';
-import { registerRoutes } from './routes.ts';
+import { isError } from 'utils/index';
+
+import { getReatomCtx } from '@/lib/app/ctx.ts';
+import { startBoot, beforeBoot } from '@/lib/app/boot.ts';
+
+import { AppError } from '@/shared/components/templates/error.tsx';
+import { AppLayout } from '@/shared/components/templates/layout.tsx';
+import { Entry } from '@/entry'
+
+import { registerPublicApi } from '@/shared/api/exposing.ts';
+import { registerRoutes } from '@/routes.ts';
 
 registerPublicApi();
 registerRoutes();
